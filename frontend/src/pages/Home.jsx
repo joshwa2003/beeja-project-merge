@@ -18,7 +18,7 @@ import Course_Slider from '../components/core/Catalog/Course_Slider'
 import TeamSlider from '../components/core/HomePage/TeamSlider';
 import SplitScreen from '../components/core/HomePage/SplitScreen';
 
-import { getCatalogPageData } from '../services/operations/pageAndComponentData';
+import { getAllCourses } from '../services/operations/courseDetailsAPI';
 
 import { MdOutlineRateReview } from 'react-icons/md';
 import { FaArrowRight } from "react-icons/fa";
@@ -45,40 +45,41 @@ const Home = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const fetchCatalogPageData = async () => {
-      if (!categoryID) return;
+    const fetchAllCourses = async () => {
       setLoading(true);
       setError(null);
       try {
-        const result = await getCatalogPageData(categoryID, dispatch);
-        console.log("CatalogPageData API result:", result);
-        setCatalogPageData(result);
+        const result = await getAllCourses();
+        console.log("All Courses API result:", result);
+        setCatalogPageData({ allCourses: result });
       } catch (err) {
-        console.error("Error fetching catalog page data:", err);
-        setError("Failed to fetch catalog page data");
+        console.error("Error fetching courses:", err);
+        setError("Failed to fetch courses");
       } finally {
         setLoading(false);
       }
     };
-    fetchCatalogPageData();
-  }, [categoryID, dispatch]);
+    fetchAllCourses();
+  }, []);
 
   const getUniqueCourseSections = () => {
-    if (!CatalogPageData) return { popularPicks: [], topEnrollments: [], additionalCourses: [] };
+    if (!CatalogPageData?.allCourses) return { popularPicks: [], topEnrollments: [], additionalCourses: [] };
 
-    const allCourses = [
-      ...(CatalogPageData?.selectedCategory?.courses?.filter(course => course.isVisible) || []),
-      ...(CatalogPageData?.mostSellingCourses?.filter(course => course.isVisible) || []),
-      ...(CatalogPageData?.differentCategory?.courses?.filter(course => course.isVisible) || [])
-    ];
+    const allCourses = CatalogPageData.allCourses.filter(course => course.status === 'Published');
 
-    const uniqueCourses = allCourses.filter((course, index, self) =>
-      index === self.findIndex(c => c._id === course._id)
-    );
-
-    const popularPicks = uniqueCourses.slice(0, 3);
-    const topEnrollments = uniqueCourses.slice(3, 6);
-    const additionalCourses = uniqueCourses.slice(6, 9);
+    // Popular Picks: Courses with more reviews
+    const popularPicks = [...allCourses]
+      .sort((a, b) => (b.ratingAndReviews?.length || 0) - (a.ratingAndReviews?.length || 0))
+      .slice(0, 6);
+    
+    // Top Enrollments: Most enrolled courses
+    const topEnrollments = [...allCourses]
+      .sort((a, b) => (b.studentsEnrolled?.length || 0) - (a.studentsEnrolled?.length || 0))
+      .slice(0, 6);
+    
+    const additionalCourses = [...allCourses]
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 6);
 
     return { popularPicks, topEnrollments, additionalCourses };
   };
@@ -356,64 +357,53 @@ const Home = () => {
           </div>
 
 
-          {/* course slider */}
-            <div className="mx-auto box-content w-full max-w-maxContentTab px- py-12 lg:max-w-maxContent">
-              <h2 className="text-white mb-6 text-2xl ">
-                Popular Picks for You 🏆
-              </h2>
-              {loading ? (
-                <p className="text-white">Loading popular picks...</p>
-              ) : error ? (
-                <p className="text-red-500">{error}</p>
-              ) : (
-                <Course_Slider Courses={popularPicks} />
-              )}
-            </div>
-            <div className=" mx-auto box-content w-full max-w-maxContentTab px- py-12 lg:max-w-maxContent">
-              <h2 className="text-white mb-6 text-2xl ">
-                Top Enrollments Today 🔥
-              </h2>
-              {loading ? (
-                <p className="text-white">Loading top enrollments...</p>
-              ) : error ? (
-                <p className="text-red-500">{error}</p>
-              ) : (
-                <Course_Slider Courses={topEnrollments} />
-              )}
-            </div>
-
-          {/* Top Enrollments */}
-          <motion.div
-            variants={fadeIn('up', 0.2)}
-            initial='hidden'
-            whileInView={'show'}
-            viewport={{ once: false, amount: 0.2 }}
-            className="mx-auto box-content w-full max-w-maxContentTab px- py-12 lg:max-w-maxContent"
-          >
-            <motion.h2
-              variants={fadeIn('right', 0.3)}
+          {/* Course Sliders */}
+          <div className="mx-auto box-content w-full max-w-maxContentTab px-4 py-12 lg:max-w-maxContent">
+            <motion.div
+              variants={fadeIn('up', 0.2)}
               initial='hidden'
               whileInView={'show'}
               viewport={{ once: false, amount: 0.2 }}
-              className="text-white mb-6 text-2xl"
+              className="space-y-12"
             >
-              Top Enrollments Today 🔥
-            </motion.h2>
-            {loading ? (
-              <p className="text-white">Loading top enrollments...</p>
-            ) : error ? (
-              <p className="text-red-500">{error}</p>
-            ) : (
-              <motion.div
-                variants={scaleUp}
-                initial='hidden'
-                whileInView={'show'}
-                viewport={{ once: false, amount: 0.2 }}
-              >
-                <Course_Slider Courses={topEnrollments} />
-              </motion.div>
-            )}
-          </motion.div>
+              {/* Popular Picks Section */}
+              <div>
+                <h2 className="text-white mb-6 text-2xl font-semibold">
+                  Popular Picks for You 🏆
+                </h2>
+                {loading ? (
+                  <div className="h-[200px] w-full flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-50"></div>
+                  </div>
+                ) : error ? (
+                  <p className="text-red-500 text-center py-8">{error}</p>
+                ) : popularPicks?.length > 0 ? (
+                  <Course_Slider Courses={popularPicks} />
+                ) : (
+                  <p className="text-richblack-300 text-center py-8">No courses available at the moment</p>
+                )}
+              </div>
+
+              {/* Top Enrollments Section */}
+              <div>
+                <h2 className="text-white mb-6 text-2xl font-semibold">
+                  Top Enrollments Today 🔥
+                </h2>
+                {loading ? (
+                  <div className="h-[200px] w-full flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-50"></div>
+                  </div>
+                ) : error ? (
+                  <p className="text-red-500 text-center py-8">{error}</p>
+                ) : topEnrollments?.length > 0 ? (
+                  <Course_Slider Courses={topEnrollments} />
+                ) : (
+                  <p className="text-richblack-300 text-center py-8">No courses available at the moment</p>
+                )}
+              </div>
+            </motion.div>
+          </div>
+
 
 
 
@@ -509,7 +499,7 @@ const Home = () => {
               whileInView={'show'}
               viewport={{ once: false, amount: 0.2 }}
             >
-              <LearningLanguageSection />
+              {/* <LearningLanguageSection /> */}
             </motion.div>
           </div>
         </div>

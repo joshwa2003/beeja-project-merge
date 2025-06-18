@@ -208,9 +208,7 @@ const ImprovedFooter = () => {
             </div>
 
             <div className={`${styles.copyrightInfo} flex items-center gap-4 text-sm text-richblack-400`}>
-              <span className="flex items-center gap-1">
-                Made with <FiHeart className="text-red-500 w-4 h-4" /> by Beeja Team
-              </span>
+           
               <span>© {new Date().getFullYear()} Beeja. All rights reserved.</span>
             </div>
           </motion.div>

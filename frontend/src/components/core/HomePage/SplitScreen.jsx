@@ -1,23 +1,39 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { fadeIn, scaleUp } from '../../common/motionFrameVarients';
 import './SplitScreen.css';
 
 // Using your existing certification images
-import Google from "../../../assets/Images/certification img/Google-certificate-img.png";
-import IBM from "../../../assets/Images/certification img/ibm-certification-img.png";
-import Meta from "../../../assets/Images/certification img/meta-certification-img.png";
-import Oracle from "../../../assets/Images/certification img/oracle-certification-img.png";
-import Walmart from "../../../assets/Images/certification img/walmart-certification-img.png";
-import Sony from "../../../assets/Images/certification img/sony-certificate-img.png";
+import adobe from "../../../assets/Images/certification img/Adobe.png";
+import apple from "../../../assets/Images/certification img/Apple.png";
+import autodesk from "../../../assets/Images/certification img/Autodesk.png";
+import cisco from "../../../assets/Images/certification img/cisco.png";
+import scb from "../../../assets/Images/certification img/CSB-Logo.png";
+import esb from "../../../assets/Images/certification img/ESB.png";
+import ic3 from "../../../assets/Images/certification img/IC3.png";
+import intuit from "../../../assets/Images/certification img/intuit.png";
+import its from "../../../assets/Images/certification img/ITS-Logo-stacked.png";
+import meta from "../../../assets/Images/certification img/meta-logo.webp";
+import Microsoft from "../../../assets/Images/certification img/microsoft.webp";
+import Project from "../../../assets/Images/certification img/project.png";
+import Unity from "../../../assets/Images/certification img/unity-logo.png";
+
 
 const logos = [
-  { src: Google, alt: "Google" },
-  { src: IBM, alt: "IBM" },
-  { src: Meta, alt: "Meta" },
-  { src: Oracle, alt: "Oracle" },
-  { src: Walmart, alt: "Walmart" },
-  { src: Sony, alt: "Sony" }
+  { src: adobe, alt: "adobe" },
+  { src: apple, alt: "apple" },
+  { src: autodesk, alt: "autodesk" },
+  { src: cisco, alt: "cisco" },
+  { src: scb, alt: "scb" },
+  { src: meta, alt: "sony" },
+  { src: Microsoft, alt: "Microsoft" },
+  { src: Project, alt: "Project" },
+  { src: Unity, alt: "Unity" },
+  { src: esb, alt: "esb" },
+  { src: ic3, alt: "ic3" },
+  { src: its, alt: "its" },
+  { src: intuit, alt: "intuit" }
 ];
 
 const MarqueeColumn = ({ direction = 'up', logos }) => (
@@ -63,13 +79,15 @@ const SplitScreen = () => {
               Join thousands of successful graduates who have transformed their careers through our certified programs.
             </p>
           </div>
-          <motion.button 
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="cta-button"
-          >
-            Explore Certifications
-          </motion.button>
+          <Link to="/catalog">
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="cta-button"
+            >
+              Explore Certifications
+            </motion.button>
+          </Link>
         </div>
       </motion.div>
 
