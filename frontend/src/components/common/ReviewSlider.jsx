@@ -89,7 +89,6 @@ function ReviewSlider() {
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-green-500 border border-richblack-900"></div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">

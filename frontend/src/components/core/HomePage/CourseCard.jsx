@@ -1,45 +1,101 @@
 import React from "react";
-
-// Importing React Icons
+import { motion } from "framer-motion";
 import { HiUsers } from "react-icons/hi";
 import { ImTree } from "react-icons/im";
-
+import { FaRupeeSign } from "react-icons/fa";
+import RatingStars from "../../common/RatingStars";
 
 const CourseCard = ({ cardData, currentCard, setCurrentCard }) => {
   return (
-    <div
-      className={`w-[360px] lg:w-[30%] ${currentCard === cardData?.heading
-        ? "bg-white shadow-[12px_12px_0_0] shadow-yellow-50"
-        : "bg-richblack-800"
-        }  text-richblack-25 h-[300px] box-border cursor-pointer`}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      whileHover={{ 
+        scale: 1.02,
+        transition: { duration: 0.2 }
+      }}
+      className={`w-[320px] h-[420px] flex flex-col
+        ${currentCard === cardData?.heading
+          ? "bg-white shadow-lg shadow-yellow-50/50"
+          : "bg-richblack-800 hover:shadow-md hover:shadow-richblack-500/20"
+        } rounded-lg overflow-hidden transition-all duration-200 cursor-pointer
+        transform hover:-translate-y-1`}
       onClick={() => setCurrentCard(cardData?.heading)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          setCurrentCard(cardData?.heading);
+        }
+      }}
     >
-      <div className="border-b-[2px] border-richblack-400 border-dashed h-[80%] p-6 flex flex-col gap-3">
-        <div className={` ${currentCard === cardData?.heading && "text-richblack-800"} font-semibold text-[20px]`}
-        >
+      {/* Thumbnail Section - Fixed Height */}
+      <div className="relative h-48 overflow-hidden flex-shrink-0">
+        {cardData?.thumbnail ? (
+          <img 
+            src={cardData.thumbnail} 
+            alt={cardData.heading}
+            className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full bg-richblack-700 flex items-center justify-center">
+            <span className="text-richblack-400 text-sm">No Image</span>
+          </div>
+        )}
+        {cardData.courseType === "Free" && (
+          <div className="absolute top-2 right-2 bg-yellow-50 text-richblack-900 text-xs font-semibold px-2 py-1 rounded">
+            FREE
+          </div>
+        )}
+      </div>
+
+      {/* Content Section - Flexible Height */}
+      <div className="p-4 flex flex-col gap-2 flex-grow">
+        <h3 className={`font-semibold text-lg leading-tight mb-1
+          ${currentCard === cardData?.heading ? "text-richblack-800" : "text-richblack-25"}`}>
           {cardData?.heading}
+        </h3>
+
+        <p className="text-richblack-400 text-sm line-clamp-2 mb-2">
+          {cardData?.description}
+        </p>
+
+        {/* Stats Row */}
+        <div className={`flex items-center justify-between text-sm
+          ${currentCard === cardData?.heading ? "text-richblack-800" : "text-richblack-400"}`}>
+          <div className="flex items-center gap-1">
+            <HiUsers className="text-lg" />
+            <span>{cardData?.level || "Beginner"}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <ImTree className="text-lg" />
+            <span>{cardData?.lessionNumber || 0} Lessons</span>
+          </div>
         </div>
 
-        <div className="text-richblack-400">{cardData?.description}</div>
+        {/* Rating and Price Row */}
+        {(cardData?.rating !== undefined || cardData?.price !== undefined) && (
+          <div className="flex items-center justify-between mt-2 pt-2 border-t border-richblack-700">
+            {cardData?.rating !== undefined && (
+              <div className="flex items-center gap-1">
+                <RatingStars rating={cardData.rating} />
+                <span className="text-yellow-50 text-sm">
+                  ({cardData.ratingCount || 0})
+                </span>
+              </div>
+            )}
+            {cardData?.price !== undefined && (
+              <div className={`flex items-center font-semibold
+                ${currentCard === cardData?.heading ? "text-richblack-800" : "text-yellow-50"}`}>
+                <FaRupeeSign className="text-sm" />
+                <span>{cardData.price}</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
-
-      <div
-        className={`flex justify-between ${currentCard === cardData?.heading ? "text-blue-300" : "text-richblack-300"
-          } px-6 py-3 font-medium`}
-      >
-        {/* Level */}
-        <div className="flex items-center gap-2 text-[16px]">
-          <HiUsers />
-          <p>{cardData?.level}</p>
-        </div>
-
-        {/* Flow Chart */}
-        <div className="flex items-center gap-2 text-[16px]">
-          <ImTree />
-          <p>{cardData?.lessionNumber} Lession</p>
-        </div>
-      </div>
-    </div>
+    </motion.div>
   );
 };
 

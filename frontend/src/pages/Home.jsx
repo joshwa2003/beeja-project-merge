@@ -49,9 +49,9 @@ const Home = () => {
       setLoading(true);
       setError(null);
       try {
-        const result = await getAllCourses();
-        console.log("All Courses API result:", result);
-        setCatalogPageData({ allCourses: result });
+        const courses = await getAllCourses();
+        console.log("Courses from API:", courses);
+        setCatalogPageData({ allCourses: courses });
       } catch (err) {
         console.error("Error fetching courses:", err);
         setError("Failed to fetch courses");
@@ -63,23 +63,33 @@ const Home = () => {
   }, []);
 
   const getUniqueCourseSections = () => {
-    if (!CatalogPageData?.allCourses) return { popularPicks: [], topEnrollments: [], additionalCourses: [] };
+    if (!CatalogPageData?.allCourses) {
+      console.log("No catalog data available");
+      return { popularPicks: [], topEnrollments: [], additionalCourses: [] };
+    }
 
+    console.log("Total courses before filtering:", CatalogPageData.allCourses.length);
+    
+    // Filter for published courses
     const allCourses = CatalogPageData.allCourses.filter(course => course.status === 'Published');
+    console.log("Published courses after filtering:", allCourses.length);
 
-    // Popular Picks: Courses with more reviews
+    // Popular Picks: Courses with more reviews (limited to 4)
     const popularPicks = [...allCourses]
       .sort((a, b) => (b.ratingAndReviews?.length || 0) - (a.ratingAndReviews?.length || 0))
-      .slice(0, 6);
+      .slice(0, 4);
     
-    // Top Enrollments: Most enrolled courses
+    // Top Enrollments: Most enrolled courses (limited to 4)
     const topEnrollments = [...allCourses]
       .sort((a, b) => (b.studentsEnrolled?.length || 0) - (a.studentsEnrolled?.length || 0))
-      .slice(0, 6);
+      .slice(0, 4);
     
     const additionalCourses = [...allCourses]
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       .slice(0, 6);
+
+    console.log("Popular picks count:", popularPicks.length);
+    console.log("Top enrollments count:", topEnrollments.length);
 
     return { popularPicks, topEnrollments, additionalCourses };
   };
@@ -369,7 +379,7 @@ const Home = () => {
               {/* Popular Picks Section */}
               <div>
                 <h2 className="text-white mb-6 text-2xl font-semibold">
-                  Popular Picks for You 🏆
+                  Popular Picks for You
                 </h2>
                 {loading ? (
                   <div className="h-[200px] w-full flex items-center justify-center">
@@ -387,7 +397,7 @@ const Home = () => {
               {/* Top Enrollments Section */}
               <div>
                 <h2 className="text-white mb-6 text-2xl font-semibold">
-                  Top Enrollments Today 🔥
+                  Top Enrollments Today
                 </h2>
                 {loading ? (
                   <div className="h-[200px] w-full flex items-center justify-center">

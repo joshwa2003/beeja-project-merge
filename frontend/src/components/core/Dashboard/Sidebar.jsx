@@ -12,8 +12,9 @@ import Loading from './../../common/Loading';
 import { HiMenuAlt1 } from 'react-icons/hi'
 import { IoMdClose } from 'react-icons/io'
 import { FiSettings } from 'react-icons/fi'
+import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md'
 
-import { setOpenSideMenu, setScreenSize } from "../../../slices/sidebarSlice";
+import { setOpenSideMenu, setScreenSize, toggleSidebarCollapse } from "../../../slices/sidebarSlice";
 
 export default function Sidebar() {
   const { user, loading: profileLoading } = useSelector((state) => state.profile)
@@ -24,7 +25,7 @@ export default function Sidebar() {
   // to keep track of confirmation modal
   const [confirmationModal, setConfirmationModal] = useState(null)
 
-  const { openSideMenu, screenSize } = useSelector((state) => state.sidebar)
+  const { openSideMenu, screenSize, isCollapsed } = useSelector((state) => state.sidebar)
 
   useEffect(() => {
     const handleResize = () => dispatch(setScreenSize(window.innerWidth))
@@ -75,10 +76,22 @@ export default function Sidebar() {
             />
           )}
           
-          <div className="fixed sm:relative h-[calc(100vh-3.5rem)] w-[280px] flex flex-col bg-slate-900/80 backdrop-blur-xl border-r border-slate-700/50 z-50 sm:z-auto">
+          <div className={`fixed sm:relative h-[calc(100vh-3.5rem)] ${isCollapsed ? 'w-[80px]' : 'w-[280px]'} flex flex-col bg-slate-900/80 backdrop-blur-xl border-r border-slate-700/50 z-50 sm:z-auto transition-all duration-300`}>
+            {/* Collapse/Expand Button - Desktop Only */}
+            {screenSize > 640 && (
+              <div className="absolute -right-3 top-6 z-10">
+                <button
+                  onClick={() => dispatch(toggleSidebarCollapse())}
+                  className="w-6 h-6 bg-slate-800 border border-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-all duration-300 shadow-lg"
+                >
+                  {isCollapsed ? <MdKeyboardArrowRight size={16} /> : <MdKeyboardArrowLeft size={16} />}
+                </button>
+              </div>
+            )}
+
             {/* User Profile Section */}
-            <div className="p-6 border-b border-slate-700/50">
-              <div className="flex items-center gap-4">
+            <div className={`${isCollapsed ? 'p-4' : 'p-6'} border-b border-slate-700/50 transition-all duration-300`}>
+              <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-4'}`}>
                 <div className="relative">
                   <img
                     src={user?.image || `https://api.dicebear.com/5.x/initials/svg?seed=${user?.firstName} ${user?.lastName}`}
@@ -87,24 +100,26 @@ export default function Sidebar() {
                   />
                   <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-900"></div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-white font-semibold text-sm truncate">
-                    {user?.firstName} {user?.lastName}
-                  </h3>
-                  <p className="text-slate-400 text-xs truncate capitalize">
-                    {user?.accountType}
-                  </p>
-                </div>
+                {!isCollapsed && (
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-white font-semibold text-sm truncate">
+                      {user?.firstName} {user?.lastName}
+                    </h3>
+                    <p className="text-slate-400 text-xs truncate capitalize">
+                      {user?.accountType}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Navigation Links */}
-            <div className="flex-1 py-6 px-4 overflow-y-auto custom-scrollbar">
+            <div className={`flex-1 py-6 ${isCollapsed ? 'px-2' : 'px-4'} overflow-y-auto custom-scrollbar transition-all duration-300`}>
               <nav className="space-y-2">
                 {sidebarLinks.map((link) => {
                   if (link.type && user?.accountType !== link.type) return null
                   return (
-                    <SidebarLink key={link.id} link={link} iconName={link.icon} />
+                    <SidebarLink key={link.id} link={link} iconName={link.icon} isCollapsed={isCollapsed} />
                   )
                 })}
               </nav>
@@ -117,6 +132,7 @@ export default function Sidebar() {
                 <SidebarLink
                   link={{ name: "Settings", path: "/dashboard/settings" }}
                   iconName={"VscSettingsGear"}
+                  isCollapsed={isCollapsed}
                 />
 
                 <button
@@ -130,22 +146,25 @@ export default function Sidebar() {
                       btn2Handler: () => setConfirmationModal(null),
                     })
                   }
-                  className="w-full flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-red-500/10 rounded-xl transition-all duration-300 group"
+                  className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 text-slate-300 hover:text-white hover:bg-red-500/10 rounded-xl transition-all duration-300 group`}
+                  title={isCollapsed ? "Logout" : ""}
                 >
                   <VscSignOut className="text-lg group-hover:text-red-400 transition-colors duration-300" />
-                  <span className="font-medium">Logout</span>
+                  {!isCollapsed && <span className="font-medium">Logout</span>}
                 </button>
               </div>
             </div>
 
             {/* Footer */}
-            <div className="p-4 border-t border-slate-700/50">
-              <div className="text-center">
-                <p className="text-xs text-slate-500">
-                  © 2024 Beeja Inovative ventures
-                </p>
+            {!isCollapsed && (
+              <div className="p-4 border-t border-slate-700/50">
+                <div className="text-center">
+                  <p className="text-xs text-slate-500">
+                    © 2024 Beeja Inovative ventures
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </>
       )}

@@ -4,7 +4,7 @@ import { NavLink, matchPath, useLocation } from "react-router-dom"
 import { resetCourseState } from "../../../slices/courseSlice"
 import { setOpenSideMenu } from "../../../slices/sidebarSlice"
 
-export default function SidebarLink({ link, iconName }) {
+export default function SidebarLink({ link, iconName, isCollapsed }) {
   const Icon = Icons[iconName]
   const location = useLocation()
   const dispatch = useDispatch()
@@ -24,12 +24,13 @@ export default function SidebarLink({ link, iconName }) {
       to={link.path}
       onClick={handleClick}
       className={({ isActive }) => `
-        group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
+        group flex items-center ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 rounded-xl transition-all duration-300 relative
         ${isActive 
           ? 'bg-purple-500/10 text-purple-400' 
           : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
         }
       `}
+      title={isCollapsed ? link.name : ""}
     >
       {/* Icon with glow effect */}
       <div className={`
@@ -46,12 +47,21 @@ export default function SidebarLink({ link, iconName }) {
         )}
       </div>
 
-      {/* Link Text */}
-      <span className="font-medium text-sm">{link.name}</span>
+      {/* Link Text - Hidden when collapsed */}
+      {!isCollapsed && (
+        <span className="font-medium text-sm">{link.name}</span>
+      )}
 
       {/* Active Indicator */}
       {matchRoute(link.path) && (
         <div className="absolute left-0 w-1 h-8 bg-gradient-to-b from-purple-400 to-blue-500 rounded-r-full" />
+      )}
+
+      {/* Tooltip for collapsed state */}
+      {isCollapsed && (
+        <div className="absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+          {link.name}
+        </div>
       )}
     </NavLink>
   )
