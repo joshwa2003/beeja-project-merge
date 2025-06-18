@@ -23,12 +23,14 @@ const Dashboard = () => {
     }, [])
 
     return (
-        <div className='relative flex min-h-[calc(100vh-3.5rem)] '>
+        <div className='relative flex min-h-[calc(100vh-3.5rem)] dashboard-gradient'>
             <Sidebar />
 
-            <div className='h-[calc(100vh-3.5rem)] overflow-auto w-full'>
-                <div className='mx-auto w-11/12 max-w-[1000px] py-10 '>
-                    <Outlet />
+            <div className='h-[calc(100vh-3.5rem)] overflow-auto w-full modern-scrollbar'>
+                <div className='mx-auto w-11/12 max-w-[1200px] py-10 px-4'>
+                    <div className="fade-in-up">
+                        <Outlet />
+                    </div>
                 </div>
             </div>
         </div>

@@ -41,41 +41,44 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-richblack-900">
+    <div className="min-h-screen dashboard-gradient">
       <div className="flex">
         {/* Sidebar */}
-        <div className="w-64 bg-richblack-800 min-h-screen p-4">
-          <div className="mb-8">
-            <h2 className="text-xl font-bold text-yellow-50">Admin Dashboard</h2>
+        <div className="w-64 card-gradient min-h-screen p-4 modern-scrollbar">
+          <div className="mb-8 glass-effect p-4 rounded-xl">
+            <h2 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-50 to-yellow-200">Admin Dashboard</h2>
           </div>
-          <nav>
+          <nav className="space-y-2">
             {sidebarItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => handleTabChange(item.id)}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg mb-2 transition-all duration-200 ${
+                className={`admin-tab w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-300 ${
                   activeTab === item.id && !showCreateCourse
-                    ? 'bg-yellow-50 text-richblack-900'
-                    : 'text-richblack-25 hover:bg-richblack-700'
+                    ? 'active'
+                    : 'text-richblack-25'
                 }`}
               >
-                {item.icon}
-                <span>{item.label}</span>
+                <span className="text-lg">{item.icon}</span>
+                <span className="font-medium">{item.label}</span>
               </button>
             ))}
           </nav>
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 p-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-richblack-5">
+        <div className="flex-1 p-8 modern-scrollbar">
+          <div className="mb-8 glass-effect p-6 rounded-xl fade-in-up">
+            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-50 to-yellow-200">
               {showCreateCourse ? 'Create Course' : sidebarItems.find(item => item.id === activeTab)?.label}
             </h1>
+            <p className="text-richblack-200 mt-2 opacity-75">
+              Manage your platform efficiently with these tools
+            </p>
           </div>
 
           {/* Content based on active tab */}
-          <div className="bg-richblack-800 rounded-lg p-6">
+          <div className="card-gradient rounded-xl p-6 glass-effect slide-in-right">
             {showCreateCourse ? (
               <CreateCourse onCancel={() => setShowCreateCourse(false)} />
             ) : (

@@ -72,7 +72,7 @@ export default function Sidebar() {
 
       {
         openSideMenu &&
-        <div className="flex h-[calc(100vh-3.5rem)] min-w-[220px] flex-col border-r-[1px] border-r-richblack-700 bg-richblack-800 py-10 ">
+        <div className="flex h-[calc(100vh-3.5rem)] min-w-[220px] flex-col border-r-[1px] border-r-richblack-700 dashboard-gradient py-10 modern-scrollbar">
           <div className="flex flex-col mt-6">
             {sidebarLinks.map((link) => {
               if (link.type && user?.accountType !== link.type) return null
@@ -102,9 +102,9 @@ export default function Sidebar() {
                   btn2Handler: () => setConfirmationModal(null),
                 })
               }
-              className=" "
+              className="sidebar-item"
             >
-              <div className="flex items-center gap-x-2 px-8 py-2 text-sm font-medium text-richblack-300 hover:bg-richblack-700 relative">
+              <div className="flex items-center gap-x-2 px-8 py-2 text-sm font-medium text-richblack-300 relative">
                 <VscSignOut className="text-lg" />
                 <span>Logout</span>
               </div>

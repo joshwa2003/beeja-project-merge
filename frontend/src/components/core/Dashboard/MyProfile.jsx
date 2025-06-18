@@ -12,97 +12,103 @@ export default function MyProfile() {
   }, [])
 
   return (
-    <>
-      <h1 className="mb-14 text-4xl font-medium text-richblack-5 font-boogaloo text-center sm:text-left"> My Profile</h1>
+    <div className="fade-in-up">
+      <div className="glass-effect p-6 rounded-xl mb-6">
+        <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-50 to-yellow-200 text-center sm:text-left">
+          My Profile
+        </h1>
+        <p className="text-richblack-200 mt-2 opacity-75">
+          Manage your personal information
+        </p>
+      </div>
 
-      <div className="flex items-center justify-between rounded-2xl border-[1px] border-richblack-700 bg-richblack-800 p-8 px-3 sm:px-12">
-        <div className="flex items-center gap-x-4">
-          <Img
-            src={user?.image}
-            alt={`profile-${user?.firstName}`}
-            className="aspect-square w-[78px] rounded-full object-cover"
-          />
-          <div className="space-y-1">
-            <p className="text-lg font-semibold text-richblack-5 capitalize">
+      <div className="card-gradient rounded-xl p-6 glass-effect mb-8">
+        <div className="flex flex-col sm:flex-row items-center gap-6">
+          <div className="relative group">
+            <Img
+              src={user?.image}
+              alt={`profile-${user?.firstName}`}
+              className="w-24 h-24 rounded-xl object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-yellow-600/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          </div>
+          <div className="text-center sm:text-left">
+            <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-50 to-yellow-200 capitalize">
               {user?.firstName + " " + user?.lastName}
-            </p>
-            <p className="text-sm text-richblack-300">{user?.email}</p>
+            </h2>
+            <p className="text-richblack-300 mt-2">{user?.email}</p>
           </div>
         </div>
       </div>
 
-      <div className="my-10 flex flex-col gap-y-10 rounded-2xl border-[1px] border-richblack-700 bg-richblack-800 p-8 px-7 sm:px-12">
-        <div className="flex w-full items-center justify-between">
-          <p className="text-lg font-semibold text-richblack-5">About</p>
+      <div className="card-gradient rounded-xl p-6 glass-effect mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-yellow-50 to-yellow-200">
+            About
+          </h3>
         </div>
-
-        <p
-          className={`${user?.additionalDetails?.about
-            ? "text-richblack-5"
-            : "text-richblack-400"
-            } text-sm font-medium`}
-        >
+        <p className={`${user?.additionalDetails?.about ? "text-richblack-5" : "text-richblack-400"} text-sm leading-relaxed`}>
           {user?.additionalDetails?.about ?? "Write Something About Yourself"}
         </p>
       </div>
 
-      <div className="my-10 flex flex-col gap-y-10 rounded-2xl border-[1px] border-richblack-700 bg-richblack-800 p-8 px-7 sm:px-12">
-        <div className="flex w-full items-center justify-between">
-          <p className="text-lg font-semibold text-richblack-5">
+      <div className="card-gradient rounded-xl p-6 glass-effect">
+        <div className="flex items-center justify-between mb-8">
+          <h3 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-yellow-50 to-yellow-200">
             Personal Details
-          </p>
+          </h3>
         </div>
 
-        <div className="flex max-w-[500px] justify-between ">
-          <div className="flex flex-col gap-y-5">
-            <div>
-              <p className="mb-2 text-sm text-richblack-600">First Name</p>
-              <p className="text-sm font-semibold text-richblack-5 capitalize">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="space-y-6">
+            <div className="metric-card p-4 rounded-lg">
+              <p className="text-sm text-richblack-300 mb-1">First Name</p>
+              <p className="text-base font-semibold text-richblack-5 capitalize">
                 {user?.firstName}
               </p>
             </div>
-            <div>
-              <p className="mb-2 text-sm text-richblack-600">Account Type</p>
-              <p className="text-sm font-semibold text-richblack-5 capitalize">
+            <div className="metric-card p-4 rounded-lg">
+              <p className="text-sm text-richblack-300 mb-1">Account Type</p>
+              <p className="text-base font-semibold text-richblack-5 capitalize">
                 {user?.accountType}
               </p>
             </div>
-            <div>
-              <p className="mb-2 text-sm text-richblack-600">Email</p>
-              <p className="text-sm font-semibold text-richblack-5">
+            <div className="metric-card p-4 rounded-lg">
+              <p className="text-sm text-richblack-300 mb-1">Email</p>
+              <p className="text-base font-semibold text-richblack-5">
                 {user?.email}
               </p>
             </div>
-            <div>
-              <p className="mb-2 text-sm text-richblack-600">Gender</p>
-              <p className="text-sm font-semibold text-richblack-5">
+            <div className="metric-card p-4 rounded-lg">
+              <p className="text-sm text-richblack-300 mb-1">Gender</p>
+              <p className="text-base font-semibold text-richblack-5">
                 {user?.additionalDetails?.gender ?? "Add Gender"}
               </p>
             </div>
           </div>
 
-          <div className="flex flex-col gap-y-5">
-            <div>
-              <p className="mb-2 text-sm text-richblack-600">Last Name</p>
-              <p className="text-sm font-semibold text-richblack-5 capitalize">
+          <div className="space-y-6">
+            <div className="metric-card p-4 rounded-lg">
+              <p className="text-sm text-richblack-300 mb-1">Last Name</p>
+              <p className="text-base font-semibold text-richblack-5 capitalize">
                 {user?.lastName}
               </p>
             </div>
-            <div>
-              <p className="mb-2 text-sm text-richblack-600">Phone Number</p>
-              <p className="text-sm font-semibold text-richblack-5">
+            <div className="metric-card p-4 rounded-lg">
+              <p className="text-sm text-richblack-300 mb-1">Phone Number</p>
+              <p className="text-base font-semibold text-richblack-5">
                 {user?.additionalDetails?.contactNumber ?? "Add Contact Number"}
               </p>
             </div>
-            <div>
-              <p className="mb-2 text-sm text-richblack-600">Date Of Birth</p>
-              <p className="text-sm font-semibold text-richblack-5">
+            <div className="metric-card p-4 rounded-lg">
+              <p className="text-sm text-richblack-300 mb-1">Date Of Birth</p>
+              <p className="text-base font-semibold text-richblack-5">
                 {formatDate(user?.additionalDetails?.dateOfBirth) ?? "Add Date Of Birth"}
               </p>
             </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }

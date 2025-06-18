@@ -81,13 +81,13 @@ export default function Instructor() {
 
 
   return (
-    <div>
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold text-richblack-5 text-center sm:text-left">
-          Hii {user?.firstName} 👋
+    <div className="fade-in-up">
+      <div className="space-y-2 glass-effect p-6 rounded-xl mb-6">
+        <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-50 to-yellow-200 text-center sm:text-left">
+          Hi {user?.firstName} 👋
         </h1>
-        <p className="font-medium text-richblack-200 text-center sm:text-left">
-          Let's start something new
+        <p className="font-medium text-richblack-200 text-center sm:text-left opacity-75">
+          Welcome back to your instructor dashboard
         </p>
       </div>
 
@@ -100,14 +100,14 @@ export default function Instructor() {
         :
         courses.length > 0 ? (
           <div>
-            <div className="my-4 flex h-[450px] space-x-4">
+            <div className="my-4 flex flex-col md:flex-row h-auto md:h-[450px] space-y-4 md:space-y-0 md:space-x-4">
               {/* Render chart / graph */}
               {totalAmount > 0 || totalStudents > 0 ? (
                 <InstructorChart courses={instructorData} />
               ) : (
-                <div className="flex-1 rounded-md bg-richblack-800 p-6">
-                  <p className="text-lg font-bold text-richblack-5">Visualize</p>
-                  <p className="mt-4 text-xl font-medium text-richblack-50">
+                <div className="flex-1 rounded-xl card-gradient p-6 glass-effect">
+                  <p className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-50 to-yellow-200">Visualize</p>
+                  <p className="mt-4 text-xl font-medium text-richblack-50 opacity-75">
                     Not Enough Data To Visualize
                   </p>
                 </div>
@@ -115,24 +115,24 @@ export default function Instructor() {
 
               {/* left column */}
               {/* Total Statistics */}
-              <div className="flex min-w-[250px] flex-col rounded-md bg-richblack-800 p-6">
+              <div className="flex min-w-[250px] flex-col rounded-xl stats-card p-6">
                 <p className="text-lg font-bold text-richblack-5">Statistics</p>
-                <div className="mt-4 space-y-4">
-                  <div>
+                <div className="mt-4 space-y-6">
+                  <div className="metric-card p-4 rounded-lg">
                     <p className="text-lg text-richblack-200">Total Courses</p>
-                    <p className="text-3xl font-semibold text-richblack-50">
+                    <p className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-50 to-yellow-200">
                       {courses.length}
                     </p>
                   </div>
-                  <div>
+                  <div className="metric-card p-4 rounded-lg">
                     <p className="text-lg text-richblack-200">Total Students</p>
-                    <p className="text-3xl font-semibold text-richblack-50">
+                    <p className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-50 to-yellow-200">
                       {totalStudents}
                     </p>
                   </div>
-                  <div>
+                  <div className="metric-card p-4 rounded-lg">
                     <p className="text-lg text-richblack-200">Total Income</p>
-                    <p className="text-3xl font-semibold text-richblack-50">
+                    <p className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-50 to-yellow-200">
                       Rs. {totalAmount}
                     </p>
                   </div>
@@ -141,35 +141,38 @@ export default function Instructor() {
             </div>
 
             {/* Render 3 courses */}
-            <div className="rounded-md bg-richblack-800 p-6">
-              <div className="flex items-center justify-between">
-                <p className="text-lg font-bold text-richblack-5">Your Courses</p>
-                <Link to="/dashboard/my-courses">
-                  <p className="text-xs font-semibold text-yellow-50 hover:underline">View All</p>
+            <div className="rounded-xl card-gradient p-6 glass-effect">
+              <div className="flex items-center justify-between mb-6">
+                <p className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-50 to-yellow-200">Your Courses</p>
+                <Link to="/dashboard/my-courses" className="text-xs font-semibold text-yellow-50 hover:text-yellow-100 transition-colors duration-200 flex items-center gap-2">
+                  View All
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
                 </Link>
               </div>
 
-              <div className="my-4 flex flex-col sm:flex-row sm:space-x-6 space-y-6 sm:space-y-0 ">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {courses.slice(0, 3).map((course) => (
-                  <div key={course._id} className="sm:w-1/3 flex flex-col items-center justify-center">
+                  <div key={course._id} className="course-card rounded-xl overflow-hidden">
                     <Img
                       src={course.thumbnail}
                       alt={course.courseName}
                       className="h-[201px] w-full rounded-2xl object-cover"
                     />
 
-                    <div className="mt-3 w-full">
-                      <p className="text-sm font-medium text-richblack-50">
+                    <div className="p-4">
+                      <p className="text-sm font-semibold text-richblack-5 mb-2">
                         {course.courseName}
                       </p>
-                      <div className="mt-1 flex items-center space-x-2">
-                        <p className="text-xs font-medium text-richblack-300">
-                          {course.studentsEnrolled.length} students
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-medium text-richblack-300 flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                          </svg>
+                          {course.studentsEnrolled.length}
                         </p>
-                        <p className="text-xs font-medium text-richblack-300">
-                          |
-                        </p>
-                        <p className="text-xs font-medium text-richblack-300">
+                        <p className="text-xs font-medium text-yellow-50">
                           Rs. {course.price}
                         </p>
                       </div>

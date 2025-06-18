@@ -27,20 +27,20 @@ export default function SidebarLink({ link, iconName }) {
     <NavLink
       to={link.path}
       onClick={handleClick}
-      className={`relative px-8 py-2 text-sm font-medium ${matchRoute(link.path)
-        ? "bg-yellow-800 text-yellow-50"
-        : "text-richblack-300 hover:bg-richblack-700 duration-200"
-        } transition-all `}
+      className={`sidebar-item relative px-8 py-3 text-sm font-medium rounded-lg mx-2 my-1 ${matchRoute(link.path)
+        ? "bg-gradient-to-r from-yellow-400 to-yellow-600 text-richblack-900 shadow-lg"
+        : "text-richblack-300"
+        } transition-all duration-300`}
     >
       <span
-        className={`absolute left-0 top-0 h-full w-[0.15rem] bg-yellow-50 ${matchRoute(link.path) ? "opacity-100" : "opacity-0"
-          }`}
+        className={`absolute left-0 top-0 h-full w-[0.25rem] bg-gradient-to-b from-yellow-400 to-yellow-600 rounded-r-full ${matchRoute(link.path) ? "opacity-100" : "opacity-0"
+          } transition-opacity duration-300`}
       >
       </span>
 
-      <div className="flex items-center gap-x-2">
-        <Icon className="text-lg" />
-        <span>{link.name}</span>
+      <div className="flex items-center gap-x-3 relative z-10">
+        <Icon className={`text-lg ${matchRoute(link.path) ? "text-richblack-900" : "text-richblack-300"} transition-colors duration-300`} />
+        <span className="font-medium">{link.name}</span>
       </div>
 
     </NavLink>

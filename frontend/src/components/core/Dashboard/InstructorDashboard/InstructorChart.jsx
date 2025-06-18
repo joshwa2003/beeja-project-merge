@@ -45,19 +45,32 @@ export default function InstructorChart({ courses }) {
   // Options for the chart
   const options = {
     maintainAspectRatio: false,
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          padding: 20,
+          usePointStyle: true,
+          font: {
+            size: 12
+          }
+        }
+      }
+    }
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-y-4 rounded-md bg-richblack-800 p-6">
-      <p className="text-lg font-bold text-richblack-5">Visualize</p>
+    <div className="flex flex-1 flex-col gap-y-4 rounded-xl card-gradient p-6 glass-effect">
+      <p className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-50 to-yellow-200">Visualize</p>
 
-      <div className="space-x-4 font-semibold">
+      <div className="flex gap-2 font-semibold">
         {/* Button to switch to the "students" chart */}
         <button
           onClick={() => setCurrChart("students")}
-          className={`rounded-sm p-1 px-3 transition-all duration-200 ${currChart === "students"
-            ? "bg-richblack-700 text-yellow-50"
-            : "text-yellow-400"
+          className={`rounded-lg px-4 py-2 transition-all duration-300 ${currChart === "students"
+            ? "bg-gradient-to-r from-yellow-400 to-yellow-600 text-richblack-900 shadow-lg"
+            : "text-yellow-400 hover:bg-richblack-700/50"
             }`}
         >
           Students
@@ -66,21 +79,23 @@ export default function InstructorChart({ courses }) {
         {/* Button to switch to the "income" chart */}
         <button
           onClick={() => setCurrChart("income")}
-          className={`rounded-sm p-1 px-3 transition-all duration-200 ${currChart === "income"
-            ? "bg-richblack-700 text-yellow-50"
-            : "text-yellow-400"
+          className={`rounded-lg px-4 py-2 transition-all duration-300 ${currChart === "income"
+            ? "bg-gradient-to-r from-yellow-400 to-yellow-600 text-richblack-900 shadow-lg"
+            : "text-yellow-400 hover:bg-richblack-700/50"
             }`}
         >
           Income
         </button>
       </div>
 
-      <div className="relative mx-auto aspect-square h-full w-full">
-        {/* Render the Pie chart based on the selected chart */}
-        <Pie
-          data={currChart === "students" ? chartDataStudents : chartIncomeData}
-          options={options}
-        />
+      <div className="flex-1 flex items-center justify-center min-h-0">
+        <div className="w-full max-w-[300px] h-[300px] relative">
+          {/* Render the Pie chart based on the selected chart */}
+          <Pie
+            data={currChart === "students" ? chartDataStudents : chartIncomeData}
+            options={options}
+          />
+        </div>
       </div>
     </div>
   )

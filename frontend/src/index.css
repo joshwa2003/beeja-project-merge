@@ -2,6 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Analytics Dashboard Styles */
+@layer components {
+  .card-gradient {
+    @apply bg-richblack-800 bg-opacity-90 backdrop-blur-lg;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  }
+
+  .glass-effect {
+    @apply bg-richblack-800 bg-opacity-50 backdrop-blur-lg;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  }
+
+  .metric-card {
+    @apply bg-richblack-700 bg-opacity-50 backdrop-blur-sm transition-all duration-300 hover:bg-opacity-70;
+  }
+
+  .stats-card {
+    @apply bg-richblack-700 bg-opacity-50 backdrop-blur-sm transition-all duration-300 hover:bg-opacity-70;
+  }
+
+  .fade-in-up {
+    animation: fadeInUp 0.5s ease-out;
+  }
+
+  .floating-animation {
+    animation: floating 3s ease-in-out infinite;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floating {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
 
 
 html,
@@ -210,5 +262,97 @@ body {
 /* used in home.jsx - random background  */
 .opacity_layer_bg {
   background: linear-gradient(180deg, rgba(4, 21, 45, 0) 0%, #04152d 79.17%);
+}
+
+/* Modern Dashboard Enhancements */
+.dashboard-gradient {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+}
+
+.sidebar-item {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.sidebar-item:hover::before {
+  left: 100%;
+}
+
+.sidebar-item:hover {
+  transform: translateX(4px);
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+}
+
+.course-card {
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.course-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  border-color: rgba(79, 70, 229, 0.5);
+}
+
+.slide-in-right {
+  animation: slideInRight 0.5s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.modern-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modern-scrollbar::-webkit-scrollbar-track {
+  background: #1f2937;
+  border-radius: 4px;
+}
+
+.modern-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  border-radius: 4px;
+}
+
+.modern-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+}
+
+.admin-tab {
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.admin-tab.active {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #1f2937;
+  box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+}
+
+.admin-tab:not(.active):hover {
+  background: rgba(75, 85, 99, 0.5);
+  transform: translateX(4px);
 }
 
