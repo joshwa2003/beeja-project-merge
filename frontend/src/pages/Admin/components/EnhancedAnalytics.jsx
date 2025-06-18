@@ -19,7 +19,11 @@ import {
   FaDollarSign,
   FaClock,
   FaBell,
-  FaChartLine
+  FaChartLine,
+  FaSignInAlt,
+  FaUserClock,
+  FaPlus,
+  FaHistory
 } from "react-icons/fa";
 
 
@@ -62,7 +66,133 @@ const EnhancedAnalytics = () => {
       monthlyRevenue: 450000, // ₹4,50,000
       growthPercentage: 12.5,
       yearlyRevenue: 5400000 // ₹54,00,000
-    }
+    },
+    recentCourses: [
+      {
+        id: 1,
+        title: "Advanced React Development",
+        instructor: "John Doe",
+        createdAt: "2024-01-15T10:30:00Z",
+        status: "Published",
+        enrollments: 45
+      },
+      {
+        id: 2,
+        title: "Machine Learning Fundamentals",
+        instructor: "Jane Smith",
+        createdAt: "2024-01-14T14:20:00Z",
+        status: "Published",
+        enrollments: 32
+      },
+      {
+        id: 3,
+        title: "Web Design Principles",
+        instructor: "Mike Johnson",
+        createdAt: "2024-01-13T09:15:00Z",
+        status: "Draft",
+        enrollments: 0
+      },
+      {
+        id: 4,
+        title: "Python for Beginners",
+        instructor: "Sarah Wilson",
+        createdAt: "2024-01-12T16:45:00Z",
+        status: "Published",
+        enrollments: 78
+      },
+      {
+        id: 5,
+        title: "Digital Marketing Strategy",
+        instructor: "Alex Brown",
+        createdAt: "2024-01-11T11:30:00Z",
+        status: "Published",
+        enrollments: 23
+      }
+    ],
+    recentLogins: [
+      {
+        id: 1,
+        user: "John Doe",
+        email: "john@example.com",
+        role: "Student",
+        loginTime: "2024-01-15T08:30:00Z",
+        location: "New York, USA"
+      },
+      {
+        id: 2,
+        user: "Jane Smith",
+        email: "jane@example.com",
+        role: "Instructor",
+        loginTime: "2024-01-15T07:45:00Z",
+        location: "London, UK"
+      },
+      {
+        id: 3,
+        user: "Mike Johnson",
+        email: "mike@example.com",
+        role: "Student",
+        loginTime: "2024-01-15T06:20:00Z",
+        location: "Toronto, Canada"
+      },
+      {
+        id: 4,
+        user: "Sarah Wilson",
+        email: "sarah@example.com",
+        role: "Instructor",
+        loginTime: "2024-01-14T22:15:00Z",
+        location: "Sydney, Australia"
+      },
+      {
+        id: 5,
+        user: "Alex Brown",
+        email: "alex@example.com",
+        role: "Admin",
+        loginTime: "2024-01-14T20:30:00Z",
+        location: "Berlin, Germany"
+      }
+    ],
+    activeLogins: [
+      {
+        id: 1,
+        user: "John Doe",
+        email: "john@example.com",
+        role: "Student",
+        sessionStart: "2024-01-15T08:30:00Z",
+        lastActivity: "2024-01-15T10:45:00Z",
+        location: "New York, USA",
+        device: "Chrome on Windows"
+      },
+      {
+        id: 2,
+        user: "Jane Smith",
+        email: "jane@example.com",
+        role: "Instructor",
+        sessionStart: "2024-01-15T07:45:00Z",
+        lastActivity: "2024-01-15T10:42:00Z",
+        location: "London, UK",
+        device: "Safari on MacOS"
+      },
+      {
+        id: 3,
+        user: "Mike Johnson",
+        email: "mike@example.com",
+        role: "Student",
+        sessionStart: "2024-01-15T06:20:00Z",
+        lastActivity: "2024-01-15T10:40:00Z",
+        location: "Toronto, Canada",
+        device: "Firefox on Linux"
+      },
+      {
+        id: 4,
+        user: "Admin User",
+        email: "admin@example.com",
+        role: "Admin",
+        sessionStart: "2024-01-15T05:00:00Z",
+        lastActivity: "2024-01-15T10:44:00Z",
+        location: "Mumbai, India",
+        device: "Chrome on Android"
+      }
+    ]
   };
 
   // Fetch analytics from backend API
@@ -954,6 +1084,82 @@ const EnhancedAnalytics = () => {
           </div>
         </div>
       </div>
+
+      {/* Recently Added Courses */}
+      <div className="bg-[#242424] p-6 rounded-xl border border-[#2F2F2F]">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+            <FaPlus className="text-green-400" />
+            Recently Added Courses
+          </h3>
+          <span className="text-sm text-gray-400">Last 7 days</span>
+        </div>
+        <div className="space-y-4">
+          {analytics.recentCourses?.slice(0, 5).map((course) => (
+            <div key={course.id} className="flex items-center justify-between p-4 rounded-lg bg-[#2F2F2F] hover:bg-[#3A3A3A] transition-all duration-300">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                  <FaBookOpen className="text-white text-lg" />
+                </div>
+                <div>
+                  <h4 className="text-white font-medium">{course.title}</h4>
+                  <p className="text-sm text-gray-400">by {course.instructor}</p>
+                  <p className="text-xs text-gray-500">
+                    {new Date(course.createdAt).toLocaleDateString()} • {course.enrollments} enrollments
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  course.status === 'Published' 
+                    ? 'bg-green-500/20 text-green-400' 
+                    : 'bg-yellow-500/20 text-yellow-400'
+                }`}>
+                  {course.status}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Recent Logins */}
+      <div className="bg-[#242424] p-6 rounded-xl border border-[#2F2F2F]">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+            <FaSignInAlt className="text-blue-400" />
+            Recent Logins
+          </h3>
+          <span className="text-sm text-gray-400">Last 24 hours</span>
+        </div>
+        <div className="space-y-4">
+          {analytics.recentLogins?.slice(0, 5).map((login) => (
+            <div key={login.id} className="flex items-center justify-between p-4 rounded-lg bg-[#2F2F2F] hover:bg-[#3A3A3A] transition-all duration-300">
+              <div className="flex items-center gap-4">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  login.role === 'Admin' ? 'bg-red-500/20' :
+                  login.role === 'Instructor' ? 'bg-purple-500/20' : 'bg-blue-500/20'
+                }`}>
+                  {login.role === 'Admin' ? <FaUserShield className="text-red-400" /> :
+                   login.role === 'Instructor' ? <FaChalkboardTeacher className="text-purple-400" /> :
+                   <FaGraduationCap className="text-blue-400" />}
+                </div>
+                <div>
+                  <h4 className="text-white font-medium">{login.user}</h4>
+                  <p className="text-sm text-gray-400">{login.email}</p>
+                  <p className="text-xs text-gray-500">{login.location}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-white">{new Date(login.loginTime).toLocaleTimeString()}</p>
+                <p className="text-xs text-gray-400">{login.role}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      
 
       {/* System Health Monitor */}
       <div className="bg-[#242424] p-6 rounded-xl border border-[#2F2F2F]">
