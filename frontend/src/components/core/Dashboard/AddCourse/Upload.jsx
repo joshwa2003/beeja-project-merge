@@ -3,8 +3,7 @@ import { useDropzone } from "react-dropzone"
 import { FiUploadCloud } from "react-icons/fi"
 import { useSelector } from "react-redux"
 
-import "video-react/dist/video-react.css"
-import { Player } from "video-react"
+// Removed video-react to eliminate legacy context API warning
 
 
 
@@ -76,7 +75,14 @@ export default function Upload({ name, label, register, setValue, errors, video 
                 className="h-full w-full rounded-md object-cover"
               />
             ) : (
-              <Player aspectRatio="16:9" playsInline src={previewSource} />
+              <video 
+                className="w-full aspect-video" 
+                controls
+                playsInline 
+                src={previewSource}
+              >
+                Your browser does not support the video tag.
+              </video>
             )}
 
             {!viewData && (

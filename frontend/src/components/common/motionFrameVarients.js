@@ -47,8 +47,8 @@ export const scaleUp = {
         opacity: 1,
         transition: {
             type: 'spring',
-            damping: 10,
-            stiffness: 100,
+            damping: 50,
+            stiffness: 1500,
             duration: 0.5,
         }
     }

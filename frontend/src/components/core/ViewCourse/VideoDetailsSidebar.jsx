@@ -127,12 +127,20 @@ export default function VideoDetailsSidebar({ setReviewModal }) {
             >
               {/* Section */}
               <div className="flex justify-between bg-richblack-700 px-5 py-4">
-                <div className="w-[70%] font-semibold">
+                <div className="w-[70%] font-semibold flex items-center gap-2">
                   {section?.sectionName}
+                  {index > 0 && !section.subSection.every(subSec => completedLectures.includes(subSec._id)) && (
+                    <div className="relative group">
+                      <FaLock size={12} className="text-yellow-50" />
+                      <div className="absolute left-0 -top-8 hidden group-hover:block bg-richblack-900 text-xs text-yellow-50 p-2 rounded-md whitespace-nowrap">
+                        Complete Section {index} to unlock
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-[12px] font-medium">
-                    Lession {section?.subSection.length}
+                    {section.subSection.filter(subSec => completedLectures.includes(subSec._id)).length}/{section?.subSection.length} Completed
                   </span>
                   <span
                     className={`${activeStatus === section?._id
@@ -149,8 +157,17 @@ export default function VideoDetailsSidebar({ setReviewModal }) {
               {activeStatus === section?._id && (
                 <div className="transition-[height] duration-500 ease-in-out">
                   {section.subSection.map((topic, i) => {
-                    const hasAccess = sectionAccess[section._id] !== false
-                    const isLocked = !hasAccess && index > 0 // First section is always accessible
+                    // Check if this section should be locked
+                    let isLocked = false
+                    
+                    if (index > 0) {
+                      // For sections after the first one, check if previous section is completed
+                      const previousSection = courseSectionData[index - 1]
+                      const previousSectionCompleted = previousSection.subSection.every(subSec => 
+                        completedLectures.includes(subSec._id)
+                      )
+                      isLocked = !previousSectionCompleted
+                    }
                     
                     return (
                       <div
@@ -178,7 +195,14 @@ export default function VideoDetailsSidebar({ setReviewModal }) {
                           disabled={isLocked}
                         />
                         <span className="flex items-center gap-2">
-                          {isLocked && <FaLock size={12} />}
+                          {isLocked && (
+                            <div className="relative group">
+                              <FaLock size={12} className="text-yellow-50" />
+                              <div className="absolute left-0 -top-12 hidden group-hover:block bg-richblack-900 text-xs text-yellow-50 p-2 rounded-md whitespace-nowrap">
+                                Complete previous section to unlock
+                              </div>
+                            </div>
+                          )}
                           {topic.title}
                         </span>
                       </div>

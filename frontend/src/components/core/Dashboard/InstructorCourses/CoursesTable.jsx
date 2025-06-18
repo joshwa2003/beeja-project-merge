@@ -19,7 +19,6 @@ import toast from 'react-hot-toast'
 
 
 
-
 export default function CoursesTable({ courses, setCourses, loading, setLoading }) {
 
   const navigate = useNavigate()

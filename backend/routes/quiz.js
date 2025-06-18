@@ -1,27 +1,25 @@
 const express = require('express');
 const router = express.Router();
-const quizController = require('../controllers/quiz');
-const { auth, isInstructor } = require('../middleware/auth');
 
-// Create a new quiz (instructor only)
-router.post('/create', auth, isInstructor, quizController.createQuiz);
+// Import controllers
+const { auth, isInstructor, isStudent, isAdmin } = require('../middleware/auth');
+const {
+  createQuiz,
+  updateQuiz,
+  getAllQuizzes,
+  getQuizById,
+  getQuizResults,
+  validateSectionAccess,
+  submitQuiz
+} = require('../controllers/quiz');
 
-// Update an existing quiz (instructor only)
-router.put('/update/:quizId', auth, isInstructor, quizController.updateQuiz);
-
-// Get all quizzes (instructor only)
-router.get('/all', auth, isInstructor, quizController.getAllQuizzes);
-
-// Get quiz by ID
-router.get('/:quizId', auth, quizController.getQuizById);
-
-// Get quiz results
-router.get('/results/:quizId', auth, quizController.getQuizResults);
-
-// Validate section access
-router.get('/validate-access/:sectionId', auth, quizController.validateSectionAccess);
-
-// Submit quiz answers
-router.post('/submit', auth, quizController.submitQuiz);
+// Routes
+router.get('/all', auth, getAllQuizzes);
+router.post('/create', auth, isAdmin, createQuiz);
+router.get('/:quizId', auth, getQuizById);
+router.put('/update/:quizId', auth, isAdmin, updateQuiz);
+router.post('/submit', auth, isStudent, submitQuiz);
+router.get('/results/:quizId', auth, getQuizResults);
+router.get('/validate-access/:sectionId', auth, validateSectionAccess);
 
 module.exports = router;

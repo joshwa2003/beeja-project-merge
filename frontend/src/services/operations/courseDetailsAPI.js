@@ -411,19 +411,27 @@ export const createRating = async (data, token) => {
   const toastId = toast.loading("Loading...")
   let success = false
   try {
+    // Log the request details
+    console.log("Creating rating with:", {
+      data,
+      token: token ? "Token exists" : "No token",
+      headers: { Authorization: `Bearer ${token}` }
+    })
+
     const response = await apiConnector("POST", CREATE_RATING_API, data, {
       Authorization: `Bearer ${token}`,
     })
     console.log("CREATE RATING API RESPONSE............", response)
     if (!response?.data?.success) {
-      throw new Error("Could Not Create Rating")
+      throw new Error(response?.data?.message || "Could Not Create Rating")
     }
     toast.success("Rating Created")
     success = true
   } catch (error) {
     success = false
     console.log("CREATE RATING API ERROR............", error)
-    toast.error(error.message)
+    // Show the actual error message from the server if available
+    toast.error(error.response?.data?.message || error.message || "Error creating rating")
   }
   toast.dismiss(toastId)
   return success

@@ -109,12 +109,20 @@ exports.getAllQuizzes = async (req, res) => {
     try {
         const quizzes = await Quiz.find({})
             .populate('subSection', 'title')
-            .select('_id title description createdAt')
             .sort({ createdAt: -1 });
+
+        // Transform the data to include a title field for the frontend
+        const transformedQuizzes = quizzes.map(quiz => ({
+            _id: quiz._id,
+            title: quiz.subSection ? `Quiz for ${quiz.subSection.title}` : 'Untitled Quiz',
+            subSection: quiz.subSection,
+            questions: quiz.questions,
+            createdAt: quiz.createdAt
+        }));
 
         return res.status(200).json({
             success: true,
-            data: quizzes
+            data: transformedQuizzes
         });
     } catch (error) {
         console.error('Error fetching all quizzes:', error);
@@ -272,6 +280,19 @@ exports.submitQuiz = async (req, res) => {
         // Validate required questions and calculate score
         let score = 0;
         let totalMarks = 0;
+        const unansweredQuestions = [];
+
+        console.log('Quiz questions:', quiz.questions.length);
+        console.log('Received answers:', JSON.stringify(answers, null, 2));
+
+        // Debug: Log the entire quiz structure
+        console.log('Quiz structure:', JSON.stringify(quiz.questions.map(q => ({
+            id: q._id,
+            type: q.questionType,
+            correctAnswer: q.correctAnswer,
+            correctAnswers: q.correctAnswers,
+            options: q.options
+        })), null, 2));
 
         for (let i = 0; i < quiz.questions.length; i++) {
             const question = quiz.questions[i];
@@ -283,63 +304,82 @@ exports.submitQuiz = async (req, res) => {
             let isAnswered = false;
             let isCorrect = false;
 
+            console.log(`Checking question ${i + 1} (ID: ${questionId}), type: ${question.questionType}`);
+            console.log(`Question correct answer:`, question.correctAnswer);
+            console.log(`Question correct answers:`, question.correctAnswers);
+
+            // Check if answer exists for this question
+            const answer = answers[questionId];
+            console.log(`Answer for question ${questionId}:`, answer, typeof answer);
+
             if (question.questionType === 'matchTheFollowing') {
                 // For match the following, check if all pairs are answered
-                const hasAllMatches = question.options.every((_, optionIndex) => 
-                    answers[`${questionId}_${optionIndex}`] !== undefined && 
-                    answers[`${questionId}_${optionIndex}`] !== ''
-                );
+                const hasAllMatches = question.options.every((_, optionIndex) => {
+                    const matchAnswer = answers[`${questionId}_${optionIndex}`];
+                    return matchAnswer !== undefined && matchAnswer !== null && matchAnswer !== '';
+                });
                 isAnswered = hasAllMatches;
-                // For now, give full marks if all matches are provided
-                // In a real scenario, you'd validate correct matches
                 if (isAnswered) {
-                    isCorrect = true;
+                    isCorrect = true; // Give full marks for now
                 }
             } else if (question.questionType === 'multipleChoice') {
                 // For multiple choice questions
-                const answer = answers[questionId];
-                isAnswered = Array.isArray(answer) && answer.length > 0;
-                
-                if (isAnswered && question.correctAnswers && question.correctAnswers.length > 0) {
-                    // Check if selected answers match correct answers
-                    const selectedIndices = answer.sort();
-                    const correctIndices = question.correctAnswers.sort();
-                    isCorrect = selectedIndices.length === correctIndices.length && 
-                               selectedIndices.every((val, index) => val === correctIndices[index]);
+                if (Array.isArray(answer)) {
+                    // Multiple selections
+                    isAnswered = answer.length > 0;
+                    if (isAnswered && Array.isArray(question.correctAnswers)) {
+                        const selectedAnswers = answer.map(a => parseInt(a, 10)).sort((a, b) => a - b);
+                        const correctAnswers = [...question.correctAnswers].sort((a, b) => a - b);
+                        isCorrect = JSON.stringify(selectedAnswers) === JSON.stringify(correctAnswers);
+                    }
+                } else {
+                    // Single selection
+                    isAnswered = answer !== undefined && answer !== null && answer !== '';
+                    if (isAnswered && Array.isArray(question.correctAnswers)) {
+                        const selectedAnswer = parseInt(answer, 10);
+                        isCorrect = question.correctAnswers.includes(selectedAnswer);
+                    }
                 }
             } else if (question.questionType === 'singleAnswer') {
                 // For single answer questions
-                const answer = answers[questionId];
-                isAnswered = answer !== undefined && answer !== null;
+                const answerNum = Number(answer);
+                isAnswered = !isNaN(answerNum) || answer === 0;
                 
-                if (isAnswered && question.correctAnswer !== undefined && question.correctAnswer !== null) {
-                    // Check if selected answer matches correct answer
-                    isCorrect = parseInt(answer) === question.correctAnswer;
+                if (isAnswered) {
+                    const correctNum = Number(question.correctAnswer);
+                    isCorrect = answerNum === correctNum;
+                    console.log(`Answer comparison: ${answerNum} === ${correctNum} = ${isCorrect}`);
                 }
             } else {
                 // For other question types (shortAnswer, longAnswer)
-                const answer = answers[questionId];
                 isAnswered = answer !== undefined && answer !== null && 
-                           (typeof answer === 'string' ? answer.trim() !== '' : true);
+                           (typeof answer === 'string' ? answer.trim() !== '' : answer !== '');
                 
-                // For text answers, give full marks (manual grading can be implemented later)
                 if (isAnswered) {
-                    isCorrect = true;
+                    isCorrect = true; // Give full marks for text answers
                 }
             }
 
-            // Validate required questions
+            console.log(`Question ${i + 1}: answered = ${isAnswered}, correct = ${isCorrect}, answer = ${answer}`);
+
+            // Track unanswered required questions
             if (question.required && !isAnswered) {
-                return res.status(400).json({
-                    success: false,
-                    message: `Answer required for question ${i + 1}`
-                });
+                unansweredQuestions.push(i + 1);
             }
 
             // Add to score if correct
             if (isCorrect) {
                 score += question.marks;
             }
+        }
+
+        // Check if there are unanswered required questions
+        if (unansweredQuestions.length > 0) {
+            console.log('Unanswered questions:', unansweredQuestions);
+            return res.status(400).json({
+                success: false,
+                message: `Please answer all questions before submitting. Unanswered questions: ${unansweredQuestions.join(', ')}`
+            });
         }
 
         // Update course progress

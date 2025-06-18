@@ -121,7 +121,7 @@ router.post("/getCategoryPageDetails", getCategoryPageDetails)
 // ********************************************************************************************************
 //                                      Rating and Review
 // ********************************************************************************************************
-router.post('/createRating', auth, isStudent, createRating);
+router.post('/createRating', auth, createRating);
 router.get('/getAverageRating', getAverageRating);
 router.get('/getReviews', getAllRatingReview);
 

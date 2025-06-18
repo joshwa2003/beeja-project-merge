@@ -63,7 +63,13 @@ exports.sendOTP = async (req, res) => {
         }
 
         // create an entry for OTP in DB
+        console.log('Creating OTP entry in database:', { email, otp });
         const otpBody = await OTP.create({ email, otp });
+        console.log('OTP entry created successfully:', otpBody);
+
+        // Verify the OTP was saved correctly
+        const savedOTP = await OTP.findOne({ email }).sort({ createdAt: -1 }).limit(1);
+        console.log('Verification - OTP saved in DB:', savedOTP);
 
         return res.status(200).json({
             success: true,
@@ -114,29 +120,51 @@ exports.signup = async (req, res) => {
             });
         }
 
+        // Debug: Log the email and OTP being searched
+        console.log('Searching for OTP - Email:', email);
+        console.log('Provided OTP:', otp);
+
         // find most recent otp stored for user in DB
         const recentOtp = await OTP.findOne({ email }).sort({ createdAt: -1 }).limit(1);
-        // console.log('recentOtp ', recentOtp)
-
-        // .sort({ createdAt: -1 }): 
-        // It's used to sort the results based on the createdAt field in descending order (-1 means descending). 
-        // This way, the most recently created OTP will be returned first.
-
-        // .limit(1): It limits the number of documents returned to 1. 
-
+        console.log('Database query result:', recentOtp);
 
         // if otp not found
-        if (!recentOtp || recentOtp.length == 0) {
+        if (!recentOtp) {
+            // Debug: Check if any OTPs exist for this email
+            const allOtps = await OTP.find({ email });
+            console.log('All OTPs for this email:', allOtps);
+            
             return res.status(400).json({
                 success: false,
-                message: 'Otp not found in DB, please try again'
+                message: 'OTP not found in DB, please try again'
             });
-        } else if (otp !== recentOtp.otp) {
-            // otp invalid
+        } 
+        
+        // Debug: Log OTP details
+        console.log('Found OTP details:', {
+            storedOTP: recentOtp.otp,
+            createdAt: recentOtp.createdAt,
+            email: recentOtp.email
+        });
+        
+        // MongoDB TTL will automatically delete expired OTPs, so if we found one, it's still valid
+        console.log('OTP found and still valid (not expired by MongoDB TTL)');
+        
+        // Debug: Log OTP comparison
+        const providedOTP = String(otp).trim();
+        const storedOTP = String(recentOtp.otp).trim();
+        console.log('OTP Comparison:', {
+            provided: providedOTP,
+            stored: storedOTP,
+            match: providedOTP === storedOTP
+        });
+        
+        // Compare OTP
+        if (providedOTP !== storedOTP) {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid Otp'
-            })
+                message: 'Invalid OTP'
+            });
         }
 
         // hash - secure passoword

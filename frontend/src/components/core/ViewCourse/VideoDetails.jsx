@@ -182,6 +182,8 @@ const VideoDetails = () => {
 
   // Handle quiz answer selection
   const handleQuizAnswer = (questionId, selectedOption, questionType = 'single') => {
+    console.log('Handling answer:', { questionId, selectedOption, questionType });
+    
     if (questionType === 'multipleChoice') {
       // For multiple choice, handle array of selected options
       setQuizAnswers(prev => {
@@ -202,13 +204,24 @@ const VideoDetails = () => {
           }
         }
       })
+    } else if (questionType === 'singleAnswer') {
+      // For single choice questions - ensure the value is a number
+      setQuizAnswers(prev => ({
+        ...prev,
+        [questionId]: Number(selectedOption)
+      }))
     } else {
-      // For single choice questions
+      // For other question types
       setQuizAnswers(prev => ({
         ...prev,
         [questionId]: selectedOption
       }))
     }
+    
+    // Debug: Log current answers after update
+    setTimeout(() => {
+      console.log('Current quiz answers:', quizAnswers);
+    }, 0);
   }
 
   // Submit quiz
@@ -221,11 +234,14 @@ const VideoDetails = () => {
     // Validate all questions are answered
     const unansweredQuestions = []
     quizData.questions.forEach((question, index) => {
+      const answer = quizAnswers[question._id]
+      
       if (question.questionType === 'matchTheFollowing') {
         // Check if all match pairs are answered
-        const hasAllMatches = question.options.every((_, optionIndex) => 
-          quizAnswers[`${question._id}_${optionIndex}`]
-        )
+        const hasAllMatches = question.options.every((_, optionIndex) => {
+          const matchAnswer = quizAnswers[`${question._id}_${optionIndex}`]
+          return matchAnswer !== undefined && matchAnswer !== null && matchAnswer !== ''
+        })
         if (!hasAllMatches) {
           unansweredQuestions.push(index + 1)
         }
@@ -235,10 +251,15 @@ const VideoDetails = () => {
         if (!Array.isArray(selectedOptions) || selectedOptions.length === 0) {
           unansweredQuestions.push(index + 1)
         }
+      } else if (question.questionType === 'singleAnswer') {
+        // For single answer questions - check if answer exists (including 0)
+        const answerNum = Number(answer);
+        if (isNaN(answerNum) && answer !== 0) {
+          unansweredQuestions.push(index + 1)
+        }
       } else {
-        // Check if question is answered for other types
-        if (!quizAnswers[question._id] || 
-            (typeof quizAnswers[question._id] === 'string' && quizAnswers[question._id].trim() === '')) {
+        // For text-based questions
+        if (!answer || (typeof answer === 'string' && answer.trim() === '')) {
           unansweredQuestions.push(index + 1)
         }
       }

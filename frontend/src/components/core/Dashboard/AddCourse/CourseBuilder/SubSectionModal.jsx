@@ -48,6 +48,8 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
       }
     } catch (error) {
       console.error("Error loading quizzes:", error)
+      // Set empty array if quiz loading fails
+      setQuizzes([])
     }
   }
 
@@ -67,34 +69,44 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
 
   // handle the editing of subsection
   const handleEditSubsection = async () => {
-    const currentValues = getValues()
-    const formData = new FormData()
-    formData.append("sectionId", modalData.sectionId)
-    formData.append("subSectionId", modalData._id)
-    if (currentValues.lectureTitle !== modalData.title) {
-      formData.append("title", currentValues.lectureTitle)
-    }
-    if (currentValues.lectureDesc !== modalData.description) {
-      formData.append("description", currentValues.lectureDesc)
-    }
-    if (currentValues.lectureVideo !== modalData.videoUrl) {
-      formData.append("video", currentValues.lectureVideo)
-    }
-    if (currentValues.quiz !== (modalData.quiz?._id || "")) {
-      formData.append("quiz", currentValues.quiz)
-    }
     setLoading(true)
-    const result = await updateSubSection(formData, token)
-    if (result) {
-      // update the structure of course
-      const updatedCourseContent = course.courseContent.map((section) =>
-        section._id === modalData.sectionId ? result : section
-      )
-      const updatedCourse = { ...course, courseContent: updatedCourseContent }
-      dispatch(setCourse(updatedCourse))
+    
+    try {
+      const currentValues = getValues()
+      const formData = new FormData()
+      formData.append("sectionId", modalData.sectionId)
+      formData.append("subSectionId", modalData._id)
+      if (currentValues.lectureTitle !== modalData.title) {
+        formData.append("title", currentValues.lectureTitle)
+      }
+      if (currentValues.lectureDesc !== modalData.description) {
+        formData.append("description", currentValues.lectureDesc)
+      }
+      if (currentValues.lectureVideo !== modalData.videoUrl) {
+        formData.append("video", currentValues.lectureVideo)
+      }
+      if (currentValues.quiz !== (modalData.quiz?._id || "")) {
+        formData.append("quiz", currentValues.quiz)
+      }
+      
+      const result = await updateSubSection(formData, token)
+      if (result) {
+        // update the structure of course
+        const updatedCourseContent = course.courseContent.map((section) =>
+          section._id === modalData.sectionId ? result : section
+        )
+        const updatedCourse = { ...course, courseContent: updatedCourseContent }
+        dispatch(setCourse(updatedCourse))
+        setModalData(null)
+      } else {
+        toast.error("Failed to update lecture. Please try again.")
+      }
+    } catch (error) {
+      console.error("Error updating subsection:", error)
+      toast.error("Failed to update lecture. Please try again.")
+    } finally {
+      setLoading(false)
     }
-    setModalData(null)
-    setLoading(false)
   }
 
   const onSubmit = async (data) => {
@@ -109,29 +121,69 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
       return
     }
 
-    const formData = new FormData()
-    formData.append("sectionId", modalData)
-    formData.append("title", data.lectureTitle)
-    formData.append("description", data.lectureDesc)
-    formData.append("video", data.lectureVideo)
-    if (data.quiz) {
-      formData.append("quiz", data.quiz)
+    // Validate video file
+    if (!data.lectureVideo || !(data.lectureVideo instanceof File)) {
+      toast.error("Please upload a video file")
+      return
     }
-    setLoading(true)
 
-    // Create subsection
-    const subsectionResult = await createSubSection(formData, token)
-    
-    if (subsectionResult) {
-      // Update course structure
-      const updatedCourseContent = course.courseContent.map((section) =>
-        section._id === modalData ? subsectionResult : section
-      )
-      const updatedCourse = { ...course, courseContent: updatedCourseContent }
-      dispatch(setCourse(updatedCourse))
+    // Validate file size (100MB limit)
+    const maxSize = 100 * 1024 * 1024 // 100MB in bytes
+    if (data.lectureVideo.size > maxSize) {
+      toast.error("Video file size must be less than 100MB")
+      return
     }
-    setModalData(null)
-    setLoading(false)
+
+    setLoading(true)
+    const toastId = toast.loading("Uploading lecture... This may take a few minutes.")
+    
+    try {
+      const formData = new FormData()
+      formData.append("sectionId", modalData)
+      formData.append("title", data.lectureTitle)
+      formData.append("description", data.lectureDesc)
+      formData.append("video", data.lectureVideo)
+      if (data.quiz) {
+        formData.append("quiz", data.quiz)
+      }
+
+      // Create subsection with timeout
+      const timeoutDuration = 300000 // 5 minutes
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), timeoutDuration)
+
+      const subsectionResult = await Promise.race([
+        createSubSection(formData, token),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Upload timeout')), timeoutDuration)
+        )
+      ])
+
+      clearTimeout(timeoutId)
+      
+      if (subsectionResult) {
+        // Update course structure
+        const updatedCourseContent = course.courseContent.map((section) =>
+          section._id === modalData ? subsectionResult : section
+        )
+        const updatedCourse = { ...course, courseContent: updatedCourseContent }
+        dispatch(setCourse(updatedCourse))
+        toast.success("Lecture added successfully")
+        setModalData(null)
+      } else {
+        throw new Error("Failed to create lecture")
+      }
+    } catch (error) {
+      console.error("Error creating subsection:", error)
+      if (error.message === 'Upload timeout') {
+        toast.error("Upload timed out. Please try again with a smaller video file.")
+      } else {
+        toast.error("Failed to add lecture. Please try again.")
+      }
+    } finally {
+      setLoading(false)
+      toast.dismiss(toastId)
+    }
   }
 
   return (

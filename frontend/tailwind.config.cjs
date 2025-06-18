@@ -127,6 +127,16 @@ module.exports = {
       },
     },
     extend: {
+      colors: {
+        customPalette: {
+          amethyst: "#B55DFE",       // Amethyst
+          brandeisBlue: "#216AFD",   // Brandeis blue
+          blueCrayola: "#627FFC",    // Blue (Crayola)
+          mediumSlateBlue: "#7561FA",// Medium slate blue
+          robinEggBlue: "#59D3D9",   // Robin egg blue
+          shadeofblue: "#254FA3"
+        }
+      },
       maxWidth: {
         maxContent: "1260px",
         maxContentTab: "650px"

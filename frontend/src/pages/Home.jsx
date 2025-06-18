@@ -1,264 +1,362 @@
-import React, { useEffect, useState } from 'react'
-import { Link } from "react-router-dom"
+import React, { useEffect, useRef, useState } from 'react';
+import { Link } from "react-router-dom";
 import { useDispatch } from 'react-redux';
-import { showAllCategories } from '../services/operations/categoryAPI'
 
-import HighlightText from '../components/core/HomePage/HighlightText'
-import CTAButton from "../components/core/HomePage/Button"
-import CodeBlocks from "../components/core/HomePage/CodeBlocks"
-import TimelineSection from '../components/core/HomePage/TimelineSection'
-import LearningLanguageSection from '../components/core/HomePage/LearningLanguageSection'
-import InstructorSection from '../components/core/HomePage/InstructorSection'
-import Footer from '../components/common/Footer'
-import ExploreMore from '../components/core/HomePage/ExploreMore'
-import ReviewSlider from '../components/common/ReviewSlider'
+import "./css style/home.css"
+
+import HighlightText from '../components/core/HomePage/HighlightText';
+import CTAButton from "../components/core/HomePage/Button";
+import CodeBlocks from "../components/core/HomePage/CodeBlocks";
+import TimelineSection from '../components/core/HomePage/TimelineSection';
+import LearningLanguageSection from '../components/core/HomePage/LearningLanguageSection';
+import InstructorSection from '../components/core/HomePage/InstructorSection';
+import ImprovedFooter from '../components/common/ImprovedFooter';
+import ExploreMore from '../components/core/HomePage/ExploreMore';
+import ReviewSlider from '../components/common/ReviewSlider';
 import Course_Slider from '../components/core/Catalog/Course_Slider'
 
-import { getCatalogPageData } from '../services/operations/pageAndComponentData'
+import TeamSlider from '../components/core/HomePage/TeamSlider';
+import SplitScreen from '../components/core/HomePage/SplitScreen';
 
-import { MdOutlineRateReview } from 'react-icons/md'
-import { FaArrowRight } from "react-icons/fa"
+import { getCatalogPageData } from '../services/operations/pageAndComponentData';
 
-import { motion } from 'framer-motion'
-import { fadeIn, } from './../components/common/motionFrameVarients';
+import { MdOutlineRateReview } from 'react-icons/md';
+import { FaArrowRight } from "react-icons/fa";
 
-// background random images
-import backgroundImg1 from '../assets/Images/random bg img/coding bg1.jpg'
-import backgroundImg2 from '../assets/Images/random bg img/coding bg2.jpg'
-import backgroundImg3 from '../assets/Images/random bg img/coding bg3.jpg'
-import backgroundImg4 from '../assets/Images/random bg img/coding bg4.jpg'
-import backgroundImg5 from '../assets/Images/random bg img/coding bg5.jpg'
-import backgroundImg6 from '../assets/Images/random bg img/coding bg6.jpeg'
-import backgroundImg7 from '../assets/Images/random bg img/coding bg7.jpg'
-import backgroundImg8 from '../assets/Images/random bg img/coding bg8.jpeg'
-import backgroundImg9 from '../assets/Images/random bg img/coding bg9.jpg'
-import backgroundImg10 from '../assets/Images/random bg img/coding bg10.jpg'
-import backgroundImg111 from '../assets/Images/random bg img/coding bg11.jpg'
+import { motion } from 'framer-motion';
+import { fadeIn, scaleUp, bounce } from './../components/common/motionFrameVarients';
+
+import BackgroundEffect from './BackgroundEffect';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
+import { faGraduationCap } from '@fortawesome/free-solid-svg-icons';
 
 
-const randomImges = [
-    backgroundImg1,
-    backgroundImg2,
-    backgroundImg3,
-    backgroundImg4,
-    backgroundImg5,
-    backgroundImg6,
-    backgroundImg7,
-    backgroundImg8,
-    backgroundImg9,
-    backgroundImg10,
-    backgroundImg111,
-];
-
-// hardcoded
 
 
 const Home = () => {
+  const [CatalogPageData, setCatalogPageData] = useState(null);
+  const [categoryID, setCategoryID] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-    // get background random images
-    const [backgroundImg, setBackgroundImg] = useState(null);
 
-    useEffect(() => {
-        const bg = randomImges[Math.floor(Math.random() * randomImges.length)]
-        setBackgroundImg(bg);
-    }, [])
+  const dispatch = useDispatch();
 
-    // console.log('bg ==== ', backgroundImg)
+  useEffect(() => {
+    const fetchCatalogPageData = async () => {
+      if (!categoryID) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await getCatalogPageData(categoryID, dispatch);
+        console.log("CatalogPageData API result:", result);
+        setCatalogPageData(result);
+      } catch (err) {
+        console.error("Error fetching catalog page data:", err);
+        setError("Failed to fetch catalog page data");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCatalogPageData();
+  }, [categoryID, dispatch]);
 
-    // get categories for dynamic categoryId
-    const [categories, setCategories] = useState([]);
-    const [categoryID, setCategoryID] = useState(null);
-    const [CatalogPageData, setCatalogPageData] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+  const getUniqueCourseSections = () => {
+    if (!CatalogPageData) return { popularPicks: [], topEnrollments: [], additionalCourses: [] };
 
-    const dispatch = useDispatch();
+    const allCourses = [
+      ...(CatalogPageData?.selectedCategory?.courses?.filter(course => course.isVisible) || []),
+      ...(CatalogPageData?.mostSellingCourses?.filter(course => course.isVisible) || []),
+      ...(CatalogPageData?.differentCategory?.courses?.filter(course => course.isVisible) || [])
+    ];
 
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const allCategories = await showAllCategories();
-                setCategories(allCategories);
-                if (allCategories.length > 0) {
-                    setCategoryID(allCategories[0]._id); // set first category as default
-                }
-            } catch (err) {
-                setError("Failed to fetch categories");
-            }
-        }
-        fetchCategories();
-    }, [])
+    const uniqueCourses = allCourses.filter((course, index, self) =>
+      index === self.findIndex(c => c._id === course._id)
+    );
 
-    useEffect(() => {
-        const fetchCatalogPageData = async () => {
-            if (!categoryID) return;
-            setLoading(true);
-            setError(null);
-            try {
-                const result = await getCatalogPageData(categoryID, dispatch);
-                console.log("CatalogPageData API result:", result);
-                setCatalogPageData(result);
-            } catch (err) {
-                console.error("Error fetching catalog page data:", err);
-                setError("Failed to fetch catalog page data");
-            } finally {
-                setLoading(false);
-            }
-        }
-        fetchCatalogPageData();
-    }, [categoryID, dispatch])
+    const popularPicks = uniqueCourses.slice(0, 3);
+    const topEnrollments = uniqueCourses.slice(3, 6);
+    const additionalCourses = uniqueCourses.slice(6, 9);
 
-    // Function to get unique courses for each section
-    const getUniqueCourseSections = () => {
-        if (!CatalogPageData) return { popularPicks: [], topEnrollments: [], additionalCourses: [] };
+    return { popularPicks, topEnrollments, additionalCourses };
+  };
 
-        // Collect all available courses
-        const allCourses = [
-            ...(CatalogPageData?.selectedCategory?.courses?.filter(course => course.isVisible) || []),
-            ...(CatalogPageData?.mostSellingCourses?.filter(course => course.isVisible) || []),
-            ...(CatalogPageData?.differentCategory?.courses?.filter(course => course.isVisible) || [])
-        ];
+  const { popularPicks, topEnrollments, additionalCourses } = getUniqueCourseSections();
 
-        // Remove duplicates based on course ID
-        const uniqueCourses = allCourses.filter((course, index, self) => 
-            index === self.findIndex(c => c._id === course._id)
-        );
 
-        // Distribute courses across sections (3 each)
-        const popularPicks = uniqueCourses.slice(0, 3);
-        const topEnrollments = uniqueCourses.slice(3, 6);
-        const additionalCourses = uniqueCourses.slice(6, 9);
 
-        return { popularPicks, topEnrollments, additionalCourses };
+  // increment count js code
+
+  // let valueDisplay = document.querySelector(".count-num"),
+  //     interval = 1000;
+
+  // function value() {
+  //     let startValue = 0,
+  //         endValue = valueDisplay.getAttribute("data-value"),
+  //         duration = Math.floor(interval / endValue);
+  //     let counter = setInterval(function () {
+  //         startValue += 1;
+  //         valueDisplay.textContent = startValue + "+"
+  //         if(startValue == endValue){
+  //             clearInterval(counter)
+  //         }
+  //     });
+  // }
+
+
+  const learnerRef1 = useRef(null);
+  const learnerRef2 = useRef(null);
+  const learnerRef3 = useRef(null);
+
+  const animateCount = (ref) => {
+    if (!ref.current) return;
+    let count = 0;
+    const target = parseInt(ref.current.getAttribute('data-target'));
+    const speed = 130; // Adjust speed as needed
+
+    const updateCount = () => {
+      const increment = Math.ceil(target / speed);
+      count += increment;
+      if (count > target) count = target;
+      ref.current.innerText = count;
+      if (count < target) {
+        requestAnimationFrame(updateCount);
+      }
     };
 
-    const { popularPicks, topEnrollments, additionalCourses } = getUniqueCourseSections();
+    updateCount();
+  };
 
-    return (
-      <React.Fragment>
-        {/* background random image */}
-        <div>
-          <div className="w-full h-[450px] md:h-[650px] absolute top-0 left-0 opacity-[0.3] overflow-hidden object-cover ">
-            <img
-              src={backgroundImg}
-              alt="Background"
-              className="w-full h-full object-cover "
-            />
+  useEffect(() => {
+    animateCount(learnerRef1);
+    animateCount(learnerRef2);
+    animateCount(learnerRef3);
+  }, []);
 
-            <div className="absolute left-0 bottom-0 w-full h-[250px] opacity_layer_bg "></div>
-          </div>
-        </div>
 
-        <div className=" ">
-          {/*Section1  */}
-          <div className="relative h-[450px] md:h-[550px] justify-center mx-auto flex flex-col w-11/12 max-w-maxContent items-center text-white ">
-            <Link to={"/signup"}>
-              <div
-                className="z-0 group p-1 mx-auto rounded-full bg-richblack-800 font-bold text-richblack-200
-                                        transition-all duration-200 hover:scale-95 w-fit"
-              >
-                <div
-                  className="flex flex-row items-center gap-2 rounded-full px-10 py-[5px]
-                              transition-all duration-200 group-hover:bg-richblack-900"
-                >
-                  <p>Become an Instructor</p>
-                  <FaArrowRight />
-                </div>
-              </div>
-            </Link>
 
+  return (
+    <React.Fragment>
+      {/* Background with Gradient and Particles */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+        className="relative z-0"
+      >
+        <BackgroundEffect />
+      </motion.div>
+
+      {/* Main Content above background */}
+      <div className="relative z-10">
+        {/* Section 1 */}
+        <div id='home-welcome' className='relative h-[600px] md:h-[400px] justify-center mx-auto flex flex-col w-11/12 max-w-maxContent items-center text-white'>
+
+          <motion.div
+            variants={fadeIn('left', 0.1)}
+            initial='hidden'
+            whileInView={'show'}
+            viewport={{ once: false, amount: 0.1 }}
+            className='text-center text-3xl lg:text-4xl font-semibold mt-7'
+          >
+            Welcome to
+            <HighlightText text={"Beeja "} />
+            Igniting Minds, Transforming Futures
+          </motion.div>
+
+          <motion.div
+            variants={fadeIn('right', 0.1)}
+            initial='hidden'
+            whileInView={'show'}
+            viewport={{ once: false, amount: 0.1 }}
+            className='mt-4 w-[90%] text-center text-base lg:text-lg font-bold text-richblack-200'
+          >
+            Embark on a seamless learning experienced with our state of the art platform. Dive into courses crafted to inspire, challenge, and empower you for success.
+          </motion.div>
+
+          <motion.div
+            variants={fadeIn('up', 0.3)}
+            initial='hidden'
+            whileInView={'show'}
+            viewport={{ once: false, amount: 0.2 }}
+            className='flex flex-row gap-7 mt-8'
+          >
             <motion.div
-              variants={fadeIn("left", 0.1)}
-              initial="hidden"
-              whileInView={"show"}
-              viewport={{ once: false, amount: 0.1 }}
-              className="text-center text-3xl lg:text-4xl font-semibold mt-7  "
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              Welcome to Beeja Igniting Minds, Transforming Futures
-              <HighlightText text={"Coding Skills"} />
-            </motion.div>
-
-            <motion.div
-              variants={fadeIn("right", 0.1)}
-              initial="hidden"
-              whileInView={"show"}
-              viewport={{ once: false, amount: 0.1 }}
-              className=" mt-4 w-[90%] text-center text-base lg:text-lg font-bold text-richblack-300"
-            >
-              Embark on a seamless learning experienced with our state of the
-              art platform. Dive into courses crafted to inspire, challenge, and
-              empower you for success.
-            </motion.div>
-
-            <div className="flex flex-row gap-7 mt-8">
-              <CTAButton active={true} linkto={"/catalog/All Courses"}>
+              <CTAButton active={true} linkto={"/signup"}>
                 Get Started
               </CTAButton>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <CTAButton active={false} linkto={"/login"}>
+                Learn More <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
+              </CTAButton>
+            </motion.div>
+          </motion.div>
+        </div>
+
+        <motion.div
+          variants={fadeIn('up', 0.2)}
+          initial='hidden'
+          whileInView={'show'}
+          viewport={{ once: false, amount: 0.2 }}
+          className='parent-count-container'
+        >
+          <motion.div
+            variants={scaleUp}
+            initial='hidden'
+            whileInView={'show'}
+            viewport={{ once: false, amount: 0.2 }}
+            className='count-container'
+          >
+            <div className="increase-count">
+              <i>
+                <FontAwesomeIcon icon={faGraduationCap} />
+              </i>
+              <div className='num'>
+                <div ref={learnerRef1} className="count-num" data-target="25">0</div>
+                <div className="count-num">K+</div>
+              </div>
+              <div className='text'>Active Learners</div>
             </div>
+          </motion.div>
+
+          <motion.div
+            variants={scaleUp}
+            initial='hidden'
+            whileInView={'show'}
+            viewport={{ once: false, amount: 0.2 }}
+            transition={{ delay: 0.2 }}
+            className='count-container'
+          >
+            <div className="increase-count">
+              <i>
+                <FontAwesomeIcon icon={faGraduationCap} />
+              </i>
+              <div className='num'>
+                <div ref={learnerRef3} className="count-num" data-target="100">0</div>
+                <div className="count-num">+</div>
+              </div>
+              <div className='text'>Total Courses</div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            variants={scaleUp}
+            initial='hidden'
+            whileInView={'show'}
+            viewport={{ once: false, amount: 0.2 }}
+            transition={{ delay: 0.4 }}
+            className='count-container'
+          >
+            <div className="increase-count">
+              <i>
+                <FontAwesomeIcon icon={faGraduationCap} />
+              </i>
+              <div className='num'>
+                <div ref={learnerRef2} className="count-num" data-target="1200">0</div>
+                <div className="count-num">+</div>
+              </div>
+              <div className='text'>Total Students</div>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* Code Blocks */}
+        <div className='relative mx-auto flex flex-col w-11/12 max-w-maxContent items-center text-white justify-between'>
+          <motion.div
+            variants={fadeIn('up', 0.2)}
+            initial='hidden'
+            whileInView={'show'}
+            viewport={{ once: false, amount: 0.2 }}
+          >
+            <CodeBlocks
+              position={"lg:flex-row"}
+              heading={<div className='text-3xl lg:text-4xl font-semibold'>Master Coding with <HighlightText text={"Beeja's Expert-Led "} /> courses</div>}
+              subheading={"Elevate your programming skills with Beeja, where hands-on learning meets expert guidance to unlock your full coding potential."}
+              ctabtn1={{ btnText: "try it yourself", linkto: "/signup", active: true }}
+              ctabtn2={{
+                btnText: (
+                  <>
+                    Learn More <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="ml-2" />
+                  </>
+                ),
+                link: "/signup",
+                active: false
+              }}
+
+              codeblock={`<<!DOCTYPE html>\n<html>\n<head><title>Example</title>\n</head>\n<body>\n<h1><ahref="/">Header</a>\n</h1>\n<nav><ahref="one/">One</a><ahref="two/">Two</a><ahref="three/">Three</a>\n</nav>`}
+              codeColor={"text-yellow-25"}
+              backgroundGradient={"code-block1-grad"}
+            />
+          </motion.div>
+
+          <motion.div
+            variants={fadeIn('up', 0.3)}
+            initial='hidden'
+            whileInView={'show'}
+            viewport={{ once: false, amount: 0.2 }}
+          >
+            <CodeBlocks
+              position={"lg:flex-row-reverse"}
+              heading={<div className="w-[100%] text-3xl lg:text-4xl font-semibold lg:w-[50%]">Code Instantly  <HighlightText text={"with Beeja"} /></div>}
+              subheading={"Jump right into coding at Beeja, where our interactive lessons get you building real-world projects from the very start."}
+              ctabtn1={{ btnText: "Continue Lesson", link: "/signup", active: true }}
+              ctabtn2={{ btnText: "Learn More", link: "/signup", active: false }}
+              codeColor={"text-white"}
+              codeblock={`import React from \"react\";\n import CTAButton from \"./Button\";\nimport TypeAnimation from \"react-type\";\nimport { FaArrowRight } from \"react-icons/fa\";\n\nconst Home = () => {\nreturn (\n<div>Home</div>\n)\n}\nexport default Home;`}
+              backgroundGradient={"code-block2-grad"}
+            />
+          </motion.div>
+
+          {/* Team Slider Section */}
+          <motion.div
+            variants={fadeIn('up', 0.1)}
+            initial='hidden'
+            whileInView={'show'}
+            viewport={{ once: false, amount: 0.1 }}
+            className='text-center text-3xl lg:text-4xl font-semibold mt-16 mb-8'
+          >
+            Meet Our Expert
+            <HighlightText text={" Team"} />
+          </motion.div>
+          <motion.div
+            variants={scaleUp}
+            initial='hidden'
+            whileInView={'show'}
+            viewport={{ once: false, amount: 0.2 }}
+          >
+            <TeamSlider />
+          </motion.div>
+
+          <div className="w-full py-20">
+            {/* Section Header */}
+            <motion.div
+              variants={fadeIn('up', 0.1)}
+              initial='hidden'
+              whileInView={'show'}
+              viewport={{ once: false, amount: 0.1 }}
+              className='text-center mb-12'
+            >
+              <h2 className='text-3xl lg:text-4xl font-semibold text-white mb-4'>
+                Our Technology
+                <HighlightText text={" Partner"} />
+              </h2>
+            </motion.div>
+
+            {/* Split Screen Section */}
+            <SplitScreen />
           </div>
 
-          {/* animated code */}
-          <div className="relative mx-auto flex flex-col w-11/12 max-w-maxContent items-center text-white justify-between">
-            {/* Code block 1 */}
-            <div className="">
-              <CodeBlocks
-                position={"lg:flex-row"}
-                heading={
-                  <div className="text-3xl lg:text-4xl font-semibold">
-                    Unlock Your
-                    <HighlightText text={"coding potential "} />
-                    with our online courses
-                  </div>
-                }
-                subheading={
-                  "Our courses are designed and taught by industry experts who have years of experience in coding and are passionate about sharing their knowledge with you."
-                }
-                ctabtn1={{
-                  btnText: "try it yourself",
-                  linkto: "/Signup",
-                  active: true,
-                }}
-                ctabtn2={{
-                  btnText: "learn more",
-                  linkto: "/Login",
-                  active: false,
-                }}
-                codeblock={`<<!DOCTYPE html>\n<html>\n<head><title>Example</title>\n</head>\n<body>\n<h1><ahref="/">Header</a>\n</h1>\n<nav><ahref="one/">One</a><ahref="two/">Two</a><ahref="three/">Three</a>\n</nav>`}
-                codeColor={"text-yellow-25"}
-                backgroundGradient={"code-block1-grad"}
-              />
-            </div>
 
-            {/* Code block 2 */}
-            <div>
-              <CodeBlocks
-                position={"lg:flex-row-reverse"}
-                heading={
-                  <div className="w-[100%] text-3xl lg:text-4xl font-semibold lg:w-[50%]">
-                    Start
-                    <HighlightText text={"coding in seconds"} />
-                  </div>
-                }
-                subheading={
-                  "Go ahead, give it a try. Our hands-on learning environment means you'll be writing real code from your very first lesson."
-                }
-                ctabtn1={{
-                  btnText: "Continue Lesson",
-                  link: "/signup",
-                  active: true,
-                }}
-                ctabtn2={{
-                  btnText: "Learn More",
-                  link: "/signup",
-                  active: false,
-                }}
-                codeColor={"text-white"}
-                codeblock={`import React from "react";\n import CTAButton from "./Button";\nimport TypeAnimation from "react-type";\nimport { FaArrowRight } from "react-icons/fa";\n\nconst Home = () => {\nreturn (\n<div>Home</div>\n)\n}\nexport default Home;`}
-                backgroundGradient={"code-block2-grad"}
-              />
-            </div>
-
-            {/* course slider */}
+          {/* course slider */}
             <div className="mx-auto box-content w-full max-w-maxContentTab px- py-12 lg:max-w-maxContent">
               <h2 className="text-white mb-6 text-2xl ">
                 Popular Picks for You 🏆
@@ -284,84 +382,182 @@ const Home = () => {
               )}
             </div>
 
-            {/* <div className=" mx-auto box-content w-full max-w-maxContentTab px- py-12 lg:max-w-maxContent">
-              <h2 className="text-white mb-6 text-2xl ">
-                Additional Courses You May Like 📚
-              </h2>
-              {loading ? (
-                <p className="text-white">Loading additional courses...</p>
-              ) : error ? (
-                <p className="text-red-500">{error}</p>
-              ) : (
-                <Course_Slider Courses={additionalCourses} />
-              )}
-            </div> */}
+          {/* Top Enrollments */}
+          <motion.div
+            variants={fadeIn('up', 0.2)}
+            initial='hidden'
+            whileInView={'show'}
+            viewport={{ once: false, amount: 0.2 }}
+            className="mx-auto box-content w-full max-w-maxContentTab px- py-12 lg:max-w-maxContent"
+          >
+            <motion.h2
+              variants={fadeIn('right', 0.3)}
+              initial='hidden'
+              whileInView={'show'}
+              viewport={{ once: false, amount: 0.2 }}
+              className="text-white mb-6 text-2xl"
+            >
+              Top Enrollments Today 🔥
+            </motion.h2>
+            {loading ? (
+              <p className="text-white">Loading top enrollments...</p>
+            ) : error ? (
+              <p className="text-red-500">{error}</p>
+            ) : (
+              <motion.div
+                variants={scaleUp}
+                initial='hidden'
+                whileInView={'show'}
+                viewport={{ once: false, amount: 0.2 }}
+              >
+                <Course_Slider Courses={topEnrollments} />
+              </motion.div>
+            )}
+          </motion.div>
 
+
+
+          <motion.div
+            variants={fadeIn('up', 0.2)}
+            initial='hidden'
+            whileInView={'show'}
+            viewport={{ once: false, amount: 0.2 }}
+          >
             <ExploreMore />
-          </div>
+          </motion.div>
+        </div>
 
-          {/*Section 2  */}
-          <div className="bg-pure-greys-5 text-richblack-700 ">
-            <div className="homepage_bg h-[310px]">
-              <div className="w-11/12 max-w-maxContent flex flex-col items-center justify-between gap-5 mx-auto">
-                <div className="h-[150px]"></div>
-                <div className="flex flex-row gap-7 text-white ">
+        {/* Section 2 */}
+        <div className='bg-pure-greys-5 text-richblack-700'>
+          <div className='homepage_bg h-[310px]'>
+            <div className='w-11/12 max-w-maxContent flex flex-col items-center justify-between gap-5 mx-auto'>
+              <div className='h-[150px]'></div>
+              <motion.div
+                variants={fadeIn('up', 0.2)}
+                initial='hidden'
+                whileInView={'show'}
+                viewport={{ once: false, amount: 0.2 }}
+                className='flex flex-row gap-7 text-white'
+              >
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
                   <CTAButton active={true} linkto={"/signup"}>
-                    <div className="flex items-center gap-3">
-                      Explore Full Catalog
-                      <FaArrowRight />
+                    <div className='flex items-center gap-3'>
+                      Explore Full Catalog <FaArrowRight />
                     </div>
                   </CTAButton>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
                   <CTAButton active={false} linkto={"/signup"}>
-                    <div>Learn more</div>
+                    <div>Learn more <FontAwesomeIcon icon={faArrowUpRightFromSquare} /></div>
                   </CTAButton>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             </div>
+          </div>
 
-            <div className="mx-auto w-11/12 max-w-maxContent flex flex-col items-center justify-between gap-7">
-              <div className="flex flex-col lg:flex-row gap-5 mb-10 mt-[95px]">
-                <div className="text-3xl lg:text-4xl font-semibold w-full lg:w-[45%]">
-                  Get the Skills you need for a
-                  <HighlightText text={"Job that is in demand"} />
+          <div className='mx-auto w-11/12 max-w-maxContent flex flex-col items-center justify-between gap-7'>
+            <div className='flex flex-col lg:flex-row gap-5 mb-10 mt-[95px]'>
+              <motion.div
+                variants={fadeIn('right', 0.2)}
+                initial='hidden'
+                whileInView={'show'}
+                viewport={{ once: false, amount: 0.2 }}
+                className='text-3xl lg:text-4xl font-semibold w-full lg:w-[45%]'
+              >
+                Get the Skills you need for a <HighlightText text={"Job that is in demand"} />
+              </motion.div>
+
+              <motion.div
+                variants={fadeIn('left', 0.2)}
+                initial='hidden'
+                whileInView={'show'}
+                viewport={{ once: false, amount: 0.2 }}
+                className='flex flex-col gap-10 w-full lg:w-[40%] items-start'
+              >
+                <div className='text-[16px]'>
+                  The modern StudyNotion dictates its own terms. Today, to be a competitive specialist requires more than professional skills.
                 </div>
-
-                <div className="flex flex-col gap-10 w-full lg:w-[40%] items-start">
-                  <div className="text-[16px]">
-                    The modern StudyNotion is the dictates its own terms. Today,
-                    to be a competitive specialist requires more than
-                    professional skills.
-                  </div>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
                   <CTAButton active={true} linkto={"/signup"}>
-                    <div>Learn more</div>
+                    <div>Learn more <FontAwesomeIcon icon={faArrowUpRightFromSquare} /></div>
                   </CTAButton>
-                </div>
-              </div>
-
-              {/* leadership */}
-              <TimelineSection />
-
-              <LearningLanguageSection />
+                </motion.div>
+              </motion.div>
             </div>
+
+            <motion.div
+              variants={fadeIn('up', 0.2)}
+              initial='hidden'
+              whileInView={'show'}
+              viewport={{ once: false, amount: 0.2 }}
+            >
+              <TimelineSection />
+            </motion.div>
+
+            <motion.div
+              variants={fadeIn('up', 0.2)}
+              initial='hidden'
+              whileInView={'show'}
+              viewport={{ once: false, amount: 0.2 }}
+            >
+              <LearningLanguageSection />
+            </motion.div>
           </div>
-
-          {/*Section 3 */}
-          <div className="mt-14 w-11/12 mx-auto max-w-maxContent flex-col items-center justify-between gap-8 first-letter bg-richblack-900 text-white">
-            <InstructorSection />
-
-            {/* Reviws from Other Learner */}
-            <h1 className="text-center text-3xl lg:text-4xl font-semibold mt-8 flex justify-center items-center gap-x-3">
-              Reviews from other learners{" "}
-              <MdOutlineRateReview className="text-yellow-25" />
-            </h1>
-            <ReviewSlider />
-          </div>
-
-          {/*Footer */}
-          <Footer />
         </div>
-      </React.Fragment>
-    );
-}
 
-export default Home
+        {/* Section 3 */}
+        <div className='mt-14 w-11/12 mx-auto max-w-maxContent flex-col items-center justify-between gap-8 bg-richblack-900 text-white'>
+          <motion.div
+            variants={fadeIn('up', 0.2)}
+            initial='hidden'
+            whileInView={'show'}
+            viewport={{ once: false, amount: 0.2 }}
+          >
+            <InstructorSection />
+          </motion.div>
+
+          <motion.h1
+            variants={fadeIn('up', 0.2)}
+            initial='hidden'
+            whileInView={'show'}
+            viewport={{ once: false, amount: 0.2 }}
+            className="text-center text-3xl lg:text-4xl font-semibold mt-8 flex justify-center items-center gap-x-3"
+          >
+            Reviews from other learners
+            <motion.span
+              variants={bounce}
+              initial='hidden'
+              whileInView={'show'}
+              viewport={{ once: false, amount: 0.2 }}
+            >
+              <MdOutlineRateReview className='text-yellow-25' />
+            </motion.span>
+          </motion.h1>
+
+          <motion.div
+            variants={fadeIn('up', 0.3)}
+            initial='hidden'
+            whileInView={'show'}
+            viewport={{ once: false, amount: 0.2 }}
+          >
+            <ReviewSlider />
+          </motion.div>
+        </div>
+
+        {/* Footer */}
+        <ImprovedFooter />
+      </div>
+    </React.Fragment>
+  );
+};
+
+export default Home;

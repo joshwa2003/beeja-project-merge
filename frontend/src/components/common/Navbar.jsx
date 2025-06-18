@@ -77,7 +77,7 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`z-[10] flex h-14 w-full items-center justify-center border-b-[1px] border-b-richblack-700 bg-richblack-900 text-white translate-y-0 transition-all ${showNavbar}`}
+      className={`fixed top-0 z-[1000] flex h-14 w-full items-center justify-center border-b-[1px] border-b-richblack-700 bg-richblack-900/50 backdrop-blur-md text-white translate-y-0 transition-all ${showNavbar}`}
     >
       <div className="flex w-11/12 max-w-maxContent items-center justify-between">
         <Link to="/" aria-label="Home">
@@ -129,7 +129,7 @@ const Navbar = () => {
                   <p>{link.title}</p>
                   <MdKeyboardArrowDown />
                   <div
-                    className="invisible absolute left-[50%] top-[50%] z-[1000] flex w-[200px] translate-x-[-50%] translate-y-[3em] 
+                    className="invisible absolute left-[50%] top-[50%] z-[1001] flex w-[200px] translate-x-[-50%] translate-y-[3em] 
                     flex-col rounded-lg bg-richblack-5 p-4 text-richblack-900 opacity-0 transition-all duration-150 group-hover:visible 
                     group-hover:translate-y-[1.65em] group-hover:opacity-100 lg:w-[300px]"
                   >

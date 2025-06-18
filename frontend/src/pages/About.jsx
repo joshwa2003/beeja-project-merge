@@ -5,21 +5,20 @@ import BannerImage1 from "../assets/Images/aboutus1.webp"
 import BannerImage2 from "../assets/Images/aboutus2.webp"
 import BannerImage3 from "../assets/Images/aboutus3.webp"
 
-import Footer from "../components/common/Footer"
-import ContactFormSection from "../components/core/AboutPage/ContactFormSection"
+import ImprovedFooter from "../components/common/ImprovedFooter"
+// import ContactFormSection from "../components/core/AboutPage/ContactFormSection"
 import LearningGrid from "../components/core/AboutPage/LearningGrid"
 import Quote from "../components/core/AboutPage/Quote"
-import StatsComponenet from "../components/core/AboutPage/Stats"
+
 import HighlightText from "../components/core/HomePage/HighlightText"
 import Img from "../components/common/Img"
 import ReviewSlider from './../components/common/ReviewSlider';
 
 import { motion } from 'framer-motion';
 import { fadeIn } from "../components/common/motionFrameVarients"
-
-
-
-
+import TeamCard from "./Card/components/TeamCard"
+import FAQSection from "../components/core/AboutPage/FAQSection"
+// import BenefitsForEmployers from "../components/core/AboutPage/BenefitsForEmployers"
 
 const About = () => {
   return (
@@ -34,8 +33,8 @@ const About = () => {
               initial='hidden'
               whileInView={'show'}
               viewport={{ once: false, amount: 0.1 }}
-            > Driving Innovation in Online Education for a
-              <HighlightText text={"Brighter Future"} />
+            > Empowering Minds Through <br />
+              <HighlightText text={"Technology and Community"} />
             </motion.p>
 
             <motion.p
@@ -78,31 +77,29 @@ const About = () => {
               viewport={{ once: false, amount: 0.1 }}
               className="my-24 flex lg:w-[50%] flex-col gap-10">
               <h1 className="bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#FCB045] bg-clip-text text-4xl font-semibold text-transparent lg:w-[70%] ">
-                Our Founding Story
+                Smart Learning. Bright Earning. Your Future, Online
               </h1>
               <p className="text-base font-medium text-richblack-300 lg:w-[95%]">
-                Our e-learning platform was born out of a shared vision and
-                passion for transforming education. It all began with a group of
-                educators, technologists, and lifelong learners who recognized
-                the need for accessible, flexible, and high-quality learning
-                opportunities in a rapidly evolving digital world.
+                1. Smart Learning: Embrace online education for personalized, accessible, and interactive
+                learning experiences. Unlock knowledge from anywhere, anytime.
               </p>
               <p className="text-base font-medium text-richblack-300 lg:w-[95%]">
-                As experienced educators ourselves, we witnessed firsthand the
-                limitations and challenges of traditional education systems. We
-                believed that education should not be confined to the walls of a
-                classroom or restricted by geographical boundaries. We
-                envisioned a platform that could bridge these gaps and empower
-                individuals from all walks of life to unlock their full
-                potential.
+                2. Bright Earning: Seize online opportunities for career growth and financial success. Acquire
+                skills, build expertise, and open doors to a prosperous future with flexible, online learning
+                pathways.
+              </p>
+              <p className="text-base font-medium text-richblack-300 lg:w-[95%]">
+                Embrace Smart Learning, Bright Earning: Go Online! Elevate your skills with flexible, accessible
+                courses. Unleash your potential, shape a brighter future, and open doors to rewarding
+                opportunities in the digital era.
               </p>
             </motion.div>
 
             <motion.div
-             variants={fadeIn('left', 0.1)}
-             initial='hidden'
-             whileInView={'show'}
-             viewport={{ once: false, amount: 0.1 }}
+              variants={fadeIn('left', 0.1)}
+              initial='hidden'
+              whileInView={'show'}
+              viewport={{ once: false, amount: 0.1 }}
             >
               <Img
                 src={FoundingStory}
@@ -112,18 +109,48 @@ const About = () => {
             </motion.div>
           </div>
 
+          <div>
+            <motion.div
+              variants={fadeIn('right', 0.1)}
+              initial='hidden'
+              whileInView={'show'}
+              viewport={{ once: false, amount: 0.1 }}
+              className='text-center text-3xl lg:text-4xl font-semibold mt-7'
+              style={{color:'white'}}
+            >
+              What Our Says
+              <HighlightText text={"Students "} />
+              Says
+            </motion.div>
+            <motion.div
+              variants={fadeIn('left', 0.1)}
+              initial='hidden'
+              whileInView={'show'}
+              viewport={{ once: false, amount: 0.1 }}
+            >
+              <TeamCard />
+
+            </motion.div>
+            <div style={{ height: '.5px', backgroundColor: 'gray', width: '100%' }} />
+          </div>
+
+          {/* Benefits for Employers Section */}
+          {/* <motion.div
+            variants={fadeIn('up', 0.1)}
+            initial='hidden'
+            whileInView={'show'}
+            viewport={{ once: false, amount: 0.1 }}
+          >
+            <BenefitsForEmployers />
+          </motion.div> */}
+
           <div className="flex flex-col items-center lg:gap-10 lg:flex-row justify-between">
             <div className="my-24 flex lg:w-[40%] flex-col gap-10">
               <h1 className="bg-gradient-to-b from-[#FF512F] to-[#F09819] bg-clip-text text-4xl font-semibold text-transparent lg:w-[70%] ">
                 Our Vision
               </h1>
               <p className="text-base font-medium text-richblack-300 lg:w-[95%]">
-                With this vision in mind, we set out on a journey to create an
-                e-learning platform that would revolutionize the way people
-                learn. Our team of dedicated experts worked tirelessly to
-                develop a robust and intuitive platform that combines
-                cutting-edge technology with engaging content, fostering a
-                dynamic and interactive learning experience.
+                At Beeja, we aspire to ignite a lifelong passion for learning by providing transformative, accessible, and personalized educational experiences. Through our innovative platform, we empower learners to unlock their potential, adapt to the evolving digital landscape, and shape a brighter future. We cultivate a community that values curiosity, growth, and continuous improvement. We aim to make meaningful learning a part of everyday life
               </p>
             </div>
 
@@ -132,18 +159,26 @@ const About = () => {
                 Our Mission
               </h1>
               <p className="text-base font-medium text-richblack-300 lg:w-[95%]">
-                Our mission goes beyond just delivering courses online. We wanted to create a vibrant community of learners, where individuals can connect, collaborate, and learn from one another. We believe that knowledge thrives in an environment of sharing and dialogue, and we foster this spirit of collaboration through forums, live sessions, and networking opportunities.
+                At Beeja Academy, we are dedicated to fostering a culture of continuous learning.
+                Our mission is to empower individuals by providing accessible,
+                high-quality education that evolves with the ever-changing demands of the industry.
+                Through innovative teaching methods, real-world projects, and a supportive community,
+                we aim to transform learners into industry-ready professionals equipped with the skills and
+                confidence to excel in their careers.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      <StatsComponenet />
+
+
+      {/* FAQ Section */}
+      <FAQSection />
 
       <section className="mx-auto mt-20 flex w-11/12 max-w-maxContent flex-col justify-between gap-10 text-white">
         <LearningGrid />
-        <ContactFormSection />
+
       </section>
 
       {/* Reviws from Other Learner */}
@@ -155,7 +190,7 @@ const About = () => {
       </div>
 
       {/* footer */}
-      <Footer />
+      <ImprovedFooter />
     </div>
   )
 }
