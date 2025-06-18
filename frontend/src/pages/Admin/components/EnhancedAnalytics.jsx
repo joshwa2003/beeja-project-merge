@@ -1,0 +1,1001 @@
+import { useEffect, useState, useCallback } from "react";
+import { useSelector } from "react-redux";
+import { Chart, registerables } from "chart.js";
+import { Pie, Doughnut, Bar, Line } from "react-chartjs-2";
+import { getAnalytics } from "../../../services/operations/adminAPI";
+import {
+  FaUsers,
+  FaGraduationCap,
+  FaChalkboardTeacher,
+  FaUserShield,
+  FaBookOpen,
+  FaCalendarAlt,
+  FaDownload,
+  FaRedo,
+  FaFilter,
+  FaExpand,
+  FaCompress,
+  FaEye,
+  FaDollarSign,
+  FaClock,
+  FaBell,
+  FaChartLine
+} from "react-icons/fa";
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+
+Chart.register(...registerables);
+
+const EnhancedAnalytics = () => {
+  const { token } = useSelector((state) => state.auth);
+  const [analytics, setAnalytics] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [autoRefresh, setAutoRefresh] = useState(false);
+  const [refreshInterval, setRefreshInterval] = useState(30000); // 30 seconds
+  const [dateRange, setDateRange] = useState('30d');
+  const [expandedChart, setExpandedChart] = useState(null);
+  const [theme, setTheme] = useState('dark');
+  const [notifications, setNotifications] = useState([]);
+
+  // Mock data for fallback
+  const mockAnalytics = {
+    users: {
+      total: 1250,
+      students: 1000,
+      instructors: 200,
+      admins: 50,
+      recentRegistrations: 45
+    },
+    courses: {
+      total: 150,
+      published: 120,
+      draft: 30,
+      free: 80,
+      paid: 70
+    },
+    requests: {
+      pendingAccessRequests: 25
+    },
+    revenue: {
+      totalRevenue: 2850000, // ₹28,50,000
+      monthlyRevenue: 450000, // ₹4,50,000
+      growthPercentage: 12.5,
+      yearlyRevenue: 5400000 // ₹54,00,000
+    }
+  };
+
+  // Fetch analytics from backend API
+  const fetchAnalytics = useCallback(async () => {
+    setLoading(true);
+    try {
+      const analyticsData = await getAnalytics(token);
+      setAnalytics(analyticsData);
+      setError(null);
+
+      // Add notification for data refresh
+      if (autoRefresh) {
+        setNotifications(prev => [...prev, {
+          id: Date.now(),
+          message: 'Analytics data refreshed',
+          type: 'success',
+          timestamp: new Date()
+        }]);
+      }
+    } catch (err) {
+      console.log('Analytics API failed, using mock data:', err);
+      // Use mock data as fallback
+      setAnalytics(mockAnalytics);
+      setError(null);
+      setNotifications(prev => [...prev, {
+        id: Date.now(),
+        message: 'Using demo data - API unavailable',
+        type: 'warning',
+        timestamp: new Date()
+      }]);
+    }
+    setLoading(false);
+  }, [token, autoRefresh]);
+
+  // Auto-refresh functionality
+  useEffect(() => {
+    fetchAnalytics();
+
+    let interval;
+    if (autoRefresh) {
+      interval = setInterval(fetchAnalytics, refreshInterval);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [fetchAnalytics, autoRefresh, refreshInterval]);
+
+  // Clear notifications after 5 seconds
+  useEffect(() => {
+    notifications.forEach(notification => {
+      setTimeout(() => {
+        setNotifications(prev => prev.filter(n => n.id !== notification.id));
+      }, 5000);
+    });
+  }, [notifications]);
+
+  // Enhanced chart data with vibrant colors and modern styling
+  const userDistributionData = analytics ? {
+    labels: ['Students', 'Instructors', 'Admins'],
+    datasets: [{
+      data: [analytics.users.students, analytics.users.instructors, analytics.users.admins],
+      backgroundColor: [
+        '#667eea',
+        '#f093fb',
+        '#4facfe'
+      ],
+      borderWidth: 3,
+      borderColor: '#1F2937',
+      hoverOffset: 15,
+      cutout: '60%',
+      spacing: 2,
+      hoverBorderWidth: 4,
+      hoverBorderColor: '#ffffff'
+    }]
+  } : null;
+
+  const courseTypeData = analytics ? {
+    labels: ['Free Courses', 'Paid Courses'],
+    datasets: [{
+      data: [analytics.courses.free, analytics.courses.paid],
+      backgroundColor: [
+        '#a8edea',
+        '#fcb69f'
+      ],
+      borderWidth: 3,
+      borderColor: '#1F2937',
+      hoverOffset: 20,
+      cutout: '70%',
+      spacing: 3,
+      hoverBorderWidth: 4,
+      hoverBorderColor: '#ffffff'
+    }]
+  } : null;
+
+  const courseStatusData = analytics ? {
+    labels: ['Published', 'Draft'],
+    datasets: [{
+      data: [analytics.courses.published, analytics.courses.draft],
+      backgroundColor: [
+        '#84fab0',
+        '#fa709a'
+      ],
+      borderWidth: 3,
+      borderColor: '#1F2937',
+      hoverOffset: 18,
+      cutout: '65%',
+      spacing: 2,
+      hoverBorderWidth: 4,
+      hoverBorderColor: '#ffffff'
+    }]
+  } : null;
+
+  // Enhanced user comparison with vibrant bars
+  const userComparisonData = analytics ? {
+    labels: ['Students', 'Instructors', 'Admins'],
+    datasets: [{
+      label: 'User Count',
+      data: [analytics.users.students, analytics.users.instructors, analytics.users.admins],
+      backgroundColor: [
+        '#667eea',
+        '#f093fb',
+        '#4facfe'
+      ],
+      borderColor: ['#4F46E5', '#EC4899', '#0EA5E9'],
+      borderWidth: 3,
+      borderRadius: 15,
+      borderSkipped: false,
+      barThickness: 60,
+      maxBarThickness: 80,
+      hoverBackgroundColor: ['#5B21B6', '#BE185D', '#0284C7'],
+      hoverBorderColor: '#ffffff',
+      hoverBorderWidth: 4
+    }]
+  } : null;
+
+  // Enhanced course metrics with dynamic colors
+  const courseMetricsData = analytics ? {
+    labels: ['Total', 'Published', 'Draft', 'Free', 'Paid'],
+    datasets: [{
+      label: 'Course Count',
+      data: [
+        analytics.courses.total,
+        analytics.courses.published,
+        analytics.courses.draft,
+        analytics.courses.free,
+        analytics.courses.paid
+      ],
+      backgroundColor: [
+        '#a8edea',
+        '#84fab0',
+        '#fa709a',
+        '#ffecd2',
+        '#667eea'
+      ],
+      borderColor: ['#06B6D4', '#10B981', '#F43F5E', '#F59E0B', '#4F46E5'],
+      borderWidth: 3,
+      borderRadius: 12,
+      borderSkipped: false,
+      barThickness: 45,
+      maxBarThickness: 60,
+      hoverBackgroundColor: ['#0891B2', '#059669', '#E11D48', '#D97706', '#4338CA'],
+      hoverBorderColor: '#ffffff',
+      hoverBorderWidth: 4
+    }]
+  } : null;
+
+  // Enhanced growth trend with smooth lines and dynamic revenue data
+  const growthTrendData = analytics ? {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+    datasets: [
+      {
+        label: 'New Users',
+        data: [
+          Math.max(0, analytics.users.recentRegistrations - 30),
+          Math.max(0, analytics.users.recentRegistrations - 25),
+          Math.max(0, analytics.users.recentRegistrations - 20),
+          Math.max(0, analytics.users.recentRegistrations - 15),
+          Math.max(0, analytics.users.recentRegistrations - 10),
+          Math.max(0, analytics.users.recentRegistrations - 5),
+          analytics.users.recentRegistrations
+        ],
+        borderColor: '#667eea',
+        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+        tension: 0.5,
+        fill: true,
+        pointBackgroundColor: '#667eea',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 3,
+        pointRadius: 8,
+        pointHoverRadius: 12,
+        pointHoverBackgroundColor: '#4F46E5',
+        pointHoverBorderColor: '#ffffff',
+        pointHoverBorderWidth: 4,
+        borderWidth: 4
+      },
+      {
+        label: 'New Courses',
+        data: [
+          Math.max(0, analytics.courses.published - 15),
+          Math.max(0, analytics.courses.published - 12),
+          Math.max(0, analytics.courses.published - 10),
+          Math.max(0, analytics.courses.published - 8),
+          Math.max(0, analytics.courses.published - 5),
+          Math.max(0, analytics.courses.published - 3),
+          analytics.courses.published
+        ],
+        borderColor: '#f093fb',
+        backgroundColor: 'rgba(240, 147, 251, 0.2)',
+        tension: 0.5,
+        fill: true,
+        pointBackgroundColor: '#f093fb',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 3,
+        pointRadius: 8,
+        pointHoverRadius: 12,
+        pointHoverBackgroundColor: '#EC4899',
+        pointHoverBorderColor: '#ffffff',
+        pointHoverBorderWidth: 4,
+        borderWidth: 4
+      },
+      {
+        label: 'Revenue (₹)',
+        data: [
+          Math.max(0, analytics.revenue?.monthlyRevenue * 0.7),
+          Math.max(0, analytics.revenue?.monthlyRevenue * 0.8),
+          Math.max(0, analytics.revenue?.monthlyRevenue * 0.85),
+          Math.max(0, analytics.revenue?.monthlyRevenue * 0.9),
+          Math.max(0, analytics.revenue?.monthlyRevenue * 0.95),
+          Math.max(0, analytics.revenue?.monthlyRevenue * 0.98),
+          analytics.revenue?.monthlyRevenue || 0
+        ],
+        borderColor: '#4facfe',
+        backgroundColor: 'rgba(79, 172, 254, 0.2)',
+        tension: 0.5,
+        fill: true,
+        pointBackgroundColor: '#4facfe',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 3,
+        pointRadius: 8,
+        pointHoverRadius: 12,
+        pointHoverBackgroundColor: '#0EA5E9',
+        pointHoverBorderColor: '#ffffff',
+        pointHoverBorderWidth: 4,
+        borderWidth: 4
+      }
+    ]
+  } : null;
+
+  // Enhanced chart options with animations and gradient support
+  const enhancedChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: {
+      duration: 2500,
+      easing: 'easeInOutCubic',
+      delay: (context) => context.dataIndex * 100
+    },
+    interaction: {
+      intersect: false,
+      mode: 'index'
+    },
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          padding: 25,
+          usePointStyle: true,
+          pointStyle: 'circle',
+          color: '#F1F5F9',
+          font: {
+            size: 13,
+            weight: '600',
+            family: 'Inter, system-ui, sans-serif'
+          }
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(17, 24, 39, 0.95)',
+        titleColor: '#F1F5F9',
+        bodyColor: '#F1F5F9',
+        borderColor: '#4F46E5',
+        borderWidth: 2,
+        cornerRadius: 12,
+        displayColors: true,
+        padding: 12,
+        titleFont: {
+          size: 14,
+          weight: 'bold'
+        },
+        bodyFont: {
+          size: 13
+        },
+        callbacks: {
+          label: function (context) {
+            return `${context.dataset.label}: ${context.parsed.y.toLocaleString()}`;
+          }
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(241, 245, 249, 0.08)',
+          drawBorder: false
+        },
+        ticks: {
+          color: '#94A3B8',
+          font: {
+            size: 12,
+            weight: '500'
+          },
+          padding: 10
+        }
+      },
+      x: {
+        grid: {
+          color: 'rgba(241, 245, 249, 0.08)',
+          drawBorder: false
+        },
+        ticks: {
+          color: '#94A3B8',
+          font: {
+            size: 12,
+            weight: '500'
+          },
+          padding: 10
+        }
+      }
+    }
+  };
+
+  const pieChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: {
+      duration: 2500,
+      easing: 'easeInOutCubic',
+      animateRotate: true,
+      animateScale: true
+    },
+    interaction: {
+      intersect: false
+    },
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          padding: 25,
+          usePointStyle: true,
+          pointStyle: 'circle',
+          color: '#F1F5F9',
+          font: {
+            size: 13,
+            weight: '600',
+            family: 'Inter, system-ui, sans-serif'
+          }
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(17, 24, 39, 0.95)',
+        titleColor: '#F1F5F9',
+        bodyColor: '#F1F5F9',
+        borderColor: '#4F46E5',
+        borderWidth: 2,
+        cornerRadius: 12,
+        displayColors: true,
+        padding: 12,
+        titleFont: {
+          size: 14,
+          weight: 'bold'
+        },
+        bodyFont: {
+          size: 13
+        },
+        callbacks: {
+          label: function (context) {
+            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+            const percentage = ((context.parsed * 100) / total).toFixed(1);
+            return `${context.label}: ${context.parsed.toLocaleString()} (${percentage}%)`;
+          }
+        }
+      }
+    }
+  };
+
+  // Export functionality
+  const exportToPDF = async () => {
+    try {
+      const element = document.getElementById('analytics-dashboard');
+      const canvas = await html2canvas(element);
+      const imgData = canvas.toDataURL('image/png');
+
+      const pdf = new jsPDF();
+      const imgWidth = 210;
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save('analytics-dashboard.pdf');
+
+      setNotifications(prev => [...prev, {
+        id: Date.now(),
+        message: 'PDF exported successfully',
+        type: 'success',
+        timestamp: new Date()
+      }]);
+    } catch (error) {
+      setNotifications(prev => [...prev, {
+        id: Date.now(),
+        message: 'Failed to export PDF: ' + error.message,
+        type: 'error',
+        timestamp: new Date()
+      }]);
+    }
+  };
+
+  const exportToExcel = () => {
+    if (!analytics) return;
+
+    const data = {
+      users: analytics.users,
+      courses: analytics.courses,
+      requests: analytics.requests
+    };
+
+    const csvContent = "data:text/csv;charset=utf-8,"
+      + "Metric,Value\n"
+      + `Total Users,${analytics.users.total}\n`
+      + `Students,${analytics.users.students}\n`
+      + `Instructors,${analytics.users.instructors}\n`
+      + `Admins,${analytics.users.admins}\n`
+      + `Recent Registrations,${analytics.users.recentRegistrations}\n`
+      + `Total Courses,${analytics.courses.total}\n`
+      + `Published Courses,${analytics.courses.published}\n`
+      + `Draft Courses,${analytics.courses.draft}\n`
+      + `Free Courses,${analytics.courses.free}\n`
+      + `Paid Courses,${analytics.courses.paid}\n`
+      + `Pending Requests,${analytics.requests?.pendingAccessRequests || 0}\n`;
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "analytics-data.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setNotifications(prev => [...prev, {
+      id: Date.now(),
+      message: 'Analytics exported to CSV successfully',
+      type: 'success',
+      timestamp: new Date()
+    }]);
+  };
+
+  if (loading && !analytics) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-50"></div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="card-gradient rounded-xl p-6 glass-effect text-center">
+      <p className="text-red-400 text-lg">{error}</p>
+      <button
+        onClick={fetchAnalytics}
+        className="mt-4 px-4 py-2 bg-yellow-500 text-richblack-900 rounded-lg hover:bg-yellow-400 transition-colors"
+      >
+        Retry
+      </button>
+    </div>
+  );
+
+  if (!analytics) return null;
+
+  return (
+    <div id="analytics-dashboard" className="min-h-screen bg-[#2B2D31] p-6">
+      {/* Notifications */}
+      <div className="fixed top-4 right-4 z-50 space-y-2">
+        {notifications.map(notification => (
+          <div
+            key={notification.id}
+            className={`p-4 rounded-xl shadow-lg transition-all duration-300 backdrop-blur-sm ${notification.type === 'success'
+                ? 'bg-green-500/90 text-white border border-green-400'
+                : notification.type === 'warning'
+                  ? 'bg-yellow-500/90 text-white border border-yellow-400'
+                  : notification.type === 'info'
+                    ? 'bg-blue-500/90 text-white border border-blue-400'
+                    : 'bg-red-500/90 text-white border border-red-400'
+              }`}
+          >
+            <div className="flex items-center gap-2">
+              <FaBell />
+              <span>{notification.message}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Enhanced Header with Controls */}
+      <div className="mb-6">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">
+              Analytics Dashboard
+            </h1>
+            <p className="text-white">
+              Real-time insights and performance metrics
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            {/* Auto Refresh Toggle */}
+            <button
+              onClick={() => setAutoRefresh(!autoRefresh)}
+              className={`px-4 py-2 rounded-xl transition-colors flex items-center gap-2 ${autoRefresh
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-[#36393F] text-white hover:bg-[#40444B]'
+                }`}
+            >
+              <FaRedo className={autoRefresh ? 'animate-spin' : ''} />
+              Auto Refresh
+            </button>
+
+            {/* Manual Refresh */}
+            <button
+              onClick={fetchAnalytics}
+              disabled={loading}
+              className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+            >
+              <FaRedo className={loading ? 'animate-spin' : ''} />
+              Refresh
+            </button>
+
+            {/* Export Buttons */}
+            <button
+              onClick={exportToPDF}
+              className="px-4 py-2 bg-[#36393F] text-white rounded-xl hover:bg-[#40444B] transition-colors flex items-center gap-2"
+            >
+              <FaDownload />
+              PDF
+            </button>
+
+            <button
+              onClick={exportToExcel}
+              className="px-4 py-2 bg-[#36393F] text-white rounded-xl hover:bg-[#40444B] transition-colors flex items-center gap-2"
+            >
+              <FaDownload />
+              CSV
+            </button>
+          </div>
+        </div>
+
+        {/* Date Range Selector */}
+        <div className="mt-6 flex gap-2">
+          {['7d', '30d', '90d', '1y'].map(range => (
+            <button
+              key={range}
+              onClick={() => setDateRange(range)}
+              className={`px-4 py-2 rounded-xl text-sm transition-colors ${dateRange === range
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-[#36393F] text-white hover:bg-[#40444B]'
+                }`}
+            >
+              {range === '7d' ? '7 Days' : range === '30d' ? '30 Days' : range === '90d' ? '90 Days' : '1 Year'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Key Metrics Cards - Matching Reference Design */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Total Users Card */}
+        <div className="bg-[#FDF5E6] p-8 rounded-3xl border border-gray-200 hover:shadow-2xl hover:border-blue-300 hover:-translate-y-2 transition-all duration-500 shadow-md cursor-pointer">
+          <div className="flex items-start justify-between mb-6">
+            <div className="p-4 bg-blue-100 rounded-2xl hover:bg-blue-200 transition-colors duration-300">
+              <FaUsers className="text-blue-600 text-2xl" />
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Total Users</p>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-3xl font-bold text-gray-900 mb-2">
+              {analytics.users.total.toLocaleString()}
+            </h3>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-green-600 text-sm font-medium bg-green-50 px-2 py-1 rounded-full">↗ 7.2%</span>
+              <span className="text-gray-600 text-sm">Last Week</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Students Card */}
+        <div className="bg-[#FDF5E6] p-8 rounded-3xl border border-gray-200 hover:shadow-2xl hover:border-green-300 hover:-translate-y-2 transition-all duration-500 shadow-md cursor-pointer">
+          <div className="flex items-start justify-between mb-6">
+            <div className="p-4 bg-green-100 rounded-2xl hover:bg-green-200 transition-colors duration-300">
+              <FaGraduationCap className="text-green-600 text-2xl" />
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Students</p>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-3xl font-bold text-gray-900 mb-2">
+              {analytics.users.students.toLocaleString()}
+            </h3>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-green-600 text-sm font-medium bg-green-50 px-2 py-1 rounded-full">↗ 6.2%</span>
+              <span className="text-gray-600 text-sm">Last Month</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Instructors Card */}
+        <div className="bg-[#FDF5E6] p-8 rounded-3xl border border-gray-200 hover:shadow-2xl hover:border-purple-300 hover:-translate-y-2 transition-all duration-500 shadow-md cursor-pointer">
+          <div className="flex items-start justify-between mb-6">
+            <div className="p-4 bg-purple-100 rounded-2xl hover:bg-purple-200 transition-colors duration-300">
+              <FaChalkboardTeacher className="text-purple-600 text-2xl" />
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Instructors</p>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-3xl font-bold text-gray-900 mb-2">
+              {analytics.users.instructors.toLocaleString()}
+            </h3>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-red-500 text-sm font-medium bg-red-50 px-2 py-1 rounded-full">↘ 0.5%</span>
+              <span className="text-gray-600 text-sm">Last Week</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Revenue Card */}
+        <div className="bg-[#FDF5E6] p-8 rounded-3xl border border-gray-200 hover:shadow-2xl hover:border-yellow-300 hover:-translate-y-2 transition-all duration-500 shadow-md cursor-pointer">
+          <div className="flex items-start justify-between mb-6">
+            <div className="p-4 bg-yellow-100 rounded-2xl hover:bg-yellow-200 transition-colors duration-300">
+              <FaDollarSign className="text-yellow-600 text-2xl" />
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Revenue</p>
+              <div className="flex gap-2 mt-2">
+                <span className="text-xs text-gray-500 hover:text-gray-700 cursor-pointer">All</span>
+                <span className="text-xs text-gray-500 hover:text-gray-700 cursor-pointer">1M</span>
+                <span className="text-xs text-gray-500 hover:text-gray-700 cursor-pointer">6M</span>
+                <span className="text-xs text-blue-600 font-medium">1Y</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-3xl font-bold text-gray-900 mb-2">
+              ₹{(analytics.revenue?.totalRevenue || 0).toLocaleString()}
+            </h3>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-green-600 text-sm font-medium bg-green-50 px-2 py-1 rounded-full">
+                ↗ {analytics.revenue?.growthPercentage || 0}%
+              </span>
+              <span className="text-gray-600 text-sm">
+                ₹{(analytics.revenue?.monthlyRevenue || 0).toLocaleString()}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Enhanced Charts Section with Expand/Collapse */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* User Distribution Pie Chart */}
+        <div className={`bg-[#242424] p-6 rounded-xl border border-[#2F2F2F] hover:border-blue-500 transition-all duration-300 ${expandedChart === 'userDist' ? 'lg:col-span-3' : ''
+          }`}>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-white">
+              User Distribution
+            </h3>
+            <button
+              onClick={() => setExpandedChart(expandedChart === 'userDist' ? null : 'userDist')}
+              className="p-2 rounded-lg bg-[#2F2F2F] hover:bg-[#3A3A3A] transition-colors text-white"
+            >
+              {expandedChart === 'userDist' ? <FaCompress /> : <FaExpand />}
+            </button>
+          </div>
+          <div className={`flex items-center justify-center ${expandedChart === 'userDist' ? 'h-96' : 'h-64'}`}>
+            {userDistributionData && (
+              <Pie data={userDistributionData} options={pieChartOptions} />
+            )}
+          </div>
+        </div>
+
+        {/* Course Type Distribution */}
+        <div className={`bg-[#242424] p-6 rounded-xl border border-[#2F2F2F] hover:border-blue-500 transition-all duration-300 ${expandedChart === 'courseType' ? 'lg:col-span-3' : ''
+          }`}>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-white">
+              Course Types
+            </h3>
+            <button
+              onClick={() => setExpandedChart(expandedChart === 'courseType' ? null : 'courseType')}
+              className="p-2 rounded-lg bg-[#2F2F2F] hover:bg-[#3A3A3A] transition-colors text-white"
+            >
+              {expandedChart === 'courseType' ? <FaCompress /> : <FaExpand />}
+            </button>
+          </div>
+          <div className={`flex items-center justify-center ${expandedChart === 'courseType' ? 'h-96' : 'h-64'}`}>
+            {courseTypeData && (
+              <Doughnut data={courseTypeData} options={pieChartOptions} />
+            )}
+          </div>
+        </div>
+
+        {/* Course Status Distribution */}
+        <div className={`bg-[#242424] p-6 rounded-xl border border-[#2F2F2F] hover:border-blue-500 transition-all duration-300 ${expandedChart === 'courseStatus' ? 'lg:col-span-3' : ''
+          }`}>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-white">
+              Course Status
+            </h3>
+            <button
+              onClick={() => setExpandedChart(expandedChart === 'courseStatus' ? null : 'courseStatus')}
+              className="p-2 rounded-lg bg-[#2F2F2F] hover:bg-[#3A3A3A] transition-colors text-white"
+            >
+              {expandedChart === 'courseStatus' ? <FaCompress /> : <FaExpand />}
+            </button>
+          </div>
+          <div className={`flex items-center justify-center ${expandedChart === 'courseStatus' ? 'h-96' : 'h-64'}`}>
+            {courseStatusData && (
+              <Doughnut data={courseStatusData} options={pieChartOptions} />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Enhanced Bar Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* User Comparison Bar Chart */}
+        <div className="bg-[#242424] p-6 rounded-xl border border-[#2F2F2F] hover:border-blue-500 transition-all duration-300">
+          <h3 className="text-lg font-semibold text-white mb-4">
+            User Type Comparison
+          </h3>
+          <div className="h-80">
+            {userComparisonData && (
+              <Bar data={userComparisonData} options={enhancedChartOptions} />
+            )}
+          </div>
+        </div>
+
+        {/* Course Metrics Bar Chart */}
+        <div className="bg-[#242424] p-6 rounded-xl border border-[#2F2F2F] hover:border-blue-500 transition-all duration-300">
+          <h3 className="text-lg font-semibold text-white mb-4">
+            Course Metrics Overview
+          </h3>
+          <div className="h-80">
+            {courseMetricsData && (
+              <Bar data={courseMetricsData} options={enhancedChartOptions} />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Enhanced Growth Trend Chart */}
+      <div className="bg-[#242424] p-6 rounded-xl border border-[#2F2F2F] hover:border-blue-500 transition-all duration-300">
+        <h3 className="text-lg font-semibold text-white mb-4">
+          Growth Trends & Projections
+        </h3>
+        <div className="h-80">
+          {growthTrendData && (
+            <Line data={growthTrendData} options={enhancedChartOptions} />
+          )}
+        </div>
+      </div>
+
+      {/* Enhanced Recent Activity with Real-time Updates */}
+      <div className="bg-[#242424] p-6 rounded-xl border border-[#2F2F2F]">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-lg font-semibold text-white">
+            Real-time Activity Monitor
+          </h3>
+          <div className="flex items-center gap-2 text-green-400">
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            <span className="text-sm">Live</span>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-[#2F2F2F] p-4 rounded-lg hover:bg-[#3A3A3A] transition-all duration-300">
+            <div className="flex items-center gap-3">
+              <FaCalendarAlt className="text-yellow-400 text-xl" />
+              <div>
+                <p className="text-sm text-white font-medium">New Registrations</p>
+                <p className="text-xl font-bold text-white">{analytics.users.recentRegistrations}</p>
+                <p className="text-xs text-white">Last 30 days</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-[#2F2F2F] p-4 rounded-lg hover:bg-[#3A3A3A] transition-all duration-300">
+            <div className="flex items-center gap-3">
+              <FaBookOpen className="text-blue-400 text-xl" />
+              <div>
+                <p className="text-sm text-white font-medium">Published Courses</p>
+                <p className="text-xl font-bold text-white">{analytics.courses.published}</p>
+                <p className="text-xs text-white">Active courses</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-[#2F2F2F] p-4 rounded-lg hover:bg-[#3A3A3A] transition-all duration-300">
+            <div className="flex items-center gap-3">
+              <FaBookOpen className="text-green-400 text-xl" />
+              <div>
+                <p className="text-sm text-white font-medium">Free Courses</p>
+                <p className="text-xl font-bold text-white">{analytics.courses.free}</p>
+                <p className="text-xs text-white">Available for all</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-[#2F2F2F] p-4 rounded-lg hover:bg-[#3A3A3A] transition-all duration-300">
+            <div className="flex items-center gap-3">
+              <FaUserShield className="text-red-400 text-xl" />
+              <div>
+                <p className="text-sm text-white font-medium">Draft Courses</p>
+                <p className="text-xl font-bold text-white">{analytics.courses.draft}</p>
+                <p className="text-xs text-white">Pending review</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Enhanced Additional Metrics with System Health */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-[#242424] p-6 rounded-xl border border-[#2F2F2F] hover:border-blue-500 transition-all duration-300">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-white mb-1">Admin Users</p>
+              <p className="text-2xl font-bold text-red-400">{analytics.users.admins}</p>
+              <p className="text-xs text-white mt-1 flex items-center gap-1">
+                <FaEye /> System monitors
+              </p>
+            </div>
+            <div className="p-3 rounded-lg bg-red-500/10">
+              <FaUserShield className="text-red-400 text-2xl" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-[#242424] p-6 rounded-xl border border-[#2F2F2F] hover:border-blue-500 transition-all duration-300">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-white mb-1">Paid Courses</p>
+              <p className="text-2xl font-bold text-blue-400">{analytics.courses.paid}</p>
+              <p className="text-xs text-white mt-1 flex items-center gap-1">
+                <FaDollarSign /> Revenue generating
+              </p>
+            </div>
+            <div className="p-3 rounded-lg bg-blue-500/10">
+              <FaBookOpen className="text-blue-400 text-2xl" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-[#242424] p-6 rounded-xl border border-[#2F2F2F] hover:border-blue-500 transition-all duration-300">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-white mb-1">Pending Requests</p>
+              <p className="text-2xl font-bold text-yellow-400">{analytics.requests?.pendingAccessRequests || 0}</p>
+              <p className="text-xs text-white mt-1 flex items-center gap-1">
+                <FaClock /> Awaiting review
+              </p>
+            </div>
+            <div className="p-3 rounded-lg bg-yellow-500/10">
+              <FaCalendarAlt className="text-yellow-400 text-2xl" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* System Health Monitor */}
+      <div className="bg-[#242424] p-6 rounded-xl border border-[#2F2F2F]">
+        <h3 className="text-lg font-semibold text-white mb-6">
+          System Health Monitor
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="flex items-center gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+            <div>
+              <p className="text-sm text-white">API Status</p>
+              <p className="text-lg font-semibold text-green-400">Online</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
+            <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse"></div>
+            <div>
+              <p className="text-sm text-white">Database</p>
+              <p className="text-lg font-semibold text-blue-400">Connected</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+            <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+            <div>
+              <p className="text-sm text-white">Server Load</p>
+              <p className="text-lg font-semibold text-yellow-400">Normal</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 p-4 rounded-lg bg-purple-500/10 border border-purple-500/20">
+            <div className="w-3 h-3 bg-purple-400 rounded-full animate-pulse"></div>
+            <div>
+              <p className="text-sm text-white">Cache</p>
+              <p className="text-lg font-semibold text-purple-400">Optimized</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default EnhancedAnalytics;

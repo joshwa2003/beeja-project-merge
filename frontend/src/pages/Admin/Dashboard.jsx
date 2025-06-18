@@ -7,7 +7,7 @@ import { MdSettings } from 'react-icons/md';
 import UserManagement from './components/UserManagement';
 import CourseManagement from './components/CourseManagement';
 import CreateCourse from './components/CreateCourse/CreateCourse';
-import Analytics from './components/Analytics';
+import EnhancedAnalytics from './components/EnhancedAnalytics';
 import Settings from './components/Settings';
 import CourseTypeManager from '../../components/core/Dashboard/Admin/CourseTypeManager';
 import CourseAccessRequests from '../../components/core/Dashboard/Admin/CourseAccessRequests';
@@ -16,7 +16,7 @@ import QuizManagement from './components/QuizManagement';
 const AdminDashboard = () => {
   const { user } = useSelector((state) => state.profile);
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('users');
+  const [activeTab, setActiveTab] = useState('analytics');
   const [showCreateCourse, setShowCreateCourse] = useState(false);
 
   // Sidebar navigation items
@@ -87,7 +87,7 @@ const AdminDashboard = () => {
                 {activeTab === 'courses' && <CourseManagement onCreateCourse={handleCreateCourse} />}
                 {activeTab === 'courseTypes' && <CourseTypeManager />}
                 {activeTab === 'accessRequests' && <CourseAccessRequests />}
-                {activeTab === 'analytics' && <Analytics />}
+                {activeTab === 'analytics' && <EnhancedAnalytics />}
                 {activeTab === 'settings' && <Settings />}
                 {activeTab === 'quizzes' && <QuizManagement />}
               </>

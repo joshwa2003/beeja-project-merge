@@ -11,9 +11,11 @@ import VerifyEmail from "./pages/VerifyEmail";
 
 import AdminRoutes from "./routes/AdminRoutes";
 import AdminDashboard from "./pages/Admin/Dashboard";
+import EnhancedAnalytics from "./pages/Admin/components/EnhancedAnalytics";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import PageNotFound from "./pages/PageNotFound";
+import TestAnalytics from "./pages/TestAnalytics";
 import CourseDetails from './pages/CourseDetails';
 import Catalog from './pages/Catalog';
 import InstituteService from "./pages/InstituteService";
@@ -180,6 +182,13 @@ function App() {
               <Route path="dashboard/edit-course/:courseId" element={<EditCourse />} />
             </>
           )}
+
+          {/* Route only for Admin */}
+          {user?.accountType === ACCOUNT_TYPE.ADMIN && (
+            <>
+              <Route path="dashboard/admin/analytics" element={<EnhancedAnalytics />} />
+            </>
+          )}
         </Route>
 
         {/* Admin routes protected */}
@@ -205,6 +214,9 @@ function App() {
 
 
 
+
+        {/* Test Route for Analytics */}
+        <Route path="/test-analytics" element={<TestAnalytics />} />
 
         {/* Page Not Found (404 Page ) */}
         <Route path="*" element={<PageNotFound />} />

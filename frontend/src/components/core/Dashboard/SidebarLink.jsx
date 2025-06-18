@@ -1,17 +1,13 @@
 import * as Icons from "react-icons/vsc"
 import { useDispatch, useSelector } from "react-redux"
 import { NavLink, matchPath, useLocation } from "react-router-dom"
-
 import { resetCourseState } from "../../../slices/courseSlice"
 import { setOpenSideMenu } from "../../../slices/sidebarSlice"
-
-
 
 export default function SidebarLink({ link, iconName }) {
   const Icon = Icons[iconName]
   const location = useLocation()
   const dispatch = useDispatch()
-
   const { openSideMenu, screenSize } = useSelector(state => state.sidebar)
 
   const matchRoute = (route) => {
@@ -27,22 +23,36 @@ export default function SidebarLink({ link, iconName }) {
     <NavLink
       to={link.path}
       onClick={handleClick}
-      className={`sidebar-item relative px-8 py-3 text-sm font-medium rounded-lg mx-2 my-1 ${matchRoute(link.path)
-        ? "bg-gradient-to-r from-yellow-400 to-yellow-600 text-richblack-900 shadow-lg"
-        : "text-richblack-300"
-        } transition-all duration-300`}
+      className={({ isActive }) => `
+        group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
+        ${isActive 
+          ? 'bg-purple-500/10 text-purple-400' 
+          : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
+        }
+      `}
     >
-      <span
-        className={`absolute left-0 top-0 h-full w-[0.25rem] bg-gradient-to-b from-yellow-400 to-yellow-600 rounded-r-full ${matchRoute(link.path) ? "opacity-100" : "opacity-0"
-          } transition-opacity duration-300`}
-      >
-      </span>
-
-      <div className="flex items-center gap-x-3 relative z-10">
-        <Icon className={`text-lg ${matchRoute(link.path) ? "text-richblack-900" : "text-richblack-300"} transition-colors duration-300`} />
-        <span className="font-medium">{link.name}</span>
+      {/* Icon with glow effect */}
+      <div className={`
+        relative flex items-center justify-center w-8 h-8 rounded-lg
+        ${matchRoute(link.path)
+          ? 'bg-purple-500/10 text-purple-400'
+          : 'text-slate-400 group-hover:text-white'
+        }
+        transition-all duration-300
+      `}>
+        <Icon className="text-lg" />
+        {matchRoute(link.path) && (
+          <div className="absolute inset-0 rounded-lg bg-purple-500/20 animate-pulse" />
+        )}
       </div>
 
+      {/* Link Text */}
+      <span className="font-medium text-sm">{link.name}</span>
+
+      {/* Active Indicator */}
+      {matchRoute(link.path) && (
+        <div className="absolute left-0 w-1 h-8 bg-gradient-to-b from-purple-400 to-blue-500 rounded-r-full" />
+      )}
     </NavLink>
   )
 }

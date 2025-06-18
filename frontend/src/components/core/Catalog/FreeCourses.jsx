@@ -69,10 +69,10 @@ export default function FreeCourses() {
   }
 
   return (
-    <div className="mx-auto w-11/12 max-w-maxContent py-12">
-      <div className="section_heading">
-        <h1 className="text-4xl font-semibold text-richblack-5">Free Courses</h1>
-        <p className="mt-3 text-xl text-richblack-200">
+    <div className="mx-auto w-11/12 max-w-maxContent py-8 sm:py-12">
+      <div className="section_heading px-4 sm:px-0">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-richblack-5">Free Courses</h1>
+        <p className="mt-2 sm:mt-3 text-base sm:text-lg lg:text-xl text-richblack-200">
           Explore our collection of free courses. Request access to start learning!
         </p>
       </div>
@@ -82,55 +82,57 @@ export default function FreeCourses() {
           <div className="spinner"></div>
         </div>
       ) : freeCourses.length === 0 ? (
-        <p className="flex h-[calc(100vh-20rem)] items-center justify-center text-richblack-5">
+        <p className="flex h-[calc(100vh-20rem)] items-center justify-center text-richblack-5 text-center px-4">
           No free courses available at the moment
         </p>
       ) : (
         <>
-          <div className="my-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="my-6 sm:my-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 px-4 sm:px-0">
             {freeCourses.map((course) => {
               const requestStatus = getRequestStatus(course._id)
               const enrolled = isEnrolled(course._id)
               
               return (
-                <div key={course._id} className="relative">
-                  <CourseCard course={course} Height="h-[250px]" />
+                <div key={course._id} className="relative bg-richblack-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+                  <CourseCard course={course} Height="h-[200px] sm:h-[220px] lg:h-[250px]" />
                   
                   {/* Access Status Overlay */}
-                  <div className="mt-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="rounded-full bg-caribbeangreen-200 px-3 py-1 text-xs font-medium text-richblack-900">
-                        FREE
-                      </span>
-                      {course.originalPrice && (
-                        <span className="text-sm text-richblack-300 line-through">
-                          ₹{course.originalPrice}
+                  <div className="p-4 border-t border-richblack-700">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="rounded-full bg-caribbeangreen-200 px-2 py-1 text-xs font-medium text-richblack-900">
+                          FREE
                         </span>
+                        {course.originalPrice && (
+                          <span className="text-sm text-richblack-300 line-through">
+                            ₹{course.originalPrice}
+                          </span>
+                        )}
+                      </div>
+                      
+                      {enrolled ? (
+                        <span className="rounded-full bg-blue-200 px-3 py-1 text-xs font-medium text-richblack-900">
+                          Enrolled
+                        </span>
+                      ) : requestStatus ? (
+                        <span className={`rounded-full px-3 py-1 text-xs font-medium ${
+                          requestStatus === 'Pending' 
+                            ? 'bg-yellow-200 text-richblack-900'
+                            : requestStatus === 'Approved'
+                            ? 'bg-caribbeangreen-200 text-richblack-900'
+                            : 'bg-pink-200 text-richblack-900'
+                        }`}>
+                          {requestStatus}
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleRequestAccess(course._id, course.courseName)}
+                          className="rounded-md bg-yellow-50 px-3 py-1.5 text-xs font-medium text-richblack-900 hover:bg-yellow-100 transition-colors"
+                        >
+                          Request Access
+                        </button>
                       )}
                     </div>
-                    
-                    {enrolled ? (
-                      <span className="rounded-full bg-blue-200 px-3 py-1 text-xs font-medium text-richblack-900">
-                        Enrolled
-                      </span>
-                    ) : requestStatus ? (
-                      <span className={`rounded-full px-3 py-1 text-xs font-medium ${
-                        requestStatus === 'Pending' 
-                          ? 'bg-yellow-200 text-richblack-900'
-                          : requestStatus === 'Approved'
-                          ? 'bg-caribbeangreen-200 text-richblack-900'
-                          : 'bg-pink-200 text-richblack-900'
-                      }`}>
-                        {requestStatus}
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => handleRequestAccess(course._id, course.courseName)}
-                        className="rounded-md bg-yellow-50 px-4 py-2 text-sm font-medium text-richblack-900 hover:bg-yellow-100 transition-colors"
-                      >
-                        Request Access
-                      </button>
-                    )}
                   </div>
                 </div>
               )
@@ -139,21 +141,21 @@ export default function FreeCourses() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="mt-8 flex items-center justify-center gap-x-4">
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4 px-4 sm:px-0">
               <button
                 onClick={() => setCurrentPage(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="rounded-md bg-richblack-700 px-4 py-2 text-richblack-50 disabled:opacity-50"
+                className="rounded-md bg-richblack-700 px-3 py-1.5 sm:px-4 sm:py-2 text-sm text-richblack-50 disabled:opacity-50 hover:bg-richblack-600 transition-colors"
               >
                 Previous
               </button>
-              <span className="text-richblack-50">
+              <span className="text-sm sm:text-base text-richblack-50">
                 Page {currentPage} of {totalPages}
               </span>
               <button
                 onClick={() => setCurrentPage(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="rounded-md bg-richblack-700 px-4 py-2 text-richblack-50 disabled:opacity-50"
+                className="rounded-md bg-richblack-700 px-3 py-1.5 sm:px-4 sm:py-2 text-sm text-richblack-50 disabled:opacity-50 hover:bg-richblack-600 transition-colors"
               >
                 Next
               </button>

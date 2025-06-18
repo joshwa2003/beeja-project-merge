@@ -1,114 +1,127 @@
 import { useEffect } from "react"
 import { useSelector } from "react-redux"
-import { formatDate } from "../../../utils/dateFormatter"
+import { formatDate, formatDateShort } from "../../../utils/dateFormatter"
 import Img from './../../common/Img';
 
 export default function MyProfile() {
   const { user } = useSelector((state) => state.profile)
 
-  // Scroll to the top of the page when the component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [])
 
   return (
-    <div className="fade-in-up">
-      <div className="glass-effect p-6 rounded-xl mb-6">
-        <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-50 to-yellow-200 text-center sm:text-left">
+    <div className="animate-fade-in-up space-y-6">
+      {/* Header Section */}
+      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-6 border border-slate-700/50">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
           My Profile
         </h1>
-        <p className="text-richblack-200 mt-2 opacity-75">
+        <p className="text-slate-400 mt-2">
           Manage your personal information
         </p>
       </div>
 
-      <div className="card-gradient rounded-xl p-6 glass-effect mb-8">
-        <div className="flex flex-col sm:flex-row items-center gap-6">
+      {/* Profile Card */}
+      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-8 border border-slate-700/50">
+        <div className="flex flex-col sm:flex-row items-center gap-8">
           <div className="relative group">
-            <Img
-              src={user?.image}
-              alt={`profile-${user?.firstName}`}
-              className="w-24 h-24 rounded-xl object-cover transition-transform duration-300 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-yellow-600/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl blur opacity-30 group-hover:opacity-70 transition duration-1000"></div>
+            <div className="relative">
+              <Img
+                src={user?.image}
+                alt={`profile-${user?.firstName}`}
+                className="w-28 h-28 rounded-2xl object-cover ring-2 ring-purple-500/20"
+              />
+            </div>
           </div>
-          <div className="text-center sm:text-left">
-            <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-50 to-yellow-200 capitalize">
+          <div className="text-center sm:text-left flex-1">
+            <h2 className="text-2xl font-bold text-white capitalize">
               {user?.firstName + " " + user?.lastName}
             </h2>
-            <p className="text-richblack-300 mt-2">{user?.email}</p>
+            <p className="text-slate-400 mt-2">{user?.email}</p>
           </div>
         </div>
       </div>
 
-      <div className="card-gradient rounded-xl p-6 glass-effect mb-8">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-yellow-50 to-yellow-200">
-            About
-          </h3>
+      {/* About Section */}
+      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-8 border border-slate-700/50">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="h-8 w-1 bg-gradient-to-b from-purple-500 to-blue-500 rounded-full"></div>
+          <h3 className="text-xl font-semibold text-white">About</h3>
         </div>
-        <p className={`${user?.additionalDetails?.about ? "text-richblack-5" : "text-richblack-400"} text-sm leading-relaxed`}>
+        <p className={`${user?.additionalDetails?.about ? "text-slate-300" : "text-slate-500"} text-sm leading-relaxed`}>
           {user?.additionalDetails?.about ?? "Write Something About Yourself"}
         </p>
       </div>
 
-      <div className="card-gradient rounded-xl p-6 glass-effect">
-        <div className="flex items-center justify-between mb-8">
-          <h3 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-yellow-50 to-yellow-200">
-            Personal Details
-          </h3>
+      {/* Personal Details */}
+      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-8 border border-slate-700/50">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="h-8 w-1 bg-gradient-to-b from-purple-500 to-blue-500 rounded-full"></div>
+          <h3 className="text-xl font-semibold text-white">Personal Details</h3>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Left Column */}
           <div className="space-y-6">
-            <div className="metric-card p-4 rounded-lg">
-              <p className="text-sm text-richblack-300 mb-1">First Name</p>
-              <p className="text-base font-semibold text-richblack-5 capitalize">
-                {user?.firstName}
-              </p>
-            </div>
-            <div className="metric-card p-4 rounded-lg">
-              <p className="text-sm text-richblack-300 mb-1">Account Type</p>
-              <p className="text-base font-semibold text-richblack-5 capitalize">
-                {user?.accountType}
-              </p>
-            </div>
-            <div className="metric-card p-4 rounded-lg">
-              <p className="text-sm text-richblack-300 mb-1">Email</p>
-              <p className="text-base font-semibold text-richblack-5">
-                {user?.email}
-              </p>
-            </div>
-            <div className="metric-card p-4 rounded-lg">
-              <p className="text-sm text-richblack-300 mb-1">Gender</p>
-              <p className="text-base font-semibold text-richblack-5">
-                {user?.additionalDetails?.gender ?? "Add Gender"}
-              </p>
-            </div>
+            <DetailCard 
+              label="First Name"
+              value={user?.firstName}
+              icon="👤"
+            />
+            <DetailCard 
+              label="Account Type"
+              value={user?.accountType}
+              icon="🎓"
+            />
+            <DetailCard 
+              label="Email"
+              value={user?.email}
+              icon="📧"
+            />
+            <DetailCard 
+              label="Gender"
+              value={user?.additionalDetails?.gender ?? "Add Gender"}
+              icon="⚥"
+            />
           </div>
 
+          {/* Right Column */}
           <div className="space-y-6">
-            <div className="metric-card p-4 rounded-lg">
-              <p className="text-sm text-richblack-300 mb-1">Last Name</p>
-              <p className="text-base font-semibold text-richblack-5 capitalize">
-                {user?.lastName}
-              </p>
-            </div>
-            <div className="metric-card p-4 rounded-lg">
-              <p className="text-sm text-richblack-300 mb-1">Phone Number</p>
-              <p className="text-base font-semibold text-richblack-5">
-                {user?.additionalDetails?.contactNumber ?? "Add Contact Number"}
-              </p>
-            </div>
-            <div className="metric-card p-4 rounded-lg">
-              <p className="text-sm text-richblack-300 mb-1">Date Of Birth</p>
-              <p className="text-base font-semibold text-richblack-5">
-                {formatDate(user?.additionalDetails?.dateOfBirth) ?? "Add Date Of Birth"}
-              </p>
-            </div>
+            <DetailCard 
+              label="Last Name"
+              value={user?.lastName}
+              icon="👤"
+            />
+            <DetailCard 
+              label="Phone Number"
+              value={user?.additionalDetails?.contactNumber ?? "Add Contact Number"}
+              icon="📱"
+            />
+            <DetailCard 
+              label="Date Of Birth"
+              value={formatDateShort(user?.additionalDetails?.dateOfBirth) ?? "Add Date Of Birth"}
+              icon="🎂"
+            />
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+// Helper Component for Detail Cards
+function DetailCard({ label, value, icon }) {
+  return (
+    <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-800/50 hover:border-slate-700/50 transition-colors duration-300">
+      <div className="flex items-center gap-3 mb-2">
+        <span className="text-lg">{icon}</span>
+        <p className="text-sm text-slate-400">{label}</p>
+      </div>
+      <p className="text-base font-medium text-white capitalize pl-8">
+        {value}
+      </p>
     </div>
   )
 }
