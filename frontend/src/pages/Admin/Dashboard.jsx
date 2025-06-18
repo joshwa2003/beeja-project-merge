@@ -12,6 +12,7 @@ import Settings from './components/Settings';
 import CourseTypeManager from '../../components/core/Dashboard/Admin/CourseTypeManager';
 import CourseAccessRequests from '../../components/core/Dashboard/Admin/CourseAccessRequests';
 import QuizManagement from './components/QuizManagement';
+import CourseCategories from '../../components/core/Dashboard/AddCategory/CourseCategories';
 
 const AdminDashboard = () => {
   const { user } = useSelector((state) => state.profile);
@@ -22,6 +23,7 @@ const AdminDashboard = () => {
   // Sidebar navigation items
   const sidebarItems = [
     { id: 'users', label: 'Users', icon: <FaUsers className="w-5 h-5" /> },
+    { id: 'categories', label: 'Course Categories', icon: <FaGraduationCap className="w-5 h-5" /> },
     { id: 'courses', label: 'Courses', icon: <FaBookOpen className="w-5 h-5" /> },
     { id: 'courseTypes', label: 'Course Types', icon: <FaGraduationCap className="w-5 h-5" /> },
     { id: 'quizzes', label: 'Quiz Management', icon: <FaQuestionCircle className="w-5 h-5" /> },
@@ -82,6 +84,7 @@ const AdminDashboard = () => {
               <>
                 {activeTab === 'users' && <UserManagement />}
                 {activeTab === 'courses' && <CourseManagement onCreateCourse={handleCreateCourse} />}
+                {activeTab === 'categories' && <CourseCategories />}
                 {activeTab === 'courseTypes' && <CourseTypeManager />}
                 {activeTab === 'accessRequests' && <CourseAccessRequests />}
                 {activeTab === 'analytics' && <Analytics />}

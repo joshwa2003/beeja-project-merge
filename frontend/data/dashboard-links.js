@@ -30,13 +30,20 @@ export const sidebarLinks = [
   },
   {
     id: 5,
+    name: "Course Categories",
+    path: "/dashboard/course-categories",
+    type: ACCOUNT_TYPE.ADMIN,
+    icon: "VscSymbolClass",
+  },
+  {
+    id: 6,
     name: "Enrolled Courses",
     path: "/dashboard/enrolled-courses",
     type: ACCOUNT_TYPE.STUDENT,
     icon: "VscMortarBoard",
   },
   {
-    id: 6,
+    id: 7,
     name: "Purchase History",
     path: "/dashboard/purchase-history",
     type: ACCOUNT_TYPE.STUDENT,

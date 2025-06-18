@@ -20,6 +20,8 @@ const { updateCourseProgress, updateQuizProgress, checkSectionAccess, getProgres
 // categories Controllers
 const {
     createCategory,
+    updateCategory,
+    deleteCategory,
     showAllCategories,
     getCategoryPageDetails,
 } = require('../controllers/category');
@@ -114,6 +116,8 @@ router.post("/getProgressPercentage", auth, isStudent, getProgressPercentage)
 // Category can Only be Created by Admin
 
 router.post('/createCategory', auth, isAdmin, createCategory);
+router.put('/updateCategory', auth, isAdmin, updateCategory);
+router.delete('/deleteCategory', auth, isAdmin, deleteCategory);
 router.get('/showAllCategories', showAllCategories);
 router.post("/getCategoryPageDetails", getCategoryPageDetails)
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Link, matchPath, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../services/operations/authAPI";
@@ -9,6 +9,7 @@ import { fetchCourseCategories } from "./../../services/operations/courseDetails
 
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { MdKeyboardArrowDown } from "react-icons/md";
+import * as Icons from "react-icons/fa";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -36,6 +37,19 @@ const Navbar = () => {
   useEffect(() => {
     fetchSublinks();
   }, [fetchSublinks]);
+
+  // Listen for category updates
+  useEffect(() => {
+    const handleCategoriesUpdate = (event) => {
+      setSubLinks(event.detail);
+    };
+
+    window.addEventListener('categoriesUpdated', handleCategoriesUpdate);
+    
+    return () => {
+      window.removeEventListener('categoriesUpdated', handleCategoriesUpdate);
+    };
+  }, []);
 
   const matchRoute = (route) => {
     return matchPath({ path: route }, location.pathname);
@@ -140,9 +154,13 @@ const Navbar = () => {
                           {subLinks?.map((subLink, i) => (
                             <Link
                               to={`/catalog/${subLink.name.split(" ").join("-").toLowerCase()}`}
-                              className="rounded-lg bg-transparent py-4 pl-4 hover:bg-richblack-50"
+                              className="rounded-lg bg-transparent py-4 pl-4 hover:bg-richblack-50 flex items-center gap-3"
                               key={i}
                             >
+                              {subLink.icon && Icons[subLink.icon] ? 
+                                React.createElement(Icons[subLink.icon], { className: "w-5 h-5" })
+                                : <Icons.FaBook className="w-5 h-5" />
+                              }
                               <p>{subLink.name}</p>
                             </Link>
                           ))}
@@ -277,9 +295,13 @@ const Navbar = () => {
                                 .split(" ")
                                 .join("-")
                                 .toLowerCase()}`}
-                              className="rounded-lg py-2 px-3 hover:bg-richblack-800"
+                              className="rounded-lg py-2 px-3 hover:bg-richblack-800 flex items-center gap-3"
                               onClick={() => setMobileMenuOpen(false)}
                             >
+                              {subLink.icon && Icons[subLink.icon] ? 
+                                React.createElement(Icons[subLink.icon], { className: "w-5 h-5" })
+                                : <Icons.FaBook className="w-5 h-5" />
+                              }
                               {subLink.name}
                             </Link>
                           ))

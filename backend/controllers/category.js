@@ -21,26 +21,145 @@ function calculateAverageRating(ratingAndReviews) {
     };
 }
 
-// ================ create Category ================
-exports.createCategory = async (req, res) => {
+// ================ delete Category ================
+exports.deleteCategory = async (req, res) => {
     try {
-        // extract data
-        const { name, description } = req.body;
+        const { categoryId } = req.body;
 
         // validation
-        if (!name || !description) {
+        if (!categoryId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Category ID is required'
+            });
+        }
+
+        // Check if category exists
+        const category = await Category.findById(categoryId);
+        if (!category) {
+            return res.status(404).json({
+                success: false,
+                message: 'Category not found'
+            });
+        }
+
+        // Check if category has courses
+        if (category.courses && category.courses.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Cannot delete category that has courses. Please remove all courses from this category first.'
+            });
+        }
+
+        // Delete category
+        await Category.findByIdAndDelete(categoryId);
+
+        res.status(200).json({
+            success: true,
+            message: 'Category deleted successfully'
+        });
+    }
+    catch (error) {
+        console.log('Error while deleting Category');
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: 'Error while deleting Category',
+            error: error.message
+        });
+    }
+}
+
+// ================ create Category ================
+// Update Category
+exports.updateCategory = async (req, res) => {
+    try {
+        const { categoryId, name, description, icon } = req.body;
+
+        // validation
+        if (!categoryId || !name || !description) {
             return res.status(400).json({
                 success: false,
                 message: 'All fields are required'
             });
         }
 
+        // Check if category exists
+        const category = await Category.findById(categoryId);
+        if (!category) {
+            return res.status(404).json({
+                success: false,
+                message: 'Category not found'
+            });
+        }
+
+        // Check if new name already exists (excluding current category)
+        const existingCategory = await Category.findOne({ 
+            _id: { $ne: categoryId },
+            name: name.trim() 
+        });
+        if (existingCategory) {
+            return res.status(400).json({
+                success: false,
+                message: 'Category with this name already exists'
+            });
+        }
+
+        // Update category
+        category.name = name.trim();
+        category.description = description.trim();
+        category.icon = icon || "";
+        await category.save();
+
+        res.status(200).json({
+            success: true,
+            data: category,
+            message: 'Category updated successfully'
+        });
+    }
+    catch (error) {
+        console.log('Error while updating Category');
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: 'Error while updating Category',
+            error: error.message
+        });
+    }
+}
+
+exports.createCategory = async (req, res) => {
+    try {
+        // extract data
+        const { name, description, icon, previewImage } = req.body;
+
+        // validation
+        if (!name || !description) {
+            return res.status(400).json({
+                success: false,
+                message: 'Name and description are required'
+            });
+        }
+
+        // Check if category already exists
+        const existingCategory = await Category.findOne({ name: name.trim() });
+        if (existingCategory) {
+            return res.status(400).json({
+                success: false,
+                message: 'Category with this name already exists'
+            });
+        }
+
         const categoryDetails = await Category.create({
-            name: name, description: description
+            name: name.trim(),
+            description: description.trim(),
+            icon: icon || "",
+            previewImage: previewImage || ""
         });
 
         res.status(200).json({
             success: true,
+            data: categoryDetails,
             message: 'Category created successfully'
         });
     }
@@ -62,7 +181,7 @@ exports.showAllCategories = async (req, res) => {
         console.log('Fetching all categories from database...');
         
         // get all category from DB
-        const allCategories = await Category.find({}, { name: true, description: true });
+        const allCategories = await Category.find({}, { name: true, description: true, icon: true });
         
         console.log(`Found ${allCategories.length} categories`);
 
