@@ -42,6 +42,7 @@ import PurchaseHistory from "./components/core/Dashboard/PurchaseHistory/Purchas
 
 import ViewCourse from "./pages/ViewCourse";
 import VideoDetails from './components/core/ViewCourse/VideoDetails';
+import QuizView from './components/core/ViewCourse/QuizView';
 
 import { ACCOUNT_TYPE } from './utils/constants';
 
@@ -198,10 +199,16 @@ function App() {
           }
         >
           {user?.accountType === ACCOUNT_TYPE.STUDENT && (
-            <Route
-              path="view-course/:courseId/section/:sectionId/sub-section/:subSectionId"
-              element={<VideoDetails />}
-            />
+            <>
+              <Route
+                path="view-course/:courseId/section/:sectionId/sub-section/:subSectionId"
+                element={<VideoDetails />}
+              />
+              <Route
+                path="view-course/:courseId/section/:sectionId/sub-section/:subSectionId/quiz"
+                element={<QuizView />}
+              />
+            </>
           )}
         </Route>
 

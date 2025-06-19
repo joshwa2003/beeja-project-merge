@@ -9,6 +9,8 @@ import { checkSectionAccess } from "../../../services/operations/courseProgressA
 import { BsChevronDown } from "react-icons/bs"
 import { IoIosArrowBack } from "react-icons/io"
 import { FaLock } from "react-icons/fa"
+import { HiOutlineClipboardCheck } from "react-icons/hi"
+import { RiQuestionAnswerLine } from "react-icons/ri"
 
 import { IoMdClose } from 'react-icons/io'
 import { HiMenuAlt1 } from 'react-icons/hi'
@@ -170,41 +172,65 @@ export default function VideoDetailsSidebar({ setReviewModal }) {
                     }
                     
                     return (
-                      <div
-                        className={`flex gap-3 px-5 py-2 ${
-                          isLocked 
-                            ? "opacity-50 cursor-not-allowed" 
-                            : videoBarActive === topic._id
-                              ? "bg-yellow-200 font-semibold text-richblack-800"
-                              : "hover:bg-richblack-900 cursor-pointer"
-                        }`}
-                        key={i}
-                        onClick={() => {
-                          if (isLocked) {
-                            return // Don't navigate if locked
-                          }
-                          navigate(`/view-course/${courseEntireData?._id}/section/${section?._id}/sub-section/${topic?._id}`)
-                          setVideoBarActive(topic._id)
-                          courseViewSidebar && window.innerWidth <= 640 ? dispatch(setCourseViewSidebar(false)) : null;
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={completedLectures.includes(topic?._id)}
-                          onChange={() => { }}
-                          disabled={isLocked}
-                        />
-                        <span className="flex items-center gap-2">
-                          {isLocked && (
-                            <div className="relative group">
-                              <FaLock size={12} className="text-yellow-50" />
-                              <div className="absolute left-0 -top-12 hidden group-hover:block bg-richblack-900 text-xs text-yellow-50 p-2 rounded-md whitespace-nowrap">
-                                Complete previous section to unlock
+                      <div className="flex flex-col">
+                        <div
+                          className={`flex gap-3 px-5 py-2 ${
+                            isLocked 
+                              ? "opacity-50 cursor-not-allowed" 
+                              : videoBarActive === topic._id
+                                ? "bg-yellow-200 font-semibold text-richblack-800"
+                                : "hover:bg-richblack-900 cursor-pointer"
+                          }`}
+                          key={i}
+                          onClick={() => {
+                            if (isLocked) {
+                              return // Don't navigate if locked
+                            }
+                            navigate(`/view-course/${courseEntireData?._id}/section/${section?._id}/sub-section/${topic?._id}`)
+                            setVideoBarActive(topic._id)
+                            courseViewSidebar && window.innerWidth <= 640 ? dispatch(setCourseViewSidebar(false)) : null;
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={completedLectures.includes(topic?._id)}
+                            onChange={() => { }}
+                            disabled={isLocked}
+                          />
+                          <span className="flex items-center gap-2 flex-1">
+                            {isLocked && (
+                              <div className="relative group">
+                                <FaLock size={12} className="text-yellow-50" />
+                                <div className="absolute left-0 -top-12 hidden group-hover:block bg-richblack-900 text-xs text-yellow-50 p-2 rounded-md whitespace-nowrap">
+                                  Complete previous section to unlock
+                                </div>
                               </div>
-                            </div>
-                          )}
-                          {topic.title}
-                        </span>
+                            )}
+                            {topic.title}
+                            {topic.quiz && (
+                              <div className="relative group ml-auto">
+                                <RiQuestionAnswerLine 
+                                  size={16} 
+                                  className={`${completedLectures.includes(topic?._id) ? 'text-yellow-50' : 'text-richblack-400'}`}
+                                />
+                                <div className="absolute right-0 -top-8 hidden group-hover:block bg-richblack-900 text-xs text-yellow-50 p-2 rounded-md whitespace-nowrap">
+                                  Quiz available
+                                </div>
+                              </div>
+                            )}
+                          </span>
+                        </div>
+                        
+                        {/* Quiz Button - Show only if lecture is completed and has quiz */}
+                        {completedLectures.includes(topic?._id) && topic.quiz && (
+                          <button
+                            onClick={() => navigate(`/view-course/${courseEntireData?._id}/section/${section?._id}/sub-section/${topic?._id}/quiz`)}
+                            className="ml-11 mr-5 mt-1 flex items-center gap-2 rounded-md bg-richblack-700 px-3 py-2 text-sm font-medium text-yellow-50 hover:bg-richblack-600 transition-colors"
+                          >
+                            <HiOutlineClipboardCheck size={16} />
+                            Take Quiz
+                          </button>
+                        )}
                       </div>
                     )
                   })}
