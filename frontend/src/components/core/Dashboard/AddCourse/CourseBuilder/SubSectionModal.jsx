@@ -253,7 +253,7 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
             )}
           </div>
 
-          {/* Quiz Selection */}
+          {/* Quiz Selection
           <div className="flex flex-col space-y-2">
             <label className="text-sm text-richblack-5" htmlFor="quiz">
               Attach Quiz (Optional)
@@ -271,7 +271,7 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
                 </option>
               ))}
             </select>
-          </div>
+          </div> */}
 
           {!view && (
             <div className="flex justify-end">

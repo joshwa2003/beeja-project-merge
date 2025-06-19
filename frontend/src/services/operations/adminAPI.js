@@ -371,7 +371,19 @@ export const getAnalytics = async (token) => {
       throw new Error("Could Not Fetch Analytics")
     }
     
-    result = response?.data?.analytics
+    // Map the backend response to match the frontend expected structure
+    const analytics = response?.data?.analytics
+    result = {
+      users: analytics.users,
+      courses: analytics.courses,
+      requests: analytics.requests,
+      revenue: analytics.revenue,
+      recentCourses: analytics.recentCourses || [],
+      recentLogins: analytics.recentLogins || [],
+      activeLogins: analytics.activeLogins || []
+    }
+
+    console.log("Mapped analytics data:", result)
   } catch (error) {
     console.log("GET_ANALYTICS_API ERROR............", error)
     toast.error(error.message)

@@ -25,7 +25,7 @@ export default function CourseCard({ course, Height = "h-auto" }) {
       }}
       className={`bg-richblack-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl 
         hover:shadow-richblack-500/20 transition-all duration-300 cursor-pointer 
-        transform hover:-translate-y-1 w-[320px] h-[480px] flex flex-col mx-auto`}
+        transform hover:-translate-y-1 w-[350px] h-[450px] flex flex-col mx-auto`}
       onClick={handleCardClick}
       role="button"
       tabIndex={0}
@@ -48,13 +48,16 @@ export default function CourseCard({ course, Height = "h-auto" }) {
             <span className="text-richblack-400 text-sm">No Image</span>
           </div>
         )}
-        {course?.courseType === 'Free' && (
-          <div className="absolute top-3 right-3 bg-yellow-50 text-richblack-900 px-3 py-1 rounded-full text-xs font-semibold shadow-md">
-            FREE
-          </div>
-        )}
+        {/* Course Type Badge */}
+        <div className={`absolute top-4 right-4 px-3 py-1.5 rounded-full font-bold text-xs
+          ${course?.courseType === 'Free' || course?.adminSetFree
+            ? "bg-caribbeangreen-200 text-caribbeangreen-800 border border-caribbeangreen-300" 
+            : "bg-blue-600/90 text-white"} 
+          backdrop-blur-sm shadow-md`}>
+          {course?.courseType === 'Free' || course?.adminSetFree ? "FREE" : "PREMIUM"}
+        </div>
         {course?.adminSetFree && course?.originalPrice && (
-          <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold">
+          <div className="absolute top-4 left-4 bg-red-500/90 text-white px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm shadow-md">
             SALE
           </div>
         )}
@@ -102,9 +105,12 @@ export default function CourseCard({ course, Height = "h-auto" }) {
           {/* Price */}
           <div className="text-right">
             {course?.courseType === 'Free' || course?.adminSetFree ? (
-              <p className="text-lg font-bold text-caribbeangreen-100">Free</p>
+              <div className="flex items-center gap-3">
+                <span className="text-lg font-bold text-caribbeangreen-300">FREE</span>
+                <span className="text-sm text-richblack-400 line-through">₹1999</span>
+              </div>
             ) : (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 {course?.originalPrice && course?.originalPrice !== course?.price && (
                   <span className="text-sm text-richblack-400 line-through">
                     ₹{course.originalPrice}

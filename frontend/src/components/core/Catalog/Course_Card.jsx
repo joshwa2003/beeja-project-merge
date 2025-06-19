@@ -39,13 +39,15 @@ function Course_Card({ course, Height }) {
               </div>
             )}
             {/* Course Type Badge */}
-            {(course?.courseType === 'Free' || course?.adminSetFree) && (
-              <div className="absolute top-3 right-3 bg-yellow-50 text-richblack-900 px-3 py-1 rounded-full text-xs font-semibold shadow-md">
-                FREE
-              </div>
-            )}
+            <div className={`absolute top-3 left-3 px-4 py-2 rounded-full font-bold text-sm 
+              ${course?.courseType === 'Free' || course?.adminSetFree
+                ? "bg-caribbeangreen-200 text-caribbeangreen-800 border border-caribbeangreen-300" 
+                : "bg-blue-600/90 text-white"} 
+              backdrop-blur-sm shadow-xl`}>
+              {course?.courseType === 'Free' || course?.adminSetFree ? "FREE" : "PREMIUM"}
+            </div>
             {course?.adminSetFree && course?.originalPrice && (
-              <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold">
+              <div className="absolute top-3 right-3 bg-red-500/90 text-white px-4 py-2 rounded-full text-sm font-bold backdrop-blur-sm shadow-xl">
                 SALE
               </div>
             )}
@@ -86,28 +88,26 @@ function Course_Card({ course, Height }) {
             
             {/* Price Row */}
             <div className="flex items-center justify-between pt-2 border-t border-richblack-700">
-              {course?.courseType === 'Free' || course?.adminSetFree ? (
-                <div className="flex items-center gap-2">
-                  <p className="text-lg font-bold text-caribbeangreen-100">Free</p>
-                  {course?.originalPrice && (
-                    <span className="text-sm text-richblack-400 line-through">
-                      ₹{course?.originalPrice}
-                    </span>
-                  )}
-                </div>
-              ) : (
-                <div className="flex items-center gap-1">
-                  {course?.originalPrice && course?.originalPrice !== course?.price && (
-                    <span className="text-sm text-richblack-400 line-through mr-2">
-                      ₹{course.originalPrice}
-                    </span>
-                  )}
-                  <div className="flex items-center text-yellow-50 font-bold">
-                    <FaRupeeSign className="text-sm" />
-                    <span className="text-lg">{course?.price}</span>
-                  </div>
-                </div>
-              )}
+              <div className="flex items-center gap-2">
+                {course?.courseType === 'Free' || course?.adminSetFree ? (
+                  <>
+                    <span className="text-lg font-bold text-caribbeangreen-300">FREE</span>
+                    <span className="text-sm text-richblack-400 line-through">₹1999</span>
+                  </>
+                ) : (
+                  <>
+                    {course?.originalPrice && course?.originalPrice !== course?.price && (
+                      <span className="text-sm text-richblack-400 line-through">
+                        ₹{course.originalPrice}
+                      </span>
+                    )}
+                    <div className="flex items-center text-yellow-50 font-bold">
+                      <FaRupeeSign className="text-sm" />
+                      <span className="text-lg">{course?.price}</span>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>

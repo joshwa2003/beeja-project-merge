@@ -83,11 +83,17 @@ function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse }) {
         />
 
         <div className="px-4">
-          <div className="space-x-3 pb-4 text-3xl font-semibold">
+          <div className="pb-4">
             {course?.courseType === 'Free' ? (
-              <span className="text-caribbeangreen-100">Free</span>
+              <div className="flex items-center gap-3">
+                <span className="text-3xl font-bold text-caribbeangreen-300">FREE</span>
+                <span className="text-lg text-richblack-400 line-through">₹1999</span>
+                <div className="bg-caribbeangreen-200 text-caribbeangreen-800 px-3 py-1 rounded-full text-sm font-bold">
+                  100% OFF
+                </div>
+              </div>
             ) : (
-              <span>Rs. {CurrentPrice}</span>
+              <span className="text-3xl font-semibold text-yellow-50">Rs. {CurrentPrice}</span>
             )}
           </div>
           
@@ -104,9 +110,18 @@ function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse }) {
             </div>
           )}
           <div className="flex flex-col gap-4">
+            {/* Course Type Badge */}
+            <div className={`inline-flex px-4 py-2 rounded-full font-bold text-sm mb-4
+              ${course?.courseType === 'Free' 
+                ? "bg-caribbeangreen-200 text-caribbeangreen-800 border border-caribbeangreen-300" 
+                : "bg-blue-600/90 text-white"} 
+              backdrop-blur-sm shadow-lg`}>
+              {course?.courseType === 'Free' ? "FREE COURSE" : "PREMIUM COURSE"}
+            </div>
+
             {course?.courseType === 'Free' ? (
               <button
-                className="yellowButton outline-none"
+                className="w-full bg-caribbeangreen-300 hover:bg-caribbeangreen-400 text-richblack-900 font-bold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg outline-none"
                 onClick={
                   user && course?.studentsEnrolled.includes(user?._id)
                     ? () => navigate("/dashboard/enrolled-courses")
@@ -115,7 +130,7 @@ function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse }) {
               >
                 {user && course?.studentsEnrolled.includes(user?._id)
                   ? "Go To Course"
-                  : "Request Access"}
+                  : "Get Free Access"}
               </button>
             ) : (
               <>

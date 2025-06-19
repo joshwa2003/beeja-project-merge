@@ -3,7 +3,6 @@ import { useSelector } from "react-redux";
 import { getAllCourses, approveCourse, deleteCourse, toggleCourseVisibility } from "../../../services/operations/adminAPI";
 import { FaCheck, FaTrash, FaEye, FaEyeSlash, FaPlus } from "react-icons/fa";
 import { toast } from "react-hot-toast";
-import ConfirmationModal from "../../../components/common/ConfirmationModal";
 import CreateCourse from "./CreateCourse/CreateCourse";
 
 const CourseManagement = () => {
@@ -42,7 +41,6 @@ const CourseManagement = () => {
     }
   };
 
-  const [confirmationModal, setConfirmationModal] = useState(null);
   const [deletingCourseId, setDeletingCourseId] = useState(null);
   const [togglingCourseId, setTogglingCourseId] = useState(null);
 
@@ -65,7 +63,7 @@ const CourseManagement = () => {
       const result = await deleteCourse(courseId, token);
       
       if (result) {
-        setConfirmationModal(null);
+        toast.success("Course deleted successfully");
         await fetchCourses(); // Refresh course list
       }
       
@@ -78,8 +76,8 @@ const CourseManagement = () => {
       
       // Show specific error message
       const errorMessage = error.response?.data?.message || error.message || 'Failed to delete course';
+      toast.error(errorMessage);
       setError(errorMessage);
-      setConfirmationModal(null);
       
     } finally {
       setDeletingCourseId(null);
@@ -203,16 +201,7 @@ const CourseManagement = () => {
                           )}
                         </button>
                         <button
-                          onClick={() => {
-                            setConfirmationModal({
-                              text1: "Delete Course?",
-                              text2: "This action cannot be undone. The course will be permanently deleted.",
-                              btn1Text: "Delete",
-                              btn2Text: "Cancel",
-                              btn1Handler: () => handleDeleteCourse(course._id),
-                              btn2Handler: () => setConfirmationModal(null),
-                            })
-                          }}
+                          onClick={() => handleDeleteCourse(course._id)}
                           disabled={deletingCourseId === course._id}
                           className={`text-red-500 hover:text-red-600 ${
                             deletingCourseId === course._id ? 'opacity-50 cursor-not-allowed' : ''
@@ -233,13 +222,6 @@ const CourseManagement = () => {
             </tbody>
           </table>
         </div>
-      )}
-      {/* Confirmation Modal */}
-      {confirmationModal && (
-        <ConfirmationModal
-          modalData={confirmationModal}
-          closeModal={() => setConfirmationModal(null)}
-        />
       )}
     </div>
   );

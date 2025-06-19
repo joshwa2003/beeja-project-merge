@@ -87,29 +87,18 @@ export default function FreeCourses() {
         </p>
       ) : (
         <>
-          <div className="my-6 sm:my-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 px-4 sm:px-0">
+          <div className="my-6 sm:my-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 px-4 sm:px-0 place-items-center">
             {freeCourses.map((course) => {
               const requestStatus = getRequestStatus(course._id)
               const enrolled = isEnrolled(course._id)
               
               return (
-                <div key={course._id} className="relative bg-richblack-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
-                  <CourseCard course={course} Height="h-[200px] sm:h-[220px] lg:h-[250px]" />
+                <div key={course._id} className="relative">
+                  <CourseCard course={course} />
                   
-                  {/* Access Status Overlay */}
-                  <div className="p-4 border-t border-richblack-700">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="rounded-full bg-caribbeangreen-200 px-2 py-1 text-xs font-medium text-richblack-900">
-                          FREE
-                        </span>
-                        {course.originalPrice && (
-                          <span className="text-sm text-richblack-300 line-through">
-                            ₹{course.originalPrice}
-                          </span>
-                        )}
-                      </div>
-                      
+                  {/* Access Status Overlay - positioned at bottom of card */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-richblack-900/90 backdrop-blur-sm p-3 rounded-b-xl">
+                    <div className="flex items-center justify-between gap-2">
                       {enrolled ? (
                         <span className="rounded-full bg-blue-200 px-3 py-1 text-xs font-medium text-richblack-900">
                           Enrolled
@@ -127,7 +116,7 @@ export default function FreeCourses() {
                       ) : (
                         <button
                           onClick={() => handleRequestAccess(course._id, course.courseName)}
-                          className="rounded-md bg-yellow-50 px-3 py-1.5 text-xs font-medium text-richblack-900 hover:bg-yellow-100 transition-colors"
+                          className="rounded-md bg-caribbeangreen-300 hover:bg-caribbeangreen-400 px-4 py-2 text-xs font-bold text-richblack-900 transition-colors shadow-md"
                         >
                           Request Access
                         </button>

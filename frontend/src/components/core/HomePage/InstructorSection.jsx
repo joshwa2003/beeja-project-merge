@@ -1,5 +1,6 @@
 import React from 'react'
-import Instructor from '../../../assets/Images/teacher3.png'
+// Using an abstract tech/code themed image
+const Instructor = "https://images.unsplash.com/photo-1550439062-609e1531270e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
 import HighlightText from './HighlightText'
 import CTAButton from "../HomePage/Button"
 import { FaArrowRight } from 'react-icons/fa'
@@ -26,8 +27,8 @@ const InstructorSection = () => {
           <div className="relative z-10">
             <Img
               src={Instructor}
-              alt="Instructor"
-              className='rounded-2xl shadow-2xl shadow-purple-500/20 border-2 border-purple-500/20'
+              alt="Abstract technology and code visualization"
+              className='rounded-2xl shadow-2xl shadow-purple-500/20 border-2 border-purple-500/20 w-full h-[400px] object-cover'
             />
             {/* Decorative elements */}
             <div className="absolute -top-4 -left-4 w-24 h-24 border-t-4 border-l-4 border-yellow-400/30 rounded-tl-2xl"></div>

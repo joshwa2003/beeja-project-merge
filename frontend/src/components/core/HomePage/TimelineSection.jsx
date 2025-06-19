@@ -4,7 +4,8 @@ import Logo1 from "../../../assets/TimeLineLogo/Logo1.svg"
 import Logo2 from "../../../assets/TimeLineLogo/Logo2.svg"
 import Logo3 from "../../../assets/TimeLineLogo/Logo3.svg"
 import Logo4 from "../../../assets/TimeLineLogo/Logo4.svg"
-import timelineImage from '../../../assets/Images/TimelineImage.png'
+// Using a high-quality image from Unsplash that represents modern learning/technology
+const timelineImage = "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
 
 import Img from './../../common/Img';
 
@@ -75,12 +76,13 @@ const TimelineSection = () => {
                     viewport={{ once: false, amount: 0.1 }}
                     className='relative shadow-blue-200'>
 
-                    <Img src={timelineImage}
-                        alt="timelineImage"
-                        className='shadow-white object-cover h-fit scale-x-[-1] w-[550px] '
+                    <Img 
+                        src={timelineImage}
+                        alt="Modern coding workspace"
+                        className='shadow-xl rounded-lg object-cover h-[400px] w-[550px] transition-transform duration-300 hover:scale-105'
                     />
 
-                    <div className=' absolute bg-caribbeangreen-700 flex flex-row text-white uppercase py-7
+                    {/* <div className=' absolute bg-caribbeangreen-700 flex flex-row text-white uppercase py-7
                             left-[50%] translate-x-[-50%] translate-y-[-70%] rounded-3xl'>
                         <div className='flex flex-row gap-5 items-center border-r border-caribbeangreen-300 px-7'>
                             <p className='text-2xl lg:text-3xl font-bold'>10</p>
@@ -92,7 +94,7 @@ const TimelineSection = () => {
                             <p className='text-caribbeangreen-300 text-xs lg:text-sm'>TYpe of Courses</p>
                         </div>
 
-                    </div>
+                    </div> */}
 
                 </motion.div>
             </div>

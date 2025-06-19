@@ -1,7 +1,9 @@
-
 import React, { useEffect, useState } from "react"
 import { BiInfoCircle } from "react-icons/bi"
 import { HiOutlineGlobeAlt } from "react-icons/hi"
+import { FiClock, FiUsers, FiStar, FiPlay, FiBookOpen } from "react-icons/fi"
+import { BsCheckCircle } from "react-icons/bs"
+import { motion } from "framer-motion"
 // import { ReactMarkdown } from "react-markdown/lib/react-markdown"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate, useParams } from "react-router-dom"
@@ -177,150 +179,314 @@ function CourseDetails() {
 
   return (
     <>
-      <div className={`relative w-full bg-richblack-800`}>
-        {/* Hero Section */}
-        <div className="mx-auto box-content px-4 lg:w-[1260px] 2xl:relative ">
-          <div className="mx-auto grid min-h-[450px] max-w-maxContentTab justify-items-cente py-8 lg:mx-0 lg:justify-items-start lg:py-0 xl:max-w-[810px]">
+      {/* Enhanced Professional Hero Section */}
+      <div className="relative w-full bg-gradient-to-br from-richblack-900 via-richblack-800 to-richblack-700">
+        {/* Subtle Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-yellow-50/5 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-100/5 rounded-full blur-3xl"></div>
+        </div>
 
-            {/* Go back button */}
-            <div className="mb-5 lg:mt-10 lg:mb-0 z-[100]  " onClick={() => navigate(-1)}>
-              <GiReturnArrow className="w-10 h-10 text-yellow-100 hover:text-yellow-50 cursor-pointer" />
-            </div>
+        <div className="relative mx-auto box-content px-4 lg:w-[1260px] 2xl:relative">
+          <div className="mx-auto grid min-h-[500px] max-w-maxContentTab justify-items-center py-8 lg:mx-0 lg:justify-items-start lg:py-0 xl:max-w-[810px]">
 
-            {/* will appear only for small size */}
-            <div className="relative block max-h-[30rem] lg:hidden">
-              <Img
-                src={thumbnail}
-                alt="course thumbnail"
-                className="aspect-auto w-full rounded-2xl"
-              />
-              <div className="absolute bottom-0 left-0 h-full w-full shadow-[#161D29_0px_-64px_36px_-28px_inset]"></div>
-            </div>
-
-            {/* Course data */}
-            <div className={`mb-5 flex flex-col justify-center gap-4 py-5 text-lg text-richblack-5`}>
-              <p className="text-4xl font-bold text-richblack-5 sm:text-[42px]">{courseName}</p>
-              <p className='text-richblack-200'>{courseDescription}</p>
-              <div className="text-md flex flex-wrap items-center gap-2">
-                <span className="text-yellow-25">{avgReviewCount}</span>
-                <RatingStars Review_Count={avgReviewCount} Star_Size={24} />
-                <span>{`(${ratingAndReviews.length} reviews)`}</span>
-                <span>{`${studentsEnrolled.length} students enrolled`}</span>
+            {/* Professional Go back button */}
+            <motion.div 
+              className="mb-5 lg:mt-10 lg:mb-0 z-[100]" 
+              onClick={() => navigate(-1)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="flex items-center gap-2 bg-richblack-700/80 backdrop-blur-sm px-4 py-2 rounded-lg border border-richblack-600 hover:border-yellow-50 transition-all duration-300 cursor-pointer group shadow-lg">
+                <GiReturnArrow className="w-4 h-4 text-yellow-50 group-hover:text-yellow-25 transition-colors duration-300" />
+                <span className="text-yellow-50 group-hover:text-yellow-25 font-medium transition-colors duration-300">Back</span>
               </div>
-              <p className="capitalize "> Created By <span className="font-semibold underline">{instructor?.firstName ?? ''} {instructor?.lastName ?? ''}</span></p>
-              <div className="flex flex-wrap gap-5 text-lg">
-                <p className="flex items-center gap-2">
-                  {" "}
-                  <BiInfoCircle /> Created at {formatDate(createdAt)}
+            </motion.div>
+
+            {/* Enhanced mobile thumbnail */}
+            <motion.div 
+              className="relative block max-h-[30rem] lg:hidden mb-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="relative overflow-hidden rounded-xl border border-richblack-600 shadow-xl">
+                <Img
+                  src={thumbnail}
+                  alt="course thumbnail"
+                  className="aspect-video w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-richblack-900/80 via-transparent to-transparent"></div>
+                <div className="absolute bottom-4 left-4 right-4">
+                  <div className="flex items-center gap-2 bg-richblack-800/90 backdrop-blur-sm px-4 py-2 rounded-lg text-white border border-richblack-600">
+                    <FiPlay className="w-4 h-4 text-yellow-50" />
+                    <span className="text-sm font-medium">Preview Course</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Enhanced Course data */}
+            <motion.div 
+              className="mb-5 flex flex-col justify-center gap-6 py-5 text-lg text-richblack-5"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <div>
+                <h1 className="text-4xl lg:text-5xl font-bold text-richblack-5 mb-4 leading-tight">
+                  {courseName}
+                </h1>
+                <p className="text-xl text-richblack-200 leading-relaxed max-w-3xl">
+                  {courseDescription}
                 </p>
-                <p className="flex items-center gap-2">{" "} <HiOutlineGlobeAlt /> English</p>
               </div>
-            </div>
 
-            {/* will appear only for small size */}
-            <div className="flex w-full flex-col gap-4 border-y border-y-richblack-500 py-4 lg:hidden">
-              <p className="space-x-3 pb-4 text-3xl font-semibold text-richblack-5">Rs. {price}</p>
-              <button className="yellowButton" onClick={handleBuyCourse}>Buy Now</button>
+              {/* Professional Rating and Stats */}
+              <div className="flex flex-wrap items-center gap-6 text-base">
+                <div className="flex items-center gap-2 bg-yellow-50/10 px-4 py-2 rounded-lg border border-yellow-50/20">
+                  <FiStar className="w-4 h-4 text-yellow-50" />
+                  <span className="text-yellow-25 font-semibold">{avgReviewCount}</span>
+                  <RatingStars Review_Count={avgReviewCount} Star_Size={18} />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="bg-richblack-700 text-richblack-25 px-4 py-2 rounded-lg text-sm font-medium border border-richblack-600">
+                    {ratingAndReviews.length} reviews
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 bg-richblack-700/50 px-4 py-2 rounded-lg border border-richblack-600 text-richblack-200">
+                  <FiUsers className="w-4 h-4" />
+                  <span>{studentsEnrolled.length} students</span>
+                </div>
+              </div>
+
+              {/* Professional Instructor Info */}
+              <div className="flex items-center gap-4 bg-richblack-800/60 backdrop-blur-sm p-4 rounded-xl border border-richblack-600 shadow-lg">
+                <Img
+                  src={instructor?.image ?? ''}
+                  alt="Instructor"
+                  className="h-12 w-12 rounded-full object-cover border-2 border-yellow-50 shadow-md"
+                />
+                <div>
+                  <p className="text-richblack-300 text-sm">Created by</p>
+                  <p className="font-semibold text-richblack-25 flex items-center gap-2">
+                    {instructor?.firstName ?? ''} {instructor?.lastName ?? ''}
+                    <MdOutlineVerified className="w-4 h-4 text-blue-200" />
+                  </p>
+                </div>
+              </div>
+
+              {/* Professional Meta Info */}
+              <div className="flex flex-wrap gap-6">
+                <div className="flex items-center gap-2 bg-richblack-700/40 px-3 py-2 rounded-lg border border-richblack-600 text-richblack-200">
+                  <BiInfoCircle className="w-4 h-4" />
+                  <span className="text-sm">Created {formatDate(createdAt)}</span>
+                </div>
+                <div className="flex items-center gap-2 bg-richblack-700/40 px-3 py-2 rounded-lg border border-richblack-600 text-richblack-200">
+                  <HiOutlineGlobeAlt className="w-4 h-4" />
+                  <span className="text-sm">English</span>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Professional mobile purchase section */}
+            <motion.div 
+              className="flex w-full flex-col gap-4 border border-richblack-600 bg-richblack-800/60 backdrop-blur-sm rounded-xl p-6 lg:hidden shadow-xl"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <div className="flex items-center justify-between">
+                <p className="text-3xl font-bold text-richblack-5">₹{price}</p>
+                <div className="bg-green-600 text-white px-3 py-1 rounded-lg text-sm font-medium">
+                  Best Seller
+                </div>
+              </div>
+              <motion.button 
+                className="bg-yellow-50 text-richblack-900 font-semibold py-3 px-6 rounded-lg hover:bg-yellow-25 transition-all duration-300 shadow-lg"
+                onClick={handleBuyCourse}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Buy Now
+              </motion.button>
               {user?.accountType !== ACCOUNT_TYPE.INSTRUCTOR && (
-                <button onClick={handleAddToCart} className="blackButton">Add to Cart</button>
+                <motion.button 
+                  onClick={handleAddToCart} 
+                  className="bg-richblack-700 text-richblack-25 font-semibold py-3 px-6 rounded-lg border border-richblack-600 hover:bg-richblack-600 transition-all duration-300"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Add to Cart
+                </motion.button>
               )}
-            </div>
+            </motion.div>
           </div>
 
-          {/* Floating Courses Card */}
-          <div className="right-[1.5rem] top-[60px] mx-auto hidden lg:block lg:absolute min-h-[600px] w-1/3 max-w-[410px] translate-y-24 md:translate-y-0">
+          {/* Enhanced Floating Course Card */}
+          <motion.div 
+            className="right-[1.5rem] top-[60px] mx-auto hidden lg:block lg:absolute min-h-[600px] w-1/3 max-w-[410px] translate-y-24 md:translate-y-0"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+          >
             <CourseDetailsCard
               course={response?.data?.courseDetails}
               setConfirmationModal={setConfirmationModal}
               handleBuyCourse={handleBuyCourse}
             />
-          </div>
+          </motion.div>
         </div>
       </div>
 
-      <div className="mx-auto box-content px-4 text-start text-richblack-5 lg:w-[1260px]">
-        <div className="mx-auto max-w-maxContentTab lg:mx-0 xl:max-w-[810px]">
-          {/* What will you learn section */}
-          <div className="my-8 border border-richblack-600 p-8">
-            <p className="text-3xl font-semibold">What you'll learn</p>
-            <div className="mt-3">
-              {whatYouWillLearn && (
-                whatYouWillLearn.split('\n').map((line, index) => (
-                  <div key={index} className="flex items-center mb-2">
-                    <p className="font-bold">{index + 1}.</p>
-                    <p className="ml-2">{line}</p>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+      {/* Professional Content Section */}
+      <div className="bg-richblack-900 min-h-screen">
+        <div className="mx-auto box-content px-4 text-start text-richblack-5 lg:w-[1260px]">
+          <div className="mx-auto max-w-maxContentTab lg:mx-0 xl:max-w-[810px]">
+            
+            {/* Professional What you'll learn section */}
+            <motion.div 
+              className="my-12 bg-richblack-800 border border-richblack-700 rounded-xl p-8 shadow-xl"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="bg-yellow-50/10 p-3 rounded-lg border border-yellow-50/20">
+                  <FiBookOpen className="w-6 h-6 text-yellow-50" />
+                </div>
+                <h2 className="text-3xl font-bold text-richblack-5">What you'll learn</h2>
+              </div>
+              <div className="grid gap-3">
+                {whatYouWillLearn && (
+                  whatYouWillLearn.split('\n').map((line, index) => (
+                    <motion.div 
+                      key={index} 
+                      className="flex items-start gap-3 p-3 bg-richblack-700/50 rounded-lg border border-richblack-600 hover:bg-richblack-700/70 transition-all duration-300"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: index * 0.1 }}
+                    >
+                      <BsCheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
+                      <p className="text-richblack-200 leading-relaxed">{line}</p>
+                    </motion.div>
+                  ))
+                )}
+              </div>
+            </motion.div>
 
-          {/* Tags */}
-          <div className="flex flex-col lg:flex-row gap-4">
-            <p className="text-xl font-bold">Tags</p>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {
-                tag && tag.map((item, ind) => (
-                  <p key={ind} className="bg-yellow-50 p-[2px] text-black rounded-full text-center font-semibold" >
+            {/* Professional Tags Section */}
+            <motion.div 
+              className="my-8 bg-richblack-800/60 backdrop-blur-sm rounded-xl p-6 border border-richblack-700 shadow-lg"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <h3 className="text-xl font-bold text-richblack-5 mb-4">Course Tags</h3>
+              <div className="flex flex-wrap gap-3">
+                {tag && tag.map((item, ind) => (
+                  <motion.span 
+                    key={ind} 
+                    className="bg-yellow-50 text-richblack-900 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-yellow-25 transition-colors duration-300 shadow-md"
+                    whileHover={{ scale: 1.05 }}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: ind * 0.1 }}
+                  >
                     {item}
-                  </p>
-                ))
-              }
-            </div>
-          </div>
-
-          {/* Course Content Section */}
-          <div className="max-w-[830px] mt-9">
-            <div className="flex flex-col gap-3">
-              <p className="text-[28px] font-semibold">Course Content</p>
-              <div className="flex flex-wrap justify-between gap-2">
-                <div className="flex gap-2">
-                  <span>
-                    {courseContent.length} {`section(s)`}
-                  </span>
-                  <span>
-                    {totalNoOfLectures} {`lecture(s)`}
-                  </span>
-                  <span>{response.data?.totalDuration} Total Time</span>
-                </div>
-                <button
-                  className="text-yellow-25"
-                  onClick={() => setIsActive([])}
-                >
-                  Collapse All Sections
-                </button>
+                  </motion.span>
+                ))}
               </div>
-            </div>
+            </motion.div>
 
-            {/* Course Details Accordion - section Subsection */}
-            <div className="py-4 ">
-              {courseContent?.map((course, index) => (
-                <CourseAccordionBar
-                  course={course}
-                  key={index}
-                  isActive={isActive}
-                  handleActive={handleActive}
-                />
-              ))}
-            </div>
-
-            {/* Author Details */}
-            <div className="mb-12 py-4">
-              <p className="text-[28px] font-semibold">Author</p>
-              <div className="flex items-center gap-4 py-4">
-                <Img
-                  src={instructor?.image ?? ''}
-                  alt="Author"
-                  className="h-14 w-14 rounded-full object-cover"
-                />
-                <div>
-                  <p className="text-lg capitalize flex items-center gap-2 font-semibold">{`${instructor?.firstName ?? ''} ${instructor?.lastName ?? ''}`}
-                    <span><MdOutlineVerified className='w-5 h-5 text-[#00BFFF]' /></span>
-                  </p>
-                  <p className="text-richblack-50">{instructor?.additionalDetails?.about}</p>
+            {/* Professional Course Content Section */}
+            <motion.div 
+              className="max-w-[830px] my-12"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <div className="bg-richblack-800 rounded-xl p-6 border border-richblack-700 mb-6 shadow-xl">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="bg-blue-200/10 p-3 rounded-lg border border-blue-200/20">
+                    <FiPlay className="w-6 h-6 text-blue-200" />
+                  </div>
+                  <h2 className="text-3xl font-bold text-richblack-5">Course Content</h2>
+                </div>
+                
+                <div className="flex flex-wrap justify-between gap-4 mb-6">
+                  <div className="flex flex-wrap gap-6">
+                    <div className="flex items-center gap-2 bg-richblack-700/50 px-3 py-2 rounded-lg border border-richblack-600 text-richblack-200">
+                      <FiBookOpen className="w-4 h-4" />
+                      <span className="text-sm">{courseContent.length} sections</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-richblack-700/50 px-3 py-2 rounded-lg border border-richblack-600 text-richblack-200">
+                      <FiPlay className="w-4 h-4" />
+                      <span className="text-sm">{totalNoOfLectures} lectures</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-richblack-700/50 px-3 py-2 rounded-lg border border-richblack-600 text-richblack-200">
+                      <FiClock className="w-4 h-4" />
+                      <span className="text-sm">{response.data?.totalDuration} total</span>
+                    </div>
+                  </div>
+                  <motion.button
+                    className="bg-yellow-50 text-richblack-900 px-4 py-2 rounded-lg font-medium hover:bg-yellow-25 transition-all duration-200 shadow-md"
+                    onClick={() => setIsActive([])}
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    Collapse All Sections
+                  </motion.button>
                 </div>
               </div>
-            </div>
+
+              {/* Course Details Accordion */}
+              <div className="space-y-4">
+                {courseContent?.map((course, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.1 }}
+                  >
+                    <CourseAccordionBar
+                      course={course}
+                      isActive={isActive}
+                      handleActive={handleActive}
+                    />
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Professional Author Section */}
+            <motion.div 
+              className="mb-12 bg-richblack-800 rounded-xl p-8 border border-richblack-700 shadow-xl"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <h2 className="text-3xl font-bold text-richblack-5 mb-6">Meet Your Instructor</h2>
+              <div className="flex items-start gap-6">
+                <div className="relative">
+                  <Img
+                    src={instructor?.image ?? ''}
+                    alt="Author"
+                    className="h-20 w-20 rounded-xl object-cover border-2 border-yellow-50 shadow-lg"
+                  />
+                  <div className="absolute -bottom-2 -right-2 bg-blue-500 rounded-full p-1 border-2 border-richblack-800">
+                    <MdOutlineVerified className="w-4 h-4 text-white" />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-richblack-5 mb-2">
+                    {`${instructor?.firstName ?? ''} ${instructor?.lastName ?? ''}`}
+                  </h3>
+                  <p className="text-richblack-200 leading-relaxed">
+                    {instructor?.additionalDetails?.about || "Experienced instructor passionate about teaching and helping students achieve their goals."}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </div>

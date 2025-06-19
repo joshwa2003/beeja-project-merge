@@ -1,4 +1,3 @@
-
 import { useDispatch, useSelector } from "react-redux"
 import { Table, Thead, Tbody, Tr, Th, Td } from 'react-super-responsive-table'
 import 'react-super-responsive-table/dist/SuperResponsiveTableStyle.css'
@@ -11,7 +10,6 @@ import { useNavigate } from "react-router-dom"
 import { formatDate } from "../../../../services/formatDate"
 import { deleteCourse, fetchInstructorCourses, } from "../../../../services/operations/courseDetailsAPI"
 import { COURSE_STATUS } from "../../../../utils/constants"
-import ConfirmationModal from "../../../common/ConfirmationModal"
 import Img from './../../../common/Img';
 import toast from 'react-hot-toast'
 
@@ -24,22 +22,29 @@ export default function CoursesTable({ courses, setCourses, loading, setLoading 
   const navigate = useNavigate()
   const { token } = useSelector((state) => state.auth)
 
-  const [confirmationModal, setConfirmationModal] = useState(null)
   const TRUNCATE_LENGTH = 25
 
   // delete course
   const handleCourseDelete = async (courseId) => {
-    setLoading(true)
-    const toastId = toast.loading('Deleting...');
-    await deleteCourse({ courseId: courseId }, token)
-    const result = await fetchInstructorCourses(token)
-    if (result) {
-      setCourses(result)
+    try {
+      setLoading(true)
+      const toastId = toast.loading('Deleting course...');
+      
+      await deleteCourse({ courseId: courseId }, token)
+      const result = await fetchInstructorCourses(token)
+      
+      if (result) {
+        setCourses(result)
+        toast.success("Course deleted successfully")
+      }
+      
+      toast.dismiss(toastId)
+    } catch (error) {
+      console.log("Course deletion error:", error)
+      toast.error("Failed to delete course")
+    } finally {
+      setLoading(false)
     }
-    setConfirmationModal(null)
-    setLoading(false)
-    toast.dismiss(toastId)
-    // console.log("All Course ", courses)
   }
 
 
@@ -187,26 +192,15 @@ export default function CoursesTable({ courses, setCourses, loading, setLoading 
                     {/* Delete button */}
                     <button
                       disabled={loading}
-                      onClick={() => {
-                        setConfirmationModal({
-                          text1: "Do you want to delete this course?",
-                          text2:
-                            "All the data related to this course will be deleted",
-                          btn1Text: !loading ? "Delete" : "Loading...  ",
-                          btn2Text: "Cancel",
-                          btn1Handler: !loading
-                            ? () => handleCourseDelete(course._id)
-                            : () => { },
-                          btn2Handler: !loading
-                            ? () => setConfirmationModal(null)
-                            : () => { },
-
-                        })
-                      }}
+                      onClick={() => handleCourseDelete(course._id)}
                       title="Delete"
                       className="px-1 transition-all duration-200 hover:scale-110 hover:text-[#ff0000]"
                     >
-                      <RiDeleteBin6Line size={20} />
+                      {loading ? (
+                        <div className="w-5 h-5 animate-spin rounded-full border-b-2 border-red-500"/>
+                      ) : (
+                        <RiDeleteBin6Line size={20} />
+                      )}
                     </button>
                   </Td>
                 </Tr>
@@ -214,9 +208,6 @@ export default function CoursesTable({ courses, setCourses, loading, setLoading 
             )}
         </Tbody>
       </Table>
-
-      {/* Confirmation Modal */}
-      {confirmationModal && <ConfirmationModal modalData={confirmationModal} />}
     </>
   )
 }
