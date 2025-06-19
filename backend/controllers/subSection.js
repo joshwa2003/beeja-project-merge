@@ -16,6 +16,22 @@ exports.updateSubSection = async (req, res) => {
             });
         }
 
+        // Verify course ownership if sectionId is provided
+        if (sectionId) {
+            const Course = require('../models/course');
+            const course = await Course.findOne({
+                courseContent: sectionId,
+                instructor: req.user.id
+            });
+
+            if (!course) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Only the course instructor can update subsections'
+                });
+            }
+        }
+
         // find in DB
         const subSection = await SubSection.findById(subSectionId);
 
@@ -102,6 +118,20 @@ exports.createSubSection = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: 'Title, description, and sectionId are required'
+            });
+        }
+
+        // Find the section and course to verify ownership
+        const Course = require('../models/course');
+        const course = await Course.findOne({
+            courseContent: sectionId,
+            instructor: req.user.id
+        });
+
+        if (!course) {
+            return res.status(403).json({
+                success: false,
+                message: 'Only the course instructor can add subsections'
             });
         }
 
@@ -195,6 +225,21 @@ exports.createSubSection = async (req, res) => {
 exports.deleteSubSection = async (req, res) => {
     try {
         const { subSectionId, sectionId } = req.body
+
+        // Verify course ownership
+        const Course = require('../models/course');
+        const course = await Course.findOne({
+            courseContent: sectionId,
+            instructor: req.user.id
+        });
+
+        if (!course) {
+            return res.status(403).json({
+                success: false,
+                message: 'Only the course instructor can delete subsections'
+            });
+        }
+
         await Section.findByIdAndUpdate(
             { _id: sectionId },
             {
