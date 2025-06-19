@@ -225,7 +225,7 @@ const QuizManagement = () => {
           )
         )}
 
-        {/* Subsection Selection */}
+        {/* Lectures List */}
         {selectedCourse && (
           <div className="space-y-4">
             {loadingCourseDetails && (
@@ -234,67 +234,65 @@ const QuizManagement = () => {
                 <span className="ml-2 text-richblack-300">Loading course details...</span>
               </div>
             )}
-            <div className="flex justify-between items-center">
-              <label className="text-sm text-richblack-5">Select Lecture</label>
-              {selectedSubSection && (
-                selectedSubSection.quiz ? (
-                  <button
-                    onClick={() => setShowQuizForm(true)}
-                    className="flex items-center gap-2 bg-yellow-50 text-richblack-900 px-4 py-2 rounded-lg hover:scale-95 transition-all duration-200"
-                  >
-                    <FaEdit className="text-sm" />
-                    <span>Edit Quiz</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setShowQuizForm(true)}
-                    className="flex items-center gap-2 bg-yellow-50 text-richblack-900 px-4 py-2 rounded-lg hover:scale-95 transition-all duration-200"
-                  >
-                    <FaPlus className="text-sm" />
-                    <span>Add Quiz</span>
-                  </button>
-                )
-              )}
-            </div>
+            
             {selectedCourseDetails && !loadingCourseDetails && (
-              <select
-                value={selectedSubSection?._id || ""}
-                onChange={(e) => {
-                  try {
-                    const subsections = getSubSections();
-                    const selectedSub = subsections.find(s => s._id === e.target.value);
-                    console.log("Selected subsection:", selectedSub);
-                    setSelectedSubSection(selectedSub);
-                  } catch (error) {
-                    console.error("Error in subsection selection:", error);
-                  }
-                }}
-                className="w-full bg-richblack-700 text-richblack-5 rounded-lg p-3"
-              >
-                <option value="">Select a lecture</option>
-                {getSubSections().map((subsection) => (
-                  <option key={subsection._id} value={subsection._id}>
-                    {subsection.sectionName} - {subsection.title}
-                    {subsection.quiz ? " (Has Quiz)" : ""}
-                  </option>
-                ))}
-              </select>
+              <div className="space-y-4">
+                <label className="text-lg font-semibold text-richblack-5">Lectures</label>
+                <div className="space-y-3">
+                  {getSubSections().map((subsection, index) => (
+                    <div key={subsection._id} className="bg-richblack-700 rounded-lg p-4 flex justify-between items-center">
+                      <div className="flex-1">
+                        <h4 className="text-richblack-5 font-medium">
+                          {subsection.sectionName} - {subsection.title}
+                        </h4>
+                        {subsection.quiz && (
+                          <div className="mt-2 space-y-1">
+                            <p className="text-sm text-richblack-300">
+                              Questions: {subsection.quiz.questions?.length || 0}
+                            </p>
+                            <p className="text-sm text-richblack-300">
+                              Total Marks: {subsection.quiz.questions?.reduce((sum, q) => sum + (q.marks || 0), 0) || 0}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      <div className="ml-4">
+                        {subsection.quiz ? (
+                          <button
+                            onClick={() => {
+                              setSelectedSubSection(subsection);
+                              setShowQuizForm(true);
+                            }}
+                            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200"
+                          >
+                            <FaEdit className="text-sm" />
+                            <span>Edit</span>
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setSelectedSubSection(subsection);
+                              setShowQuizForm(true);
+                            }}
+                            className="flex items-center gap-2 bg-yellow-50 text-richblack-900 px-4 py-2 rounded-lg hover:scale-95 transition-all duration-200"
+                          >
+                            <FaPlus className="text-sm" />
+                            <span>Add Quiz</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {getSubSections().length === 0 && (
+                    <div className="flex flex-col items-center justify-center gap-3 p-6 text-center bg-richblack-700 rounded-lg">
+                      <p className="text-xl font-semibold text-richblack-100">No lectures found</p>
+                      <p className="text-richblack-400">This course doesn't have any lectures yet.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
-          </div>
-        )}
-
-        {/* Quiz Details */}
-        {selectedSubSection?.quiz && (
-          <div className="bg-richblack-700 rounded-lg p-6 space-y-4">
-            <h3 className="text-lg font-semibold text-richblack-5">Quiz Details</h3>
-            <div className="space-y-2">
-              <p className="text-sm text-richblack-100">
-                Number of Questions: {selectedSubSection.quiz.questions?.length || 0}
-              </p>
-              <p className="text-sm text-richblack-100">
-                Total Marks: {selectedSubSection.quiz.questions?.reduce((sum, q) => sum + (q.marks || 0), 0) || 0}
-              </p>
-            </div>
           </div>
         )}
 

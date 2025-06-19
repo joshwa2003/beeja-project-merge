@@ -121,7 +121,10 @@ const CourseManagement = () => {
 
   // Calculate statistics
   const totalCourses = courses.length;
-  const pendingCourses = courses.filter(course => !course.status || course.status === 'Draft').length;
+  // Pending courses are those in Draft status and visible (submitted for approval)
+  const pendingCourses = courses.filter(course => 
+    course.status === 'Draft' && course.isVisible
+  ).length;
   const activeCourses = courses.filter(course => course.status === 'Published').length;
 
   return (

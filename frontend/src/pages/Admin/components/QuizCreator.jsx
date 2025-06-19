@@ -129,11 +129,7 @@ export default function QuizCreator({ subSectionId, existingQuiz, onClose, onSuc
       
       let result;
       if (existingQuiz) {
-        const updateData = {
-          ...quizData,
-          quizId: existingQuiz._id
-        }
-        result = await updateQuiz(updateData, token)
+        result = await updateQuiz(existingQuiz._id, quizData, token)
       } else {
         result = await createQuiz(quizData, token)
       }

@@ -129,7 +129,7 @@ export default function VideoDetailsSidebar({ setReviewModal }) {
               <div className="flex justify-between bg-richblack-700 px-5 py-4">
                 <div className="w-[70%] font-semibold flex items-center gap-2">
                   {section?.sectionName}
-                  {index > 0 && !section.subSection.every(subSec => completedLectures.includes(subSec._id)) && (
+                  {index > 0 && !(courseSectionData[index-1].subSection.every(subSec => completedLectures.includes(subSec._id))) && (
                     <div className="relative group">
                       <FaLock size={12} className="text-yellow-50" />
                       <div className="absolute left-0 -top-8 hidden group-hover:block bg-richblack-900 text-xs text-yellow-50 p-2 rounded-md whitespace-nowrap">

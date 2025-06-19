@@ -28,7 +28,6 @@ export default function AdminSubSectionModal({
   } = useForm()
 
   const [loading, setLoading] = useState(false)
-  const [quizzes, setQuizzes] = useState([])
   const { token } = useSelector((state) => state.auth)
 
   useEffect(() => {
@@ -36,24 +35,8 @@ export default function AdminSubSectionModal({
       setValue("lectureTitle", modalData.title)
       setValue("lectureDesc", modalData.description)
       setValue("lectureVideo", modalData.videoUrl)
-      setValue("quiz", modalData.quiz?._id || "")
     }
-    
-    // Load available quizzes
-    loadQuizzes()
   }, [])
-
-  const loadQuizzes = async () => {
-    try {
-      const response = await getAllQuizzes(token)
-      if (response) {
-        setQuizzes(response)
-      }
-    } catch (error) {
-      console.error("Error loading quizzes:", error)
-      setQuizzes([])
-    }
-  }
 
   // detect whether form is updated or not
   const isFormUpdated = () => {
@@ -198,25 +181,6 @@ export default function AdminSubSectionModal({
             )}
           </div>
 
-          {/* Quiz Selection */}
-          <div className="flex flex-col space-y-2">
-            <label className="text-sm text-richblack-5" htmlFor="quiz">
-              Attach Quiz (Optional)
-            </label>
-            <select
-              disabled={view || loading}
-              id="quiz"
-              {...register("quiz")}
-              className="form-style w-full"
-            >
-              <option value="">No Quiz</option>
-              {quizzes.map((quiz) => (
-                <option key={quiz._id} value={quiz._id}>
-                  {quiz.title}
-                </option>
-              ))}
-            </select>
-          </div>
 
           {!view && (
             <div className="flex justify-end">
