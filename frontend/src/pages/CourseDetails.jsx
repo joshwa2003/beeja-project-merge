@@ -25,6 +25,8 @@ import { GiReturnArrow } from 'react-icons/gi'
 import { MdOutlineVerified } from 'react-icons/md'
 import Img from './../components/common/Img';
 import toast from "react-hot-toast"
+import copy from "copy-to-clipboard"
+import BackgroundEffect from './BackgroundEffect'
 
 
 
@@ -140,6 +142,11 @@ function CourseDetails() {
 
   // Buy Course handler
   const handleBuyCourse = () => {
+    if (!courseId) {
+      toast.error("Course information not available")
+      return
+    }
+    
     if (token) {
       const coursesId = [courseId]
       buyCourse(token, coursesId, user, navigate, dispatch)
@@ -157,14 +164,21 @@ function CourseDetails() {
 
   // Add to cart Course handler
   const handleAddToCart = () => {
+    if (!response?.data?.courseDetails) {
+      toast.error("Course information not available")
+      return
+    }
+
     if (user && user?.accountType === ACCOUNT_TYPE.INSTRUCTOR) {
       toast.error("You are an Instructor. You can't buy a course.")
       return
     }
+    
     if (token) {
-      dispatch(addToCart(response?.data.courseDetails))
+      dispatch(addToCart(response.data.courseDetails))
       return
     }
+    
     setConfirmationModal({
       text1: "You are not logged in!",
       text2: "Please login to add To Cart",
@@ -179,8 +193,18 @@ function CourseDetails() {
 
   return (
     <>
+      {/* Background with Gradient and Particles */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+        className="relative z-0"
+      >
+        <BackgroundEffect />
+      </motion.div>
+
       {/* Enhanced Professional Hero Section */}
-      <div className="relative w-full bg-gradient-to-br from-richblack-900 via-richblack-800 to-richblack-700">
+      <div className="relative w-full bg-gradient-to-br from-richblack-900 via-richblack-800 to-richblack-700 z-10">
         {/* Subtle Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-yellow-50/5 rounded-full blur-3xl"></div>
@@ -302,23 +326,57 @@ function CourseDetails() {
                   Best Seller
                 </div>
               </div>
-              <motion.button 
-                className="bg-yellow-50 text-richblack-900 font-semibold py-3 px-6 rounded-lg hover:bg-yellow-25 transition-all duration-300 shadow-lg"
-                onClick={handleBuyCourse}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                Buy Now
-              </motion.button>
-              {user?.accountType !== ACCOUNT_TYPE.INSTRUCTOR && (
+              {/* Admin Role - Can manage all courses */}
+              {/* Admin Role - Can manage all courses */}
+              {user?.accountType === ACCOUNT_TYPE.ADMIN ? (
                 <motion.button 
-                  onClick={handleAddToCart} 
-                  className="bg-richblack-700 text-richblack-25 font-semibold py-3 px-6 rounded-lg border border-richblack-600 hover:bg-richblack-600 transition-all duration-300"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg"
+                  onClick={() => navigate('/admin')}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  disabled={!courseId}
                 >
-                  Add to Cart
+                  Manage Course
                 </motion.button>
+              ) : 
+              /* Instructor Role - Can manage only their own courses */
+              user?.accountType === ACCOUNT_TYPE.INSTRUCTOR ? (
+                instructor?._id === user?._id ? (
+                  <motion.button 
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg"
+                  onClick={() => navigate('/dashboard/my-courses')}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    disabled={!courseId}
+                  >
+                    Manage Course
+                  </motion.button>
+                ) : (
+                  <div className="bg-richblack-700 text-richblack-200 font-medium py-3 px-6 rounded-lg text-center border border-richblack-600">
+                    <p className="text-sm">You can only manage courses you've created</p>
+                    <p className="text-xs mt-1">This course is managed by {instructor?.firstName} {instructor?.lastName}</p>
+                  </div>
+                )
+              ) : (
+                /* Student Role - Normal buy/request access flow */
+                <>
+                  <motion.button 
+                    className="bg-yellow-50 text-richblack-900 font-semibold py-3 px-6 rounded-lg hover:bg-yellow-25 transition-all duration-300 shadow-lg"
+                    onClick={handleBuyCourse}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Buy Now
+                  </motion.button>
+                  <motion.button 
+                    onClick={handleAddToCart} 
+                    className="bg-richblack-700 text-richblack-25 font-semibold py-3 px-6 rounded-lg border border-richblack-600 hover:bg-richblack-600 transition-all duration-300"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Add to Cart
+                  </motion.button>
+                </>
               )}
             </motion.div>
           </div>

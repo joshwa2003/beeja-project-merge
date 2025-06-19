@@ -292,7 +292,7 @@ const Home = () => {
               position={"lg:flex-row"}
               heading={<div className='text-3xl lg:text-4xl font-semibold'>Master Coding with <HighlightText text={"Beeja's Expert-Led "} /> courses</div>}
               subheading={"Elevate your programming skills with Beeja, where hands-on learning meets expert guidance to unlock your full coding potential."}
-              ctabtn1={{ btnText: "try it yourself", linkto: "/signup", active: true }}
+              ctabtn1={{ btnText: "try it yourself", link: "/login", active: true }}
               ctabtn2={{
                 btnText: (
                   <>
@@ -333,7 +333,7 @@ const Home = () => {
             initial='hidden'
             whileInView={'show'}
             viewport={{ once: false, amount: 0.1 }}
-            className='text-center text-3xl lg:text-4xl font-semibold mt-16 mb-8'
+            className='text-center text-3xl lg:text-4xl font-semibold mt-8 mb-6'
           >
             Meet Our Expert
             <HighlightText text={" Team"} />
@@ -347,7 +347,7 @@ const Home = () => {
             <TeamSlider />
           </motion.div>
 
-          <div className="w-full py-20">
+          <div className="w-full py-12">
             {/* Section Header */}
             <motion.div
               variants={fadeIn('up', 0.1)}
@@ -368,7 +368,7 @@ const Home = () => {
 
 
           {/* Course Sliders */}
-          <div className="mx-auto box-content w-full max-w-maxContentTab px-4 py-12 lg:max-w-maxContent">
+          <div className="mx-auto box-content w-full max-w-maxContentTab px-4 py-8 lg:max-w-maxContent">
             <motion.div
               variants={fadeIn('up', 0.2)}
               initial='hidden'
@@ -422,47 +422,18 @@ const Home = () => {
             initial='hidden'
             whileInView={'show'}
             viewport={{ once: false, amount: 0.2 }}
+            className="mb-4"
           >
             <ExploreMore />
           </motion.div>
         </div>
 
         {/* Section 2 */}
-        <div className='bg-pure-greys-5 text-richblack-700'>
-          <div className='homepage_bg h-[310px]'>
-            <div className='w-11/12 max-w-maxContent flex flex-col items-center justify-between gap-5 mx-auto'>
-              <div className='h-[150px]'></div>
-              <motion.div
-                variants={fadeIn('up', 0.2)}
-                initial='hidden'
-                whileInView={'show'}
-                viewport={{ once: false, amount: 0.2 }}
-                className='flex flex-row gap-7 text-white'
-              >
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <CTAButton active={true} linkto={"/signup"}>
-                    <div className='flex items-center gap-3'>
-                      Explore Full Catalog <FaArrowRight />
-                    </div>
-                  </CTAButton>
-                </motion.div>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <CTAButton active={false} linkto={"/signup"}>
-                    <div>Learn more <FontAwesomeIcon icon={faArrowUpRightFromSquare} /></div>
-                  </CTAButton>
-                </motion.div>
-              </motion.div>
-            </div>
-          </div>
+        <div className='bg-pure-greys-5 text-richblack-700 mt-8'>
+          
 
           <div className='mx-auto w-11/12 max-w-maxContent flex flex-col items-center justify-between gap-7'>
-            <div className='flex flex-col lg:flex-row gap-5 mb-10 mt-[95px]'>
+            <div className='flex flex-col lg:flex-row gap-5 mb-8 mt-[60px]'>
               <motion.div
                 variants={fadeIn('right', 0.2)}
                 initial='hidden'
@@ -515,7 +486,7 @@ const Home = () => {
         </div>
 
         {/* Section 3 */}
-        <div className='mt-14 w-11/12 mx-auto max-w-maxContent flex-col items-center justify-between gap-8 bg-richblack-900 text-white'>
+        <div className='mt-8 w-11/12 mx-auto max-w-maxContent flex-col items-center justify-between gap-6 bg-richblack-900 text-white'>
           <motion.div
             variants={fadeIn('up', 0.2)}
             initial='hidden'

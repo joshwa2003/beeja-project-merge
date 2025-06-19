@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, matchPath, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { motion, AnimatePresence } from "framer-motion";
 import { logout } from "../../services/operations/authAPI";
 
 import { NavbarLinks } from "../../../data/navbar-links";
@@ -77,10 +78,19 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 z-[1000] flex h-14 w-full items-center justify-center border-b-[1px] border-b-richblack-700 bg-richblack-900/50 backdrop-blur-md text-white translate-y-0 transition-all ${showNavbar}`}
+      className={`fixed top-0 z-[1000] flex h-14 w-full items-center justify-center border-b-[1px] border-b-richblack-700 bg-richblack-900/50 backdrop-blur-md text-white transition-all duration-300 ${
+        showNavbar === "hide" ? "-translate-y-full" : 
+        showNavbar === "show" ? "translate-y-0 shadow-lg" : 
+        "translate-y-0"
+      }`}
     >
       <div className="flex w-11/12 max-w-maxContent items-center justify-between">
-        <Link to="/" aria-label="Home">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Link to="/" aria-label="Home">
           <img
             src={studyNotionLogo}
             width={120}
@@ -88,7 +98,8 @@ const Navbar = () => {
             loading="lazy"
             alt="StudyNotion Logo"
           />
-        </Link>
+          </Link>
+        </motion.div>
 
         {/* Hamburger menu button - visible on small screens */}
         <button
@@ -115,15 +126,21 @@ const Navbar = () => {
         </button>
 
         {/* Nav Links - visible for only large devices */}
-        <ul className="hidden sm:flex gap-x-6 text-richblack-25">
+        <motion.ul 
+          className="hidden sm:flex gap-x-6 text-richblack-25"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+        >
+          <motion.div className="flex gap-x-6">
           {NavbarLinks.map((link, index) => (
             <li key={index}>
               {link.title === "Catalog" ? (
                 <div
-                  className={`group relative flex cursor-pointer items-center gap-1 ${
+                  className={`group relative flex cursor-pointer items-center gap-1 transition-all duration-200 hover:scale-105 ${
                     matchRoute("/catalog/:catalogName")
                       ? "bg-yellow-25 text-black rounded-xl p-1 px-3"
-                      : "text-richblack-25 rounded-xl p-1 px-3"
+                      : "text-richblack-25 rounded-xl p-1 px-3 hover:bg-richblack-700"
                   }`}
                 >
                   <p>{link.title}</p>
@@ -253,11 +270,19 @@ const Navbar = () => {
               </div>
             </li>
           )}
-        </ul>
+          </motion.div>
+        </motion.ul>
 
         {/* Mobile menu - visible on small devices */}
-        {mobileMenuOpen && (
-          <div className="absolute top-14 left-0 z-50 w-full bg-richblack-900 p-4 sm:hidden">
+        <AnimatePresence>
+          {mobileMenuOpen && (
+          <motion.div 
+            className="absolute top-14 left-0 z-50 w-full bg-richblack-900 p-4 sm:hidden"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.2 }}
+          >
             <ul className="flex flex-col gap-4 text-white">
               {NavbarLinks.map((link, index) => (
                 <li key={index}>
@@ -345,8 +370,9 @@ const Navbar = () => {
                 </>
               )}
             </ul>
-          </div>
-        )}
+          </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </nav>
   );

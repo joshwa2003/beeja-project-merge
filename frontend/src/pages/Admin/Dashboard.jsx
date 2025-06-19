@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { FaUsers, FaBookOpen, FaChartBar, FaGraduationCap, FaQuestionCircle } from 'react-icons/fa';
+import { FaUsers, FaBookOpen, FaChartBar, FaGraduationCap, FaQuestionCircle, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { MdSettings } from 'react-icons/md';
+import { toggleSidebarCollapse } from '../../slices/sidebarSlice';
 
 import UserManagement from './components/UserManagement';
 import CourseManagement from './components/CourseManagement';
@@ -15,6 +16,8 @@ import QuizManagement from './components/QuizManagement';
 
 const AdminDashboard = () => {
   const { user } = useSelector((state) => state.profile);
+  const { isCollapsed } = useSelector((state) => state.sidebar);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('analytics');
   const [showCreateCourse, setShowCreateCourse] = useState(false);
@@ -44,23 +47,40 @@ const AdminDashboard = () => {
     <div className="min-h-screen dashboard-gradient">
       <div className="flex">
         {/* Sidebar */}
-        <div className="w-64 card-gradient min-h-screen p-4 modern-scrollbar">
-          <div className="mb-8 glass-effect p-4 rounded-xl">
-            <h2 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-50 to-yellow-200">Admin Dashboard</h2>
+        <div className={`${isCollapsed ? 'w-20' : 'w-64'} card-gradient min-h-screen p-4 modern-scrollbar transition-all duration-300`}>
+          <div className="mb-8 glass-effect p-4 rounded-xl flex items-center justify-between">
+            {!isCollapsed && (
+              <h2 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-50 to-yellow-200">
+                Admin Dashboard
+              </h2>
+            )}
+              <button
+              onClick={() => dispatch(toggleSidebarCollapse())}
+              className="text-yellow-50 hover:text-yellow-200 transition-colors p-2 rounded-full hover:bg-[#ffffff1a]"
+            >
+              {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
+            </button>
           </div>
           <nav className="space-y-2">
             {sidebarItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => handleTabChange(item.id)}
-                className={`admin-tab w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-300 ${
+                className={`admin-tab w-full flex items-center justify-center ${!isCollapsed ? 'space-x-3 justify-start' : ''} px-4 py-3 rounded-lg transition-all duration-300 ${
                   activeTab === item.id && !showCreateCourse
                     ? 'active'
                     : 'text-richblack-25'
                 }`}
               >
-                <span className="text-lg">{item.icon}</span>
-                <span className="font-medium">{item.label}</span>
+                <div className="relative group flex items-center justify-center">
+                  <span className="text-lg">{item.icon}</span>
+                  {isCollapsed && (
+                    <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-richblack-800 text-yellow-50 text-sm rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+                      {item.label}
+                    </div>
+                  )}
+                </div>
+                {!isCollapsed && <span className="font-medium">{item.label}</span>}
               </button>
             ))}
           </nav>

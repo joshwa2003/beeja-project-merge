@@ -5,13 +5,18 @@ import { motion } from 'framer-motion';
 import { HiUsers } from 'react-icons/hi';
 import { FaRupeeSign, FaClock } from 'react-icons/fa';
 import RatingStars from '../../common/RatingStars';
+import { toast } from 'react-hot-toast';
 
 export default function CourseCard({ course, Height = "h-auto" }) {
   const { user } = useSelector((state) => state.profile);
   const navigate = useNavigate();
 
   const handleCardClick = () => {
-    navigate(`/courses/${course._id}`);
+    if (course?._id) {
+      navigate(`/courses/${course._id}`);
+    } else {
+      toast.error("Course information not available");
+    }
   };
 
   return (
@@ -23,10 +28,18 @@ export default function CourseCard({ course, Height = "h-auto" }) {
         scale: 1.02,
         transition: { duration: 0.2 }
       }}
-      className={`bg-richblack-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl 
-        hover:shadow-richblack-500/20 transition-all duration-300 cursor-pointer 
-        transform hover:-translate-y-1 w-[350px] h-[450px] flex flex-col mx-auto`}
-      onClick={handleCardClick}
+      className={`bg-richblack-800 rounded-xl overflow-hidden shadow-md hover:shadow-xl 
+        hover:shadow-yellow-50/10 transition-all duration-300 cursor-pointer 
+        transform hover:-translate-y-2 w-[330px] h-[420px] flex flex-col mx-auto
+        border border-transparent hover:border-yellow-50/10`}
+      onClick={(e) => {
+        // Prevent navigation if clicking on the overlay or request button
+        if (e.target.closest('.overlay-content')) {
+          e.stopPropagation();
+          return;
+        }
+        handleCardClick();
+      }}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -36,7 +49,8 @@ export default function CourseCard({ course, Height = "h-auto" }) {
       }}
     >
       {/* Thumbnail Section - Fixed Height */}
-      <div className="relative h-48 overflow-hidden flex-shrink-0">
+      <div className="relative h-44 overflow-hidden flex-shrink-0 group">
+        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-all duration-300 z-10"></div>
         {course?.thumbnail ? (
           <img
             src={course?.thumbnail}
@@ -49,23 +63,19 @@ export default function CourseCard({ course, Height = "h-auto" }) {
           </div>
         )}
         {/* Course Type Badge */}
-        <div className={`absolute top-4 right-4 px-3 py-1.5 rounded-full font-bold text-xs
+        <div className={`absolute top-4 right-4 z-20 px-3 py-1.5 rounded-full font-bold text-xs
           ${course?.courseType === 'Free' || course?.adminSetFree
-            ? "bg-caribbeangreen-200 text-caribbeangreen-800 border border-caribbeangreen-300" 
-            : "bg-blue-600/90 text-white"} 
+            ? "bg-gradient-to-r from-caribbeangreen-300 to-caribbeangreen-200 text-caribbeangreen-800" 
+            : "bg-gradient-to-r from-blue-600 to-blue-500 text-white"} 
           backdrop-blur-sm shadow-md`}>
           {course?.courseType === 'Free' || course?.adminSetFree ? "FREE" : "PREMIUM"}
         </div>
-        {course?.adminSetFree && course?.originalPrice && (
-          <div className="absolute top-4 left-4 bg-red-500/90 text-white px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm shadow-md">
-            SALE
-          </div>
-        )}
+
       </div>
       
       {/* Content Section - Flexible Height */}
-      <div className="p-5 flex flex-col flex-grow">
-        <h3 className="text-lg font-semibold text-richblack-5 mb-2 line-clamp-2 leading-tight">
+      <div className="p-5 flex flex-col flex-grow bg-gradient-to-b from-richblack-800 to-richblack-900">
+        <h3 className="text-lg font-semibold text-richblack-5 mb-2 line-clamp-2 leading-tight group-hover:text-yellow-50 transition-colors duration-300">
           {course?.courseName}
         </h3>
         
@@ -81,7 +91,7 @@ export default function CourseCard({ course, Height = "h-auto" }) {
         </p>
 
         {/* Stats Row */}
-        <div className="flex items-center gap-4 text-xs text-richblack-400 mb-3">
+        <div className="flex items-center gap-4 text-xs text-richblack-300 mb-3">
           <div className="flex items-center gap-1">
             <HiUsers className="text-sm" />
             <span>{course?.studentsEnrolled?.length || 0} students</span>
@@ -93,7 +103,7 @@ export default function CourseCard({ course, Height = "h-auto" }) {
         </div>
 
         {/* Rating and Price Row */}
-        <div className="flex items-center justify-between pt-3 border-t border-richblack-700">
+        <div className="flex items-center justify-between pt-3 mt-auto border-t border-richblack-700/50">
           {/* Rating */}
           <div className="flex items-center gap-2">
             <RatingStars rating={course?.averageRating || 0} />
@@ -106,8 +116,10 @@ export default function CourseCard({ course, Height = "h-auto" }) {
           <div className="text-right">
             {course?.courseType === 'Free' || course?.adminSetFree ? (
               <div className="flex items-center gap-3">
-                <span className="text-lg font-bold text-caribbeangreen-300">FREE</span>
-                <span className="text-sm text-richblack-400 line-through">₹1999</span>
+                <span className="text-lg font-bold bg-gradient-to-r from-caribbeangreen-300 to-caribbeangreen-200 bg-clip-text text-transparent">FREE</span>
+                <span className="text-sm text-richblack-300 line-through">
+                  ₹{course?.price || course?.originalPrice}
+                </span>
               </div>
             ) : (
               <div className="flex items-center gap-2">

@@ -92,7 +92,7 @@ function ReviewSlider() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <h1 className="font-semibold text-[11px] text-yellow-50 capitalize truncate pr-1">{`${review?.user?.firstName} ${review?.user?.lastName}`}</h1>
+                        <h1 className="font-semibold text-[11px] text-white capitalize truncate pr-1">{`${review?.user?.firstName} ${review?.user?.lastName}`}</h1>
                         <div className="flex items-center gap-1 flex-shrink-0">
                           <span className="text-yellow-100 text-[9px] font-medium">{review.rating}</span>
                           <ReactStars

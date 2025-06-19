@@ -9,9 +9,7 @@ export const HomePageExplore = [
                 lessionNumber : 8,
                 thumbnail: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
                 courseType: "Free",
-                rating: 4.5,
-                ratingCount: 1250,
-                price: 0
+
             },
             {
                 heading : "Learn CSS",
@@ -20,9 +18,7 @@ export const HomePageExplore = [
                 lessionNumber : 10,
                 thumbnail: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
                 courseType: "Free",
-                rating: 4.7,
-                ratingCount: 980,
-                price: 0
+
             },
             {
                 heading : "Responsive Web Design",
@@ -31,9 +27,7 @@ export const HomePageExplore = [
                 lessionNumber : 12,
                 thumbnail: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
                 courseType: "Free",
-                rating: 4.6,
-                ratingCount: 750,
-                price: 0
+
             },
         ]
     },
@@ -47,9 +41,6 @@ export const HomePageExplore = [
                 lessionNumber : 15,
                 thumbnail: "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
                 courseType: "Paid",
-                rating: 4.8,
-                ratingCount: 2100,
-                price: 2999
             },
             {
                 heading : "JavaScript Basics",
@@ -58,9 +49,7 @@ export const HomePageExplore = [
                 lessionNumber : 18,
                 thumbnail: "https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
                 courseType: "Paid",
-                rating: 4.9,
-                ratingCount: 1800,
-                price: 3999
+
             },
             {
                 heading : "Git & Version Control",
@@ -69,9 +58,7 @@ export const HomePageExplore = [
                 lessionNumber : 10,
                 thumbnail: "https://images.unsplash.com/photo-1556075798-4825dfaaf498?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
                 courseType: "Free",
-                rating: 4.4,
-                ratingCount: 920,
-                price: 0
+
             },
         ]
     },
@@ -85,9 +72,7 @@ export const HomePageExplore = [
                 lessionNumber : 45,
                 thumbnail: "https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
                 courseType: "Paid",
-                rating: 4.8,
-                ratingCount: 3200,
-                price: 8999
+
             },
             {
                 heading : "Python for Everyone",
@@ -96,9 +81,7 @@ export const HomePageExplore = [
                 lessionNumber : 35,
                 thumbnail: "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
                 courseType: "Paid",
-                rating: 4.9,
-                ratingCount: 4500,
-                price: 6999
+
             },
             {
                 heading : "React Development",
@@ -107,9 +90,7 @@ export const HomePageExplore = [
                 lessionNumber : 28,
                 thumbnail: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
                 courseType: "Paid",
-                rating: 4.7,
-                ratingCount: 2800,
-                price: 7999
+
             },
         ]
     },
@@ -123,9 +104,7 @@ export const HomePageExplore = [
                 lessionNumber : 22,
                 thumbnail: "https://images.unsplash.com/photo-1555949963-aa79dcee981c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
                 courseType: "Paid",
-                rating: 4.6,
-                ratingCount: 1200,
-                price: 5999
+
             },
             {
                 heading : "Django Mastery",
@@ -134,9 +113,7 @@ export const HomePageExplore = [
                 lessionNumber : 38,
                 thumbnail: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
                 courseType: "Paid",
-                rating: 4.8,
-                ratingCount: 1800,
-                price: 9999
+
             },
             {
                 heading : "FastAPI Development",
@@ -145,9 +122,7 @@ export const HomePageExplore = [
                 lessionNumber : 25,
                 thumbnail: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
                 courseType: "Paid",
-                rating: 4.7,
-                ratingCount: 950,
-                price: 6999
+              
             },
         ]
     },
@@ -161,9 +136,7 @@ export const HomePageExplore = [
                 lessionNumber : 32,
                 thumbnail: "https://images.unsplash.com/photo-1627398242454-45a1465c2479?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
                 courseType: "Paid",
-                rating: 4.9,
-                ratingCount: 2200,
-                price: 12999
+              
             },
             {
                 heading : "Cloud Architecture",
@@ -172,9 +145,7 @@ export const HomePageExplore = [
                 lessionNumber : 40,
                 thumbnail: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
                 courseType: "Paid",
-                rating: 4.8,
-                ratingCount: 1500,
-                price: 15999
+             
             },
             {
                 heading : "Data Science Track",
@@ -183,9 +154,7 @@ export const HomePageExplore = [
                 lessionNumber : 50,
                 thumbnail: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
                 courseType: "Paid",
-                rating: 4.9,
-                ratingCount: 3100,
-                price: 18999
+              
             },
         ]
     },

@@ -27,9 +27,9 @@ const ExploreMore = () => {
   };
 
   return (
-    <div className="w-full py-16 relative">
+    <div className="w-full py-8 relative">
       {/* Explore more section */}
-      <div className="mb-12">
+      <div className="mb-8">
         <div className="text-3xl lg:text-4xl font-semibold text-center mb-4">
           Unlock the
           <HighlightText text={" Power of Code"} />
@@ -40,7 +40,7 @@ const ExploreMore = () => {
       </div>
 
       {/* Tabs Section */}
-      <div className="flex flex-wrap justify-center gap-2 lg:gap-5 mb-16 mx-auto w-max max-w-4xl bg-richblack-800 text-richblack-200 p-2 lg:p-1 rounded-full font-medium drop-shadow-[0_1.5px_rgba(255,255,255,0.25)]">
+      <div className="flex flex-wrap justify-center gap-2 lg:gap-5 mb-10 mx-auto w-max max-w-4xl bg-richblack-800 text-richblack-200 p-2 lg:p-1 rounded-full font-medium drop-shadow-[0_1.5px_rgba(255,255,255,0.25)]">
         {tabsName.map((ele, index) => {
           return (
             <div

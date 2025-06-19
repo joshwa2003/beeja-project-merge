@@ -8,6 +8,11 @@ import RatingStars from "../../common/RatingStars"
 import Img from './../../common/Img';
 
 function Course_Card({ course, Height }) {
+  // Return null if no course data is provided
+  if (!course) {
+    return null;
+  }
+
   // Use the averageRating from backend instead of calculating it on frontend
   const avgRating = course?.averageRating || 0
   const totalRatings = course?.totalRatings || 0
@@ -21,12 +26,14 @@ function Course_Card({ course, Height }) {
         scale: 1.02,
         transition: { duration: 0.2 }
       }}
-      className='z-50 group transform hover:-translate-y-1 transition-all duration-300 w-[320px] h-[480px]'
+      className='z-50 group transform hover:-translate-y-2 transition-all duration-300 w-[330px] h-[420px]'
     >
-      <Link to={`/courses/${course._id}`}>
-        <div className="bg-richblack-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl hover:shadow-richblack-500/20 transition-all duration-300 h-full flex flex-col">
+      <Link to={course._id ? `/courses/${course._id}` : "#"}>
+        <div className="bg-richblack-800 rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:shadow-yellow-50/10 
+          transition-all duration-300 h-full flex flex-col border border-transparent hover:border-yellow-50/10">
           {/* Thumbnail Section - Fixed Height */}
-          <div className="relative overflow-hidden h-48 flex-shrink-0">
+          <div className="relative overflow-hidden h-44 flex-shrink-0 group">
+            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-all duration-300 z-10"></div>
             {course?.thumbnail ? (
               <Img
                 src={course?.thumbnail}
@@ -39,22 +46,18 @@ function Course_Card({ course, Height }) {
               </div>
             )}
             {/* Course Type Badge */}
-            <div className={`absolute top-3 left-3 px-4 py-2 rounded-full font-bold text-sm 
+            <div className={`absolute top-4 right-4 z-20 px-3 py-1.5 rounded-full font-bold text-xs
               ${course?.courseType === 'Free' || course?.adminSetFree
-                ? "bg-caribbeangreen-200 text-caribbeangreen-800 border border-caribbeangreen-300" 
-                : "bg-blue-600/90 text-white"} 
-              backdrop-blur-sm shadow-xl`}>
+                ? "bg-gradient-to-r from-caribbeangreen-300 to-caribbeangreen-200 text-caribbeangreen-800" 
+                : "bg-gradient-to-r from-blue-600 to-blue-500 text-white"} 
+              backdrop-blur-sm shadow-md`}>
               {course?.courseType === 'Free' || course?.adminSetFree ? "FREE" : "PREMIUM"}
             </div>
-            {course?.adminSetFree && course?.originalPrice && (
-              <div className="absolute top-3 right-3 bg-red-500/90 text-white px-4 py-2 rounded-full text-sm font-bold backdrop-blur-sm shadow-xl">
-                SALE
-              </div>
-            )}
+
           </div>
           
           {/* Content Section - Flexible Height */}
-          <div className="flex flex-col gap-2 sm:gap-3 p-4 sm:p-5 flex-grow">
+          <div className="flex flex-col gap-2 sm:gap-3 p-4 sm:p-5 flex-grow bg-gradient-to-b from-richblack-800 to-richblack-900">
             <h3 className="text-base sm:text-lg font-semibold text-richblack-5 line-clamp-2 group-hover:text-yellow-50 transition-colors duration-200 leading-tight">
               {course?.courseName}
             </h3>
@@ -87,13 +90,14 @@ function Course_Card({ course, Height }) {
             </div>
             
             {/* Price Row */}
-            <div className="flex items-center justify-between pt-2 border-t border-richblack-700">
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 pt-3 mt-auto border-t border-richblack-700/50">
                 {course?.courseType === 'Free' || course?.adminSetFree ? (
-                  <>
-                    <span className="text-lg font-bold text-caribbeangreen-300">FREE</span>
-                    <span className="text-sm text-richblack-400 line-through">₹1999</span>
-                  </>
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg font-bold bg-gradient-to-r from-caribbeangreen-300 to-caribbeangreen-200 bg-clip-text text-transparent">FREE</span>
+                    <span className="text-sm text-richblack-400 line-through">
+                      ₹{course?.price || course?.originalPrice }
+                    </span>
+                  </div>
                 ) : (
                   <>
                     {course?.originalPrice && course?.originalPrice !== course?.price && (
@@ -107,7 +111,6 @@ function Course_Card({ course, Height }) {
                     </div>
                   </>
                 )}
-              </div>
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
+import { motion } from "framer-motion"
 
 // import CourseCard from "../components/Catalog/CourseCard"
 // import CourseSlider from "../components/Catalog/CourseSlider"
@@ -7,6 +8,7 @@ import ImprovedFooter from "../components/common/ImprovedFooter"
 import Course_Card from '../components/core/Catalog/Course_Card'
 import Course_Slider from "../components/core/Catalog/Course_Slider"
 import Loading from './../components/common/Loading';
+import BackgroundEffect from './BackgroundEffect'
 
 import { getCatalogPageData } from '../services/operations/pageAndComponentData'
 import { fetchCourseCategories } from './../services/operations/courseDetailsAPI';
@@ -74,8 +76,18 @@ function Catalog() {
 
     return (
         <>
+            {/* Background with Gradient and Particles */}
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1 }}
+                className="relative z-0"
+            >
+                <BackgroundEffect />
+            </motion.div>
+
             {/* Hero Section */}
-            <div className="box-content bg-richblack-800 px-4 sm:px-6 lg:px-8">
+            <div className="relative box-content bg-richblack-800 px-4 sm:px-6 lg:px-8 z-10">
                 <div className="mx-auto flex min-h-[200px] sm:min-h-[240px] lg:min-h-[260px] max-w-maxContentTab flex-col justify-center gap-3 sm:gap-4 lg:max-w-maxContent">
                     <p className="text-xs sm:text-sm text-richblack-300">
                         {`Home / Catalog / `}

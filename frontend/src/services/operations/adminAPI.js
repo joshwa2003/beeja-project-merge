@@ -378,6 +378,7 @@ export const getAnalytics = async (token) => {
       courses: analytics.courses,
       requests: analytics.requests,
       revenue: analytics.revenue,
+      enrollments: analytics.enrollments, // Add enrollment data mapping
       recentCourses: analytics.recentCourses || [],
       recentLogins: analytics.recentLogins || [],
       activeLogins: analytics.activeLogins || []
