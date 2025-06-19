@@ -1,47 +1,49 @@
-import { useEffect, useState } from "react"
-import { VscSignOut } from "react-icons/vsc"
-import { useDispatch, useSelector } from "react-redux"
-import { useNavigate } from "react-router-dom"
+import { useEffect, useState } from "react";
+import { useSelector, useDispatch } from 'react-redux';
+import { FaUsers, FaBookOpen, FaChartBar, FaGraduationCap, FaQuestionCircle } from 'react-icons/fa';
+import { MdSettings, MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md';
+import { VscSignOut } from "react-icons/vsc";
+import { HiMenuAlt1 } from 'react-icons/hi';
+import { IoMdClose } from 'react-icons/io';
+import { useNavigate } from "react-router-dom";
+import { toggleSidebarCollapse, setOpenSideMenu, setScreenSize } from '../../../../slices/sidebarSlice';
+import { logout } from "../../../../services/operations/authAPI";
+import ConfirmationModal from "../../../common/ConfirmationModal";
 
-import { sidebarLinks } from './../../../../data/dashboard-links';
-import { logout } from "../../../services/operations/authAPI"
-import ConfirmationModal from "../../common/ConfirmationModal"
-import SidebarLink from "./SidebarLink"
-import Loading from './../../common/Loading';
+const AdminSidebar = ({ activeTab, onTabChange }) => {
+  const { isCollapsed, openSideMenu, screenSize } = useSelector((state) => state.sidebar);
+  const { user, loading: profileLoading } = useSelector((state) => state.profile);
+  const { loading: authLoading } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [confirmationModal, setConfirmationModal] = useState(null);
 
-import { HiMenuAlt1 } from 'react-icons/hi'
-import { IoMdClose } from 'react-icons/io'
-import { FiSettings } from 'react-icons/fi'
-import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md'
-
-import { setOpenSideMenu, setScreenSize, toggleSidebarCollapse } from "../../../slices/sidebarSlice";
-
-export default function Sidebar() {
-  const { user, loading: profileLoading } = useSelector((state) => state.profile)
-  const { loading: authLoading } = useSelector((state) => state.auth)
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
-
-  // to keep track of confirmation modal
-  const [confirmationModal, setConfirmationModal] = useState(null)
-
-  const { openSideMenu, screenSize, isCollapsed } = useSelector((state) => state.sidebar)
+  // Sidebar navigation items
+  const sidebarItems = [
+    { id: 'users', label: 'Users', icon: <FaUsers size={20} /> },
+    { id: 'courses', label: 'Courses', icon: <FaBookOpen size={20} /> },
+    { id: 'courseTypes', label: 'Course Types', icon: <FaGraduationCap size={20} /> },
+    { id: 'quizzes', label: 'Quiz Management', icon: <FaQuestionCircle size={20} /> },
+    { id: 'accessRequests', label: 'Access Requests', icon: <FaUsers size={20} /> },
+    { id: 'analytics', label: 'Analytics', icon: <FaChartBar size={20} /> },
+    { id: 'settings', label: 'Settings', icon: <MdSettings size={20} /> },
+  ];
 
   useEffect(() => {
-    const handleResize = () => dispatch(setScreenSize(window.innerWidth))
-
-    window.addEventListener('resize', handleResize)
-    handleResize()
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+    const handleResize = () => dispatch(setScreenSize(window.innerWidth));
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, [dispatch]);
 
   // If screen size is small then close the side bar
   useEffect(() => {
     if (screenSize <= 640) {
-      dispatch(setOpenSideMenu(false))
+      dispatch(setOpenSideMenu(false));
+    } else {
+      dispatch(setOpenSideMenu(true));
     }
-    else dispatch(setOpenSideMenu(true))
-  }, [screenSize])
+  }, [screenSize, dispatch]);
 
   if (profileLoading || authLoading) {
     return (
@@ -50,7 +52,7 @@ export default function Sidebar() {
           <div className="w-8 h-8 border-2 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -76,7 +78,9 @@ export default function Sidebar() {
             />
           )}
           
-          <div className={`fixed sm:relative h-[calc(100vh-3.5rem)] ${isCollapsed ? 'w-[80px]' : 'w-[280px]'} flex flex-col bg-slate-900/80 backdrop-blur-xl border-r border-slate-700/50 z-50 sm:z-10 transition-all duration-300`}>
+          <div className={`fixed sm:relative h-[calc(100vh-3.5rem)] ${
+            isCollapsed ? 'w-[80px]' : 'w-[280px]'
+          } flex flex-col bg-slate-900/80 backdrop-blur-xl border-r border-slate-700/50 z-50 sm:z-10 transition-all duration-300`}>
             {/* Collapse/Expand Button - Desktop Only */}
             {screenSize > 640 && (
               <div className="absolute -right-3 top-32 z-[1001]">
@@ -109,7 +113,7 @@ export default function Sidebar() {
                       {user?.firstName} {user?.lastName}
                     </h3>
                     <p className="text-slate-400 text-xs truncate capitalize">
-                      {user?.accountType}
+                      Admin
                     </p>
                   </div>
                 )}
@@ -119,25 +123,30 @@ export default function Sidebar() {
             {/* Navigation Links */}
             <div className={`flex-1 py-6 ${isCollapsed ? 'px-2' : 'px-4'} overflow-y-auto custom-scrollbar transition-all duration-300`}>
               <nav className="space-y-2">
-                {sidebarLinks.map((link) => {
-                  if (link.type && user?.accountType !== link.type) return null
-                  return (
-                    <SidebarLink key={link.id} link={link} iconName={link.icon} isCollapsed={isCollapsed} />
-                  )
-                })}
+                {sidebarItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => onTabChange(item.id)}
+                    className={`w-full flex items-center ${
+                      isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'
+                    } py-3 rounded-xl transition-all duration-300 group relative ${
+                      activeTab === item.id
+                        ? 'bg-purple-500/20 text-white'
+                        : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
+                    }`}
+                    title={isCollapsed ? item.label : ""}
+                  >
+                    <span className="text-lg">{item.icon}</span>
+                    {!isCollapsed && <span className="font-medium">{item.label}</span>}
+                  </button>
+                ))}
               </nav>
 
               {/* Divider */}
               <div className="my-6 h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
 
-              {/* Settings & Logout */}
+              {/* Logout */}
               <div className="space-y-2">
-                <SidebarLink
-                  link={{ name: "Settings", path: "/dashboard/settings" }}
-                  iconName={"VscSettingsGear"}
-                  isCollapsed={isCollapsed}
-                />
-
                 <button
                   onClick={() =>
                     setConfirmationModal({
@@ -190,5 +199,7 @@ export default function Sidebar() {
         }
       `}</style>
     </>
-  )
-}
+  );
+};
+
+export default AdminSidebar;

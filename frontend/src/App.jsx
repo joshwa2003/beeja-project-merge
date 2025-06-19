@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Route, Routes, useLocation, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 
+import Toast from "./components/common/Toast";
 import Home from "./pages/Home"
 import Login from "./pages/Login"
 import Signup from "./pages/Signup"
@@ -22,7 +23,7 @@ import InstituteService from "./pages/InstituteService";
 import StudentService from "./pages/StudentService";
 import FreeCourses from './components/core/Catalog/FreeCourses';
 
-import Navbar from "./components/common/Navbar"
+import ModernNavbar from "./components/common/Navbar"
 
 import OpenRoute from "./components/core/Auth/OpenRoute"
 import ProtectedRoute from "./components/core/Auth/ProtectedRoute";
@@ -84,8 +85,9 @@ function App() {
   }, [showArrow]);
 
   return (
-    <div className="w-screen min-h-screen bg-richblack-900 flex flex-col font-inter">
-      <Navbar />
+    <div className="w-screen min-h-screen bg-richblack-900 flex flex-col font-inter pt-24">
+      <ModernNavbar />
+      <Toast />
 
       {/* go upward arrow */}
       <button

@@ -81,25 +81,17 @@ const ModernNavbar = () => {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className={`fixed top-4 z-[90] w-full flex items-center justify-center transition-all duration-500 ease-in-out ${
+      className={`fixed z-[1000] w-full flex items-center justify-center transition-all duration-500 ease-in-out ${
         showNavbar === "hide" ? "-translate-y-full" : 
-        showNavbar === "show" ? "" : 
-        "translate-y-0"
+        showNavbar === "show" ? "translate-y-0.5" : 
+        "translate-y-0.5"
       }`}
     >
       <motion.div 
-        className="w-[98%] max-w-[1500px] mx-auto rounded-[25px] bg-gradient-to-r from-blue-500/20 via-violet-500/20 to-fuchsia-500/20 backdrop-blur-2xl shadow-2xl flex items-center justify-between px-10 py-5 text-white"
-        style={{
-          background: 'linear-gradient(135deg, rgba(59,130,246,0.2) 0%, rgba(139,92,246,0.2) 50%, rgba(217,70,239,0.2) 100%)',
-          backdropFilter: 'blur(16px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(16px) saturate(180%)',
-          boxShadow: '0 20px 50px -15px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15)',
-          border: '1px solid rgba(255,255,255,0.15)'
-        }}
+        className="w-[99%] max-w-[1400px] mx-auto rounded-full border border-white/20 bg-gradient-to-r from-richblack-900/90 to-richblack-800/90 backdrop-blur-2xl shadow-[0_4px_24px_rgba(0,0,0,0.3)] flex items-center justify-between px-10 py-2.5 text-white"
         whileHover={{ 
-          boxShadow: "0 25px 60px -20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2)",
-          background: "linear-gradient(135deg, rgba(59,130,246,0.25) 0%, rgba(139,92,246,0.25) 50%, rgba(217,70,239,0.25) 100%)",
-          scale: 1.005
+          boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
+          scale: 1.01
         }}
         transition={{ duration: 0.2 }}
       >
@@ -121,61 +113,39 @@ const ModernNavbar = () => {
           </Link>
         </motion.div>
 
-        {/* Mobile Right Section - Profile + Menu */}
-        <div className="sm:hidden flex items-center gap-3">
-          {/* Mobile Profile Picture */}
-          {token && user && (
-            <motion.div 
-              className="relative flex items-center group"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: 0.2 }}
-            >
-              <motion.img
-                src={user.image}
-                alt={`${user.firstName} ${user.lastName}`}
-                className="h-8 w-8 rounded-full object-cover cursor-pointer border-2 border-transparent hover:border-emerald-400 transition-all duration-300"
-                title={`${user.firstName} ${user.lastName}`}
-                whileHover={{ scale: 1.1, borderColor: "#34d399" }}
-                onClick={toggleMobileMenu}
-              />
-            </motion.div>
-          )}
-
-          {/* Hamburger menu button */}
-          <motion.button
-            onClick={toggleMobileMenu}
-            aria-label="Toggle menu"
-            aria-expanded={mobileMenuOpen}
-            className="flex flex-col h-6 w-6 justify-between items-center group relative"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <motion.span
-              className="h-0.5 w-full bg-white rounded-lg origin-center"
-              animate={{
-                rotate: mobileMenuOpen ? 45 : 0,
-                y: mobileMenuOpen ? 6 : 0,
-              }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-            />
-            <motion.span
-              className="h-0.5 w-full bg-white rounded-lg"
-              animate={{
-                opacity: mobileMenuOpen ? 0 : 1,
-              }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-            />
-            <motion.span
-              className="h-0.5 w-full bg-white rounded-lg origin-center"
-              animate={{
-                rotate: mobileMenuOpen ? -45 : 0,
-                y: mobileMenuOpen ? -6 : 0,
-              }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-            />
-          </motion.button>
-        </div>
+        {/* Hamburger menu button - visible on small screens */}
+        <motion.button
+          onClick={toggleMobileMenu}
+          aria-label="Toggle menu"
+          aria-expanded={mobileMenuOpen}
+          className="sm:hidden flex flex-col h-6 w-6 justify-between items-center group relative"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <motion.span
+            className="h-0.5 w-full bg-white rounded-lg origin-center"
+            animate={{
+              rotate: mobileMenuOpen ? 45 : 0,
+              y: mobileMenuOpen ? 6 : 0,
+            }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          />
+          <motion.span
+            className="h-0.5 w-full bg-white rounded-lg"
+            animate={{
+              opacity: mobileMenuOpen ? 0 : 1,
+            }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          />
+          <motion.span
+            className="h-0.5 w-full bg-white rounded-lg origin-center"
+            animate={{
+              rotate: mobileMenuOpen ? -45 : 0,
+              y: mobileMenuOpen ? -6 : 0,
+            }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          />
+        </motion.button>
 
         {/* Nav Links - visible for only large devices */}
         <motion.ul 
@@ -195,7 +165,7 @@ const ModernNavbar = () => {
                 <div
                   className={`group relative flex cursor-pointer items-center gap-1 transition-all duration-300 hover:scale-105 ${
                     matchRoute("/catalog/:catalogName")
-                      ? "bg-gradient-to-r from-teal-400 to-emerald-400 text-white rounded-xl p-2 px-4 shadow-[0_4px_20px_rgba(20,184,166,0.3)]"
+                      ? "bg-gradient-to-r from-yellow-400 to-yellow-500 text-black rounded-xl p-2 px-4 shadow-lg"
                       : "text-richblack-25 rounded-xl p-2 px-4 hover:bg-white/10 hover:backdrop-blur-sm"
                   }`}
                 >
@@ -208,14 +178,14 @@ const ModernNavbar = () => {
                     <MdKeyboardArrowDown />
                   </motion.div>
                   <motion.div
-                    className="invisible absolute left-0 top-full z-[91] flex w-[200px] mt-2
+                    className="invisible absolute left-[50%] top-[50%] z-[1001] flex w-[200px] translate-x-[-50%] translate-y-[3em] 
                     flex-col rounded-xl bg-white/95 backdrop-blur-xl p-4 text-richblack-900 opacity-0 transition-all duration-300 group-hover:visible 
-                    group-hover:opacity-100 lg:w-[300px] shadow-[0_8px_32px_rgba(0,0,0,0.2)]"
+                    group-hover:translate-y-[2.5em] group-hover:opacity-100 lg:w-[300px] shadow-[0_8px_32px_rgba(0,0,0,0.2)]"
                     initial={{ scale: 0.8, opacity: 0 }}
                     whileInView={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <div className="absolute left-4 top-0 z-[100] h-4 w-4 translate-y-[-50%] rotate-45 select-none rounded bg-white/95"></div>
+                    <div className="absolute left-[50%] top-0 z-[100] h-4 w-4 translate-x-[80%] translate-y-[-50%] rotate-45 select-none rounded bg-white/95"></div>
                     {loading ? (<p className="text-center">Loading...</p>)
                       : subLinks.length ? (
                         <>
@@ -248,7 +218,7 @@ const ModernNavbar = () => {
                     <p
                       className={`font-medium transition-all duration-300 ${
                         matchRoute(link?.path)
-                          ? "bg-gradient-to-r from-teal-400 to-emerald-400 text-white rounded-xl p-2 px-4 shadow-[0_4px_20px_rgba(20,184,166,0.3)]"
+                          ? "bg-gradient-to-r from-yellow-400 to-yellow-500 text-black rounded-xl p-2 px-4 shadow-lg"
                           : "text-richblack-25 rounded-xl p-2 px-4 hover:bg-white/10 hover:backdrop-blur-sm"
                       }`}
                     >
@@ -270,7 +240,7 @@ const ModernNavbar = () => {
             <Link to="/free-courses">
               <p className={`font-medium transition-all duration-300 ${
                 matchRoute("/free-courses")
-                  ? "bg-gradient-to-r from-teal-400 to-emerald-400 text-white rounded-xl p-2 px-4 shadow-[0_4px_20px_rgba(20,184,166,0.3)]"
+                  ? "bg-gradient-to-r from-yellow-400 to-yellow-500 text-black rounded-xl p-2 px-4 shadow-lg"
                   : "text-richblack-25 rounded-xl p-2 px-4 hover:bg-white/10 hover:backdrop-blur-sm"
               }`}>
                 Free Courses
@@ -295,12 +265,12 @@ const ModernNavbar = () => {
               <MdKeyboardArrowDown />
             </motion.div>
             <motion.div 
-              className="invisible absolute left-0 top-full z-[91] flex w-[200px] mt-2 flex-col rounded-xl bg-white/95 backdrop-blur-xl p-4 text-richblack-900 opacity-0 transition-all duration-300 group-hover:visible group-hover:opacity-100 lg:w-[250px] shadow-[0_8px_32px_rgba(0,0,0,0.2)]"
+              className="invisible absolute left-[50%] top-[50%] z-[1000] flex w-[200px] -translate-x-1/2 translate-y-[3em] flex-col rounded-xl bg-white/95 backdrop-blur-xl p-4 text-richblack-900 opacity-0 transition-all duration-300 group-hover:visible group-hover:translate-y-[2.5em] group-hover:opacity-100 lg:w-[250px] shadow-[0_8px_32px_rgba(0,0,0,0.2)]"
               initial={{ scale: 0.8, opacity: 0 }}
               whileInView={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.2 }}
             >
-              <div className="absolute left-4 top-0 z-[100] h-4 w-4 translate-y-[-50%] rotate-45 select-none rounded bg-white/95"></div>
+              <div className="absolute left-[50%] top-0 z-[100] h-4 w-4 -translate-x-1/2 -translate-y-1/2 rotate-45 select-none rounded bg-white/95"></div>
               <motion.div whileHover={{ x: 5, backgroundColor: "rgba(0,0,0,0.05)" }}>
                 <Link
                   to="/services/institute"
@@ -344,8 +314,8 @@ const ModernNavbar = () => {
               >
                 <motion.button 
                   onClick={handleSignup}
-                  className="rounded-xl bg-gradient-to-r from-teal-400 to-emerald-400 px-4 py-2 text-white font-medium transition-all duration-300 hover:from-teal-300 hover:to-emerald-300 shadow-lg"
-                  whileHover={{ scale: 1.05, boxShadow: "0 6px 25px rgba(20,184,166,0.4)" }}
+                  className="rounded-xl bg-gradient-to-r from-yellow-400 to-yellow-500 px-4 py-2 text-richblack-900 font-medium transition-all duration-300 hover:from-yellow-300 hover:to-yellow-400 shadow-lg"
+                  whileHover={{ scale: 1.05, boxShadow: "0 6px 25px rgba(255,193,7,0.4)" }}
                   whileTap={{ scale: 0.95 }}
                 >
                   Sign up
@@ -365,13 +335,13 @@ const ModernNavbar = () => {
               <motion.img
                 src={user.image}
                 alt={`${user.firstName} ${user.lastName}`}
-                className="h-10 w-10 rounded-full object-cover cursor-pointer border-2 border-transparent hover:border-emerald-400 transition-all duration-300"
+                className="h-10 w-10 rounded-full object-cover cursor-pointer border-2 border-transparent hover:border-yellow-400 transition-all duration-300"
                 title={`${user.firstName} ${user.lastName}`}
-                whileHover={{ scale: 1.1, borderColor: "#34d399" }}
+                whileHover={{ scale: 1.1, borderColor: "#fbbf24" }}
               />
               {/* Dropdown Menu */}
               <motion.div 
-                className="invisible absolute right-0 top-[120%] z-[91] flex w-[200px] flex-col rounded-xl bg-white/95 backdrop-blur-xl p-4 text-richblack-900 opacity-0 transition-all duration-300 group-hover:visible group-hover:opacity-100 shadow-[0_8px_32px_rgba(0,0,0,0.2)]"
+                className="invisible absolute right-0 top-[120%] z-[1000] flex w-[200px] flex-col rounded-xl bg-white/95 backdrop-blur-xl p-4 text-richblack-900 opacity-0 transition-all duration-300 group-hover:visible group-hover:opacity-100 shadow-[0_8px_32px_rgba(0,0,0,0.2)]"
                 initial={{ scale: 0.8, opacity: 0 }}
                 whileInView={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.2 }}
@@ -408,7 +378,7 @@ const ModernNavbar = () => {
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div 
-              className="absolute top-16 left-0 z-[91] w-full rounded-xl bg-richblack-900/95 backdrop-blur-xl p-4 sm:hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-white/10"
+              className="absolute top-16 left-0 z-50 w-full rounded-xl bg-richblack-900/95 backdrop-blur-xl p-4 sm:hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-white/10"
               initial={{ opacity: 0, y: -20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -20, scale: 0.95 }}
@@ -501,61 +471,7 @@ const ModernNavbar = () => {
                   </details>
                 </motion.li>
 
-                {/* Profile Options for Mobile - Show when logged in */}
-                {token && user && (
-                  <>
-                    <motion.li
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: 0.5 }}
-                    >
-                      <motion.div whileHover={{ x: 5 }} transition={{ duration: 0.2 }}>
-                        <Link
-                          to="/dashboard/my-profile"
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="block rounded-xl p-3 hover:bg-white/10 font-medium transition-all duration-300"
-                        >
-                          Dashboard
-                        </Link>
-                      </motion.div>
-                    </motion.li>
-                    {user.accountType === "Admin" && (
-                      <motion.li
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: 0.6 }}
-                      >
-                        <motion.div whileHover={{ x: 5 }} transition={{ duration: 0.2 }}>
-                          <Link
-                            to="/admin"
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="block rounded-xl p-3 hover:bg-white/10 font-medium transition-all duration-300"
-                          >
-                            Admin Dashboard
-                          </Link>
-                        </motion.div>
-                      </motion.li>
-                    )}
-                    <motion.li
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: 0.7 }}
-                    >
-                      <motion.button
-                        onClick={() => {
-                          dispatch(logout(navigate));
-                          setMobileMenuOpen(false);
-                        }}
-                        className="w-full text-left block rounded-xl p-3 hover:bg-white/10 font-medium transition-all duration-300"
-                        whileHover={{ x: 5 }}
-                      >
-                        Logout
-                      </motion.button>
-                    </motion.li>
-                  </>
-                )}
-
-                {/* Auth Buttons for Mobile - Show when not logged in */}
+                {/* Auth Buttons for Mobile */}
                 {!token && (
                   <>
                     <motion.li
