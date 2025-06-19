@@ -75,14 +75,14 @@ export default function Upload({ name, label, register, setValue, errors, video 
                 className="h-full w-full rounded-md object-cover"
               />
             ) : (
-              <video 
-                className="w-full aspect-video" 
-                controls
-                playsInline 
-                src={previewSource}
-              >
-                Your browser does not support the video tag.
-              </video>
+          <video 
+            className="w-full aspect-video max-h-[300px] overflow-auto" 
+            controls
+            playsInline 
+            src={previewSource}
+          >
+            Your browser does not support the video tag.
+          </video>
             )}
 
             {!viewData && (

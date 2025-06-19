@@ -24,6 +24,11 @@ export default function CoursesTable({ courses, setCourses, loading, setLoading 
 
   const TRUNCATE_LENGTH = 25
 
+  // Get course duration from the API response
+  const getCourseDuration = (course) => {
+    return course.totalDuration || "0s"
+  }
+
   // delete course
   const handleCourseDelete = async (courseId) => {
     try {
@@ -51,16 +56,16 @@ export default function CoursesTable({ courses, setCourses, loading, setLoading 
   // Loading Skeleton
   const skItem = () => {
     return (
-      <div className="flex border-b border-richblack-800 px-6 py-8 w-full">
-        <div className="flex flex-1 gap-x-4 ">
-          <div className='h-[148px] min-w-[300px] rounded-xl skeleton '></div>
+      <div className="flex flex-col md:flex-row border-b border-richblack-800 px-4 md:px-6 py-4 md:py-8 w-full">
+        <div className="flex flex-col md:flex-row flex-1 gap-4 md:gap-x-4">
+          <div className='h-[148px] w-full md:min-w-[270px] md:max-w-[270px] rounded-xl skeleton'></div>
 
-          <div className="flex flex-col w-[40%]">
-            <p className="h-5 w-[50%] rounded-xl skeleton"></p>
-            <p className="h-20 w-[60%] rounded-xl mt-3 skeleton"></p>
+          <div className="flex flex-col w-full md:w-[40%]">
+            <p className="h-5 w-[70%] md:w-[50%] rounded-xl skeleton"></p>
+            <p className="h-20 w-[90%] md:w-[60%] rounded-xl mt-3 skeleton"></p>
 
-            <p className="h-2 w-[20%] rounded-xl skeleton mt-3"></p>
-            <p className="h-2 w-[20%] rounded-xl skeleton mt-2"></p>
+            <p className="h-2 w-[40%] md:w-[20%] rounded-xl skeleton mt-3"></p>
+            <p className="h-2 w-[40%] md:w-[20%] rounded-xl skeleton mt-2"></p>
           </div>
         </div>
       </div>
@@ -69,10 +74,10 @@ export default function CoursesTable({ courses, setCourses, loading, setLoading 
 
   return (
     <>
-      <Table className="rounded-2xl border border-richblack-800 ">
+      <Table className="rounded-2xl border border-richblack-800 w-full">
         {/* heading */}
         <Thead>
-          <Tr className="flex gap-x-10 rounded-t-3xl border-b border-b-richblack-800 px-6 py-2">
+          <Tr className="flex flex-wrap md:flex-nowrap gap-4 md:gap-x-10 rounded-t-3xl border-b border-b-richblack-800 px-4 md:px-6 py-2">
             <Th className="flex-1 text-left text-sm font-medium uppercase text-richblack-100">
               Courses
             </Th>
@@ -112,14 +117,14 @@ export default function CoursesTable({ courses, setCourses, loading, setLoading 
               courses?.map((course) => (
                 <Tr
                   key={course._id}
-                  className="flex gap-x-10 border-b border-richblack-800 px-6 py-8"
+                  className="flex flex-col md:flex-row gap-4 md:gap-x-10 border-b border-richblack-800 px-4 md:px-6 py-4 md:py-8"
                 >
-                  <Td className="flex flex-1 gap-x-4 relative">
+                  <Td className="flex flex-col md:flex-row flex-1 gap-4 md:gap-x-4 relative">
                     {/* course Thumbnail */}
                     <Img
                       src={course?.thumbnail}
                       alt={course?.courseName}
-                      className="h-[148px] min-w-[270px] max-w-[270px] rounded-lg object-cover"
+                      className="h-[148px] w-full md:min-w-[270px] md:max-w-[270px] rounded-lg object-cover"
                     />
 
                     <div className="flex flex-col">
@@ -160,25 +165,37 @@ export default function CoursesTable({ courses, setCourses, loading, setLoading 
                     </div>
                   </Td>
 
-                  {/* course duration */}
-                  <Td className="text-sm font-medium text-richblack-100">2hr 30min</Td>
-                  <Td className="text-sm font-medium text-richblack-100">
+                  {/* Metadata section for mobile */}
+                  <div className="flex flex-wrap md:hidden gap-4 items-center justify-between mt-4 px-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-richblack-100">Duration:</span>
+                      <span>{getCourseDuration(course)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-richblack-100">Price:</span>
+                      <span>{course.courseType === 'Free' ? 'Free' : `₹${course.price}`}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-yellow-50">{course?.averageRating?.toFixed(1) || 0}</span>
+                      <FaStar className="text-yellow-50" />
+                      <span className="text-richblack-300">({course?.totalRatings || 0})</span>
+                    </div>
+                  </div>
+
+                  {/* Desktop view metadata */}
+                  <Td className="hidden md:table-cell text-sm font-medium text-richblack-100">{getCourseDuration(course)}</Td>
+                  <Td className="hidden md:table-cell text-sm font-medium text-richblack-100">
                     {course.courseType === 'Free' ? 'Free' : `₹${course.price}`}
                   </Td>
-
-                  <Td className="text-sm font-medium text-richblack-100">
+                  <Td className="hidden md:table-cell text-sm font-medium text-richblack-100">
                     <div className="flex items-center gap-2">
-                      <span className="text-yellow-50">
-                        {course?.averageRating?.toFixed(1) || 0}
-                      </span>
+                      <span className="text-yellow-50">{course?.averageRating?.toFixed(1) || 0}</span>
                       <FaStar className="text-yellow-50" />
-                      <span className="text-richblack-300">
-                        ({course?.totalRatings || 0})
-                      </span>
+                      <span className="text-richblack-300">({course?.totalRatings || 0})</span>
                     </div>
                   </Td>
 
-                  <Td className="text-sm font-medium text-richblack-100 ">
+                  <Td className="flex justify-center md:justify-start text-sm font-medium text-richblack-100">
                     {/* Edit button */}
                     <button
                       disabled={loading}

@@ -14,7 +14,7 @@ const Toast = () => {
       toastOptions={{
         // Default options for all toasts
         className: '',
-        duration: 4000,
+        duration: 500,
         style: {
           background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(30, 30, 30, 0.95) 100%)',
           backdropFilter: 'blur(20px) saturate(180%)',

@@ -313,7 +313,35 @@ export const fetchInstructorCourses = async (token, userRole) => {
     if (!response?.data?.success) {
       throw new Error("Could Not Fetch Instructor Courses")
     }
-    result = response?.data?.data
+    // Calculate total duration for each course
+    result = response?.data?.data.map(course => {
+      let totalDurationInSeconds = 0
+      course.courseContent?.forEach(section => {
+        section.subSection?.forEach(subSection => {
+          totalDurationInSeconds += parseInt(subSection.timeDuration) || 0
+        })
+      })
+      
+      // Convert seconds to hours, minutes, and seconds
+      const hours = Math.floor(totalDurationInSeconds / 3600)
+      const minutes = Math.floor((totalDurationInSeconds % 3600) / 60)
+      const seconds = Math.floor((totalDurationInSeconds % 3600) % 60)
+
+      // Format duration string
+      let totalDuration = "0s"
+      if (hours > 0) {
+        totalDuration = `${hours}h ${minutes}m`
+      } else if (minutes > 0) {
+        totalDuration = `${minutes}m ${seconds}s`
+      } else if (seconds > 0) {
+        totalDuration = `${seconds}s`
+      }
+
+      return {
+        ...course,
+        totalDuration
+      }
+    })
   } catch (error) {
     console.log("INSTRUCTOR COURSES API ERROR............", error)
     toast.error(error.message)

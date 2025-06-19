@@ -11,6 +11,7 @@ import CoursesTable from "./InstructorCourses/CoursesTable"
 
 export default function MyCourses() {
   const { token } = useSelector((state) => state.auth)
+  const { user } = useSelector((state) => state.profile)
   const navigate = useNavigate()
   const [courses, setCourses] = useState([])
   const [loading, setLoading] = useState(false)
@@ -18,8 +19,8 @@ export default function MyCourses() {
   useEffect(() => {
     const fetchCourses = async () => {
       setLoading(true);
-      const result = await fetchInstructorCourses(token)
-      // console.log('Instructors all courses  ', result);
+      const result = await fetchInstructorCourses(token, user?.accountType)
+      console.log('Instructors all courses  ', result);
       setLoading(false);
       if (result) {
         setCourses(result)
@@ -35,13 +36,16 @@ export default function MyCourses() {
   }, [])
 
   return (
-    <div>
-      <div className="mb-14 flex justify-between">
-        {/* <div className="mb-14 flex items-center justify-between"> */}
-        <h1 className="text-4xl font-medium text-richblack-5 font-boogaloo text-center lg:text-left">My Courses</h1>
+    <div className="w-full">
+      <div className="mb-8 md:mb-14 flex flex-col md:flex-row justify-between items-center md:items-start gap-4">
+        <h1 className="text-2xl md:text-4xl font-medium text-richblack-5 font-boogaloo text-center md:text-left">
+          My Courses
+        </h1>
       </div>
       {/* course Table */}
-      {courses && <CoursesTable courses={courses} setCourses={setCourses} loading={loading} setLoading={setLoading} />}
+      <div className="w-full overflow-x-auto">
+        {courses && <CoursesTable courses={courses} setCourses={setCourses} loading={loading} setLoading={setLoading} />}
+      </div>
     </div>
   )
 }
