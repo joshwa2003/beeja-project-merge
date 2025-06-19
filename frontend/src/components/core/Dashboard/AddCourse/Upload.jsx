@@ -38,8 +38,8 @@ export default function Upload({ name, label, register, setValue, errors, video 
   }
 
   useEffect(() => {
-    register(name, { required: true })
-  }, [register])
+    register(name, { required: !video }) // Make video upload optional
+  }, [register, video])
 
 
   useEffect(() => {
@@ -59,7 +59,8 @@ export default function Upload({ name, label, register, setValue, errors, video 
   return (
     <div className="flex flex-col space-y-2">
       <label className="text-sm text-richblack-5" htmlFor={name}>
-        {label} {!viewData && <sup className="text-pink-200">*</sup>}
+        {label} {!viewData && !video && <sup className="text-pink-200">*</sup>}
+        {video && <span className="text-xs text-richblack-300 ml-2">(optional)</span>}
       </label>
 
       <div

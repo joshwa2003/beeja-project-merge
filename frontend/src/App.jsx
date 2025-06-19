@@ -24,6 +24,7 @@ import Navbar from "./components/common/Navbar"
 
 import OpenRoute from "./components/core/Auth/OpenRoute"
 import ProtectedRoute from "./components/core/Auth/ProtectedRoute";
+import AuthChecker from "./components/common/AuthChecker";
 
 import Dashboard from "./pages/Dashboard";
 import MyProfile from "./components/core/Dashboard/MyProfile";
@@ -82,8 +83,9 @@ function App() {
   }, [showArrow]);
 
   return (
-    <div className="w-screen min-h-screen bg-richblack-900 flex flex-col font-inter">
-      <Navbar />
+    <AuthChecker>
+      <div className="w-screen min-h-screen bg-richblack-900 flex flex-col font-inter">
+        <Navbar />
 
       {/* go upward arrow */}
       <button
@@ -209,9 +211,10 @@ function App() {
         {/* Page Not Found (404 Page ) */}
         <Route path="*" element={<PageNotFound />} />
 
-      </Routes>
+        </Routes>
 
-    </div>
+      </div>
+    </AuthChecker>
   );
 }
 

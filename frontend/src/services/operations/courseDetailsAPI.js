@@ -186,10 +186,16 @@ export const createSubSection = async (data, token) => {
 
     result = response?.data?.data
     toast.success("Lecture Added")
-  } catch (error) {
-    console.log("CREATE SUB-SECTION API ERROR............", error)
-    toast.error(error.message)
-  }
+    } catch (error) {
+      console.log("CREATE SUB-SECTION API ERROR............", error)
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || "Failed to create subsection"
+      toast.error(errorMessage)
+      console.error("Full error details:", {
+        response: error.response?.data,
+        status: error.response?.status,
+        message: error.message
+      })
+    }
   toast.dismiss(toastId)
   return result
 }

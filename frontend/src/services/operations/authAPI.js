@@ -1,8 +1,8 @@
 import { toast } from "react-hot-toast"
 
-import { setLoading, setToken } from "../../slices/authSlice"
+import { setLoading, setToken, setUser, clearAuth } from "../../slices/authSlice"
 import { resetCart } from "../../slices/cartSlice"
-import { setUser } from "../../slices/profileSlice"
+import { setUser as setProfileUser } from "../../slices/profileSlice"
 import { apiConnector } from "../apiConnector"
 import { endpoints } from "../apis"
 
@@ -111,11 +111,11 @@ export function login(email, password, navigate) {
         ? response.data.user.image
         : `https://api.dicebear.com/5.x/initials/svg?seed=${response.data.user.firstName} ${response.data.user.lastName}`
 
-      dispatch(setUser({ ...response.data.user, image: userImage }));
-      // console.log('User data - ', response.data.user);/
-      localStorage.setItem("token", response.data?.token);
-
-      localStorage.setItem("user", JSON.stringify({ ...response.data.user, image: userImage }));
+      const userData = { ...response.data.user, image: userImage };
+      
+      // Set user data in both auth and profile slices
+      dispatch(setUser(userData));
+      dispatch(setProfileUser(userData));
 
       navigate("/dashboard/my-profile");
     } catch (error) {
@@ -193,11 +193,9 @@ export function resetPassword(password, confirmPassword, token, navigate) {
 // ================ Logout ================
 export function logout(navigate) {
   return (dispatch) => {
-    dispatch(setToken(null))
-    dispatch(setUser(null))
+    dispatch(clearAuth())
+    dispatch(setProfileUser(null))
     dispatch(resetCart())
-    localStorage.removeItem("token")
-    localStorage.removeItem("user")
     toast.success("Logged Out")
     navigate("/")
   }

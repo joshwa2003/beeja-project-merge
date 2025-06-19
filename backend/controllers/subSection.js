@@ -38,9 +38,11 @@ exports.updateSubSection = async (req, res) => {
         // upload video to cloudinary
         if (req.file) {
             const video = req.file;
+            console.log('Uploading video file:', video.originalname);
             const uploadDetails = await uploadImageToCloudinary(video, process.env.FOLDER_NAME);
             subSection.videoUrl = uploadDetails.secure_url;
-            subSection.timeDuration = uploadDetails.duration;
+            subSection.timeDuration = uploadDetails.duration || 0;
+            console.log('Video uploaded successfully:', uploadDetails.secure_url);
         }
 
         // Handle quiz attachment
@@ -105,31 +107,54 @@ exports.createSubSection = async (req, res) => {
             });
         }
 
-        if (!videoFile) {
-            console.log('Validation failed: No video file provided');
-            return res.status(400).json({
-                success: false,
-                message: 'Video file is required'
-            });
-        }
+        let videoUrl = '';
+        let timeDuration = 0;
 
-        console.log('Starting video upload to Cloudinary...');
-        
-        // upload video to cloudinary with timeout
-        const uploadPromise = uploadImageToCloudinary(videoFile, process.env.FOLDER_NAME);
-        const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Upload timeout')), 300000) // 5 minutes timeout
-        );
-        
-        const videoFileDetails = await Promise.race([uploadPromise, timeoutPromise]);
-        console.log('Video uploaded successfully:', videoFileDetails.secure_url);
+        if (videoFile) {
+            try {
+                console.log('Starting video upload to Cloudinary...');
+                console.log('Video file details:', {
+                    originalname: videoFile.originalname,
+                    mimetype: videoFile.mimetype,
+                    size: videoFile.size,
+                    path: videoFile.path
+                });
+                
+                // Check if FOLDER_NAME environment variable is set
+                if (!process.env.FOLDER_NAME) {
+                    console.log('Warning: FOLDER_NAME environment variable not set, using default');
+                }
+                
+                // upload video to cloudinary with timeout
+                const uploadPromise = uploadImageToCloudinary(videoFile, process.env.FOLDER_NAME || 'uploads');
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Upload timeout')), 300000) // 5 minutes timeout
+                );
+                
+                const videoFileDetails = await Promise.race([uploadPromise, timeoutPromise]);
+                console.log('Video uploaded successfully:', videoFileDetails.secure_url);
+                
+                videoUrl = videoFileDetails.secure_url;
+                timeDuration = videoFileDetails.duration || 0;
+            } catch (uploadError) {
+                console.error('Video upload failed:', uploadError);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Video upload failed',
+                    error: uploadError.message
+                });
+            }
+        } else {
+            console.log('No video file provided, creating subsection without video');
+            videoUrl = 'https://via.placeholder.com/640x360?text=No+Video'; // Placeholder
+        }
 
         // create entry in DB
         const SubSectionDetails = await SubSection.create({
             title, 
-            timeDuration: videoFileDetails.duration || 0, 
+            timeDuration, 
             description, 
-            videoUrl: videoFileDetails.secure_url 
+            videoUrl 
         });
 
         console.log('SubSection created in DB:', SubSectionDetails._id);
@@ -178,10 +203,15 @@ exports.createSubSection = async (req, res) => {
     }
     catch (error) {
         console.error('Error while creating SubSection:', error);
+        console.error('Error stack:', error.stack);
         res.status(500).json({
             success: false,
             error: error.message,
-            message: 'Error while creating SubSection'
+            message: 'Error while creating SubSection',
+            details: {
+                stack: error.stack,
+                name: error.name
+            }
         });
     }
 }

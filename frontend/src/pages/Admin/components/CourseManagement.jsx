@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { getAllCourses, approveCourse, deleteCourse, toggleCourseVisibility } from "../../../services/operations/adminAPI";
-import { FaCheck, FaTrash, FaEye, FaEyeSlash, FaPlus } from "react-icons/fa";
+import { FaCheck, FaTrash, FaEye, FaEyeSlash, FaPlus, FaEdit } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import ConfirmationModal from "../../../components/common/ConfirmationModal";
 import CreateCourse from "./CreateCourse/CreateCourse";
+import EditCourse from "./EditCourse";
 
 const CourseManagement = () => {
   const [showCreateCourse, setShowCreateCourse] = useState(false);
+  const [editingCourse, setEditingCourse] = useState(null);
   const { token } = useSelector((state) => state.auth);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -107,6 +109,11 @@ const CourseManagement = () => {
     }
   };
 
+  const handleEditCourse = (course) => {
+    setEditingCourse(course);
+    setShowCreateCourse(false);
+  };
+
   const handleViewCourse = (courseId) => {
     // Implement course preview/details view
     console.log("View course:", courseId);
@@ -150,7 +157,17 @@ const CourseManagement = () => {
 
       {loading && <p>Loading courses...</p>}
       {error && <p className="text-red-500">{error}</p>}
-      {showCreateCourse ? (
+      
+      {editingCourse ? (
+        <EditCourse
+          course={editingCourse}
+          onCancel={() => setEditingCourse(null)}
+          onSave={(updatedCourse) => {
+            setEditingCourse(null);
+            fetchCourses();
+          }}
+        />
+      ) : showCreateCourse ? (
         <CreateCourse onCancel={() => setShowCreateCourse(false)} />
       ) : !loading && !error && (
         <div className="overflow-x-auto">
@@ -201,6 +218,16 @@ const CourseManagement = () => {
                           ) : (
                             course.isVisible ? <FaEye size={20} /> : <FaEyeSlash size={20} />
                           )}
+                        </button>
+                        <button
+                          onClick={() => handleEditCourse(course)}
+                          className="hover:scale-110 transition-transform duration-200"
+                          style={{ color: 'rgb(255, 214, 10)' }}
+                          onMouseEnter={(e) => e.target.style.color = 'rgb(255, 224, 40)'}
+                          onMouseLeave={(e) => e.target.style.color = 'rgb(255, 214, 10)'}
+                          title="Edit Course"
+                        >
+                          <FaEdit size={20} />
                         </button>
                         <button
                           onClick={() => {

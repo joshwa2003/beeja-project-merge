@@ -8,9 +8,19 @@ exports.uploadImageToCloudinary = async (file, folder, height, quality) => {
 
         options.resource_type = 'auto';
         
-        // Handle both file path (disk storage) and file buffer (memory storage)
-        const filePath = file.path || file.tempFilePath;
-        return await cloudinary.uploader.upload(filePath, options);
+        // Handle file upload to Cloudinary
+        if (file.buffer) {
+            // If file is in memory (buffer)
+            return await cloudinary.uploader.upload(
+                `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
+                options
+            );
+        } else if (file.path) {
+            // If file is stored on disk
+            return await cloudinary.uploader.upload(file.path, options);
+        } else {
+            throw new Error('Invalid file format');
+        }
     }
     catch (error) {
         console.log("Error while uploading image");

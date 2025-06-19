@@ -1,7 +1,6 @@
 import { toast } from "react-hot-toast"
 import { apiConnector } from "../apiConnector"
 import { quizEndpoints } from "../apis"
-import { updateQuizProgress } from "./courseProgressAPI"
 
 const {
   CREATE_QUIZ_API,
@@ -13,153 +12,145 @@ const {
   VALIDATE_SECTION_ACCESS_API,
 } = quizEndpoints
 
-export async function createQuiz(data, token) {
-  const toastId = toast.loading("Creating Quiz...")
+// ================ Get All Quizzes ================
+export const getAllQuizzes = async (token) => {
+  let result = []
   try {
-    console.log("Creating quiz with data:", data)
-    const response = await apiConnector("POST", CREATE_QUIZ_API, data, {
+    const response = await apiConnector("GET", GET_ALL_QUIZZES_API, null, {
       Authorization: `Bearer ${token}`,
     })
-    console.log("CREATE QUIZ API RESPONSE............", response)
     
     if (!response?.data?.success) {
-      const errorMessage = response?.data?.message || "Could Not Create Quiz"
-      throw new Error(errorMessage)
+      throw new Error("Could Not Fetch Quizzes")
     }
-    
-    toast.success("Quiz Created Successfully")
-    return response?.data?.data
+    result = response?.data?.data
   } catch (error) {
-    console.error("CREATE QUIZ API ERROR............", error)
-    const errorMessage = error.response?.data?.message || error.message || "Failed to create quiz"
-    toast.error(errorMessage)
-    throw error // Re-throw to handle in component
-  } finally {
-    toast.dismiss(toastId)
+    console.log("GET_ALL_QUIZZES_API ERROR............", error)
+    // Don't show error toast for quiz loading failure
+    // toast.error(error.message)
   }
+  return result
 }
 
-export async function updateQuiz(data, token) {
-  const toastId = toast.loading("Updating Quiz...")
-  try {
-    const { quizId, ...updateData } = data
-    const response = await apiConnector("PUT", UPDATE_QUIZ_API.replace(":quizId", quizId), updateData, {
-      Authorization: `Bearer ${token}`,
-    })
-    console.log("UPDATE QUIZ API RESPONSE............", response)
-    if (!response?.data?.success) {
-      throw new Error(response?.data?.message || "Could Not Update Quiz")
-    }
-    toast.success("Quiz Updated Successfully")
-    return response?.data?.data
-  } catch (error) {
-    console.log("UPDATE QUIZ API ERROR............", error)
-    const errorMessage = error.response?.data?.message || error.message || "Failed to update quiz"
-    toast.error(errorMessage)
-    throw error // Re-throw to handle in component
-  } finally {
-    toast.dismiss(toastId)
-  }
-}
-
-export async function getQuizById(quizId, token) {
+// ================ Get Quiz by ID ================
+export const getQuizById = async (quizId, token) => {
+  let result = null
   try {
     const response = await apiConnector("GET", GET_QUIZ_API.replace(":quizId", quizId), null, {
       Authorization: `Bearer ${token}`,
     })
-    console.log("GET QUIZ API RESPONSE............", response)
+    
     if (!response?.data?.success) {
-      throw new Error("Could Not Get Quiz")
+      throw new Error("Could Not Fetch Quiz")
     }
-    return response?.data?.data
+    result = response?.data?.data
   } catch (error) {
-    console.log("GET QUIZ API ERROR............", error)
-    // Silently handle error without showing toast notification
-    throw error
+    console.log("GET_QUIZ_API ERROR............", error)
+    toast.error(error.message)
   }
+  return result
 }
 
-export async function submitQuiz(data, token) {
+// ================ Create Quiz ================
+export const createQuiz = async (data, token) => {
+  let result = null
+  const toastId = toast.loading("Creating Quiz...")
+  try {
+    const response = await apiConnector("POST", CREATE_QUIZ_API, data, {
+      Authorization: `Bearer ${token}`,
+    })
+    
+    if (!response?.data?.success) {
+      throw new Error("Could Not Create Quiz")
+    }
+    result = response?.data?.data
+    toast.success("Quiz Created Successfully")
+  } catch (error) {
+    console.log("CREATE_QUIZ_API ERROR............", error)
+    toast.error(error.message)
+  }
+  toast.dismiss(toastId)
+  return result
+}
+
+// ================ Update Quiz ================
+export const updateQuiz = async (quizId, data, token) => {
+  let result = null
+  const toastId = toast.loading("Updating Quiz...")
+  try {
+    const response = await apiConnector("PUT", UPDATE_QUIZ_API.replace(":quizId", quizId), data, {
+      Authorization: `Bearer ${token}`,
+    })
+    
+    if (!response?.data?.success) {
+      throw new Error("Could Not Update Quiz")
+    }
+    result = response?.data?.data
+    toast.success("Quiz Updated Successfully")
+  } catch (error) {
+    console.log("UPDATE_QUIZ_API ERROR............", error)
+    toast.error(error.message)
+  }
+  toast.dismiss(toastId)
+  return result
+}
+
+// ================ Submit Quiz ================
+export const submitQuiz = async (data, token) => {
+  let result = null
   const toastId = toast.loading("Submitting Quiz...")
   try {
     const response = await apiConnector("POST", SUBMIT_QUIZ_API, data, {
       Authorization: `Bearer ${token}`,
     })
-    console.log("SUBMIT QUIZ API RESPONSE............", response)
+    
     if (!response?.data?.success) {
       throw new Error("Could Not Submit Quiz")
     }
-
-    // Update course progress with quiz completion
-    if (data.courseId && data.subsectionId) {
-      const progressData = {
-        courseId: data.courseId,
-        subsectionId: data.subsectionId,
-        quizId: data.quizId,
-        score: response.data.data.score,
-        totalMarks: response.data.data.totalMarks
-      }
-      await updateQuizProgress(progressData, token)
-    }
-
+    result = response?.data?.data
     toast.success("Quiz Submitted Successfully")
-    return response?.data?.data
   } catch (error) {
-    console.log("SUBMIT QUIZ API ERROR............", error)
+    console.log("SUBMIT_QUIZ_API ERROR............", error)
     toast.error(error.message)
-    return null
-  } finally {
-    toast.dismiss(toastId)
   }
+  toast.dismiss(toastId)
+  return result
 }
 
-export async function getQuizResults(quizId, token) {
-  const toastId = toast.loading("Loading Quiz Results...")
+// ================ Get Quiz Results ================
+export const getQuizResults = async (quizId, token) => {
+  let result = null
   try {
     const response = await apiConnector("GET", GET_QUIZ_RESULTS_API.replace(":quizId", quizId), null, {
       Authorization: `Bearer ${token}`,
     })
-    console.log("GET QUIZ RESULTS API RESPONSE............", response)
+    
     if (!response?.data?.success) {
-      throw new Error("Could Not Get Quiz Results")
+      throw new Error("Could Not Fetch Quiz Results")
     }
-    return response?.data?.data
+    result = response?.data?.data
   } catch (error) {
-    console.log("GET QUIZ RESULTS API ERROR............", error)
+    console.log("GET_QUIZ_RESULTS_API ERROR............", error)
     toast.error(error.message)
   }
-  toast.dismiss(toastId)
+  return result
 }
 
-export async function validateSectionAccess(sectionId, token) {
+// ================ Validate Section Access ================
+export const validateSectionAccess = async (sectionId, token) => {
+  let result = null
   try {
     const response = await apiConnector("GET", VALIDATE_SECTION_ACCESS_API.replace(":sectionId", sectionId), null, {
       Authorization: `Bearer ${token}`,
     })
-    console.log("VALIDATE SECTION ACCESS API RESPONSE............", response)
+    
     if (!response?.data?.success) {
       throw new Error("Could Not Validate Section Access")
     }
-    return response?.data
+    result = response?.data?.data
   } catch (error) {
-    console.log("VALIDATE SECTION ACCESS API ERROR............", error)
+    console.log("VALIDATE_SECTION_ACCESS_API ERROR............", error)
     toast.error(error.message)
   }
-}
-
-export async function getAllQuizzes(token) {
-  try {
-    const response = await apiConnector("GET", GET_ALL_QUIZZES_API, null, {
-      Authorization: `Bearer ${token}`,
-    })
-    console.log("GET ALL QUIZZES API RESPONSE............", response)
-    if (!response?.data?.success) {
-      throw new Error("Could Not Get Quizzes")
-    }
-    return response?.data?.data
-  } catch (error) {
-    console.log("GET ALL QUIZZES API ERROR............", error)
-    toast.error(error.message)
-    return []
-  }
+  return result
 }
