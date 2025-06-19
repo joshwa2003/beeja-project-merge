@@ -319,8 +319,22 @@ exports.submitQuiz = async (req, res) => {
                     return matchAnswer !== undefined && matchAnswer !== null && matchAnswer !== '';
                 });
                 isAnswered = hasAllMatches;
+                
                 if (isAnswered) {
-                    isCorrect = true; // Give full marks for now
+                    // Check if ALL matches are correct - if any one is wrong, entire question is wrong
+                    isCorrect = question.options.every((_, optionIndex) => {
+                        const userAnswer = answers[`${questionId}_${optionIndex}`];
+                        // The correct answer should match the option index
+                        return parseInt(userAnswer) === optionIndex;
+                    });
+                    
+                    console.log(`Match the following question ${questionId}: all correct = ${isCorrect}`);
+                    
+                    // Log individual matches for debugging
+                    question.options.forEach((_, optionIndex) => {
+                        const userAnswer = answers[`${questionId}_${optionIndex}`];
+                        console.log(`  Match ${optionIndex}: user=${userAnswer}, correct=${optionIndex}, match=${parseInt(userAnswer) === optionIndex}`);
+                    });
                 }
             } else if (question.questionType === 'multipleChoice') {
                 // For multiple choice questions

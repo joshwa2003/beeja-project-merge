@@ -6,6 +6,7 @@ import IconBtn from "../../common/IconBtn"
 import { IoIosArrowBack } from "react-icons/io"
 import { FiClock, FiCheckCircle, FiAlertCircle } from "react-icons/fi"
 import { HiOutlineQuestionMarkCircle } from "react-icons/hi"
+import Xarrow from 'react-xarrows'
 
 const QuizView = () => {
   const { courseId, sectionId, subSectionId } = useParams()
@@ -73,6 +74,61 @@ const QuizView = () => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
+
+
+  // Handle question click for manual connection
+  const [selectedQuestion, setSelectedQuestion] = useState(null)
+  const [shuffledAnswers, setShuffledAnswers] = useState({})
+  
+  // Initialize shuffled answers for match the following questions
+  useEffect(() => {
+    if (quizData && quizData.questions) {
+      const newShuffledAnswers = {}
+      quizData.questions.forEach(question => {
+        if (question.questionType === 'matchTheFollowing') {
+          const answersToShow = question.answers || question.options
+          const shuffled = [...answersToShow]
+            .map((answer, index) => ({ answer, originalIndex: index, letter: String.fromCharCode(65 + index) }))
+            .sort(() => Math.random() - 0.5)
+          newShuffledAnswers[question._id] = shuffled
+        }
+      })
+      setShuffledAnswers(newShuffledAnswers)
+    }
+  }, [quizData])
+
+  const handleQuestionClick = (questionIndex) => {
+    // If clicking the same question, deselect it
+    if (selectedQuestion === questionIndex) {
+      setSelectedQuestion(null)
+      return
+    }
+    setSelectedQuestion(questionIndex)
+  }
+
+  const handleAnswerClick = (answerIndex) => {
+    if (selectedQuestion !== null) {
+      // Check if this connection already exists
+      const existingConnection = Object.entries(quizAnswers)
+        .find(([key, value]) => 
+          key.startsWith(currentQuestionData._id) && 
+          parseInt(key.split('_')[1]) === selectedQuestion && 
+          value === answerIndex
+        )
+
+      if (existingConnection) {
+        // Remove the connection if it exists
+        const [key] = existingConnection
+        const newAnswers = { ...quizAnswers }
+        delete newAnswers[key]
+        setQuizAnswers(newAnswers)
+      } else {
+        // Create new connection
+        handleQuizAnswer(`${currentQuestionData._id}_${selectedQuestion}`, answerIndex)
+      }
+      setSelectedQuestion(null)
+    }
   }
 
   // Handle quiz answer selection
@@ -410,25 +466,153 @@ const QuizView = () => {
 
         {/* Match the Following Questions */}
         {currentQuestionData.questionType === 'matchTheFollowing' && (
-          <div className="space-y-3">
-            <p className="text-sm text-richblack-300 mb-4">Match the items by selecting corresponding pairs:</p>
-            {currentQuestionData.options.map((option, optionIndex) => (
-              <div key={optionIndex} className="flex items-center space-x-4 p-3 bg-richblack-700 rounded-lg">
-                <span className="text-richblack-25 flex-1">{option}</span>
-                <select
-                  value={quizAnswers[`${currentQuestionData._id}_${optionIndex}`] || ''}
-                  onChange={(e) => handleQuizAnswer(`${currentQuestionData._id}_${optionIndex}`, e.target.value)}
-                  className="p-2 bg-richblack-600 text-richblack-25 rounded border border-richblack-500 focus:border-yellow-50 focus:outline-none"
-                >
-                  <option value="">Select match...</option>
-                  {currentQuestionData.options.map((matchOption, matchIndex) => (
-                    <option key={matchIndex} value={matchIndex}>
-                      {String.fromCharCode(65 + matchIndex)}
-                    </option>
+          <div className="space-y-4">
+            <p className="text-sm text-richblack-300 mb-6">Click on a question and then click on its matching answer to create a connection:</p>
+            
+            <div className="relative">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 relative min-h-[400px]">
+                {/* Left Column - Questions */}
+                <div className="space-y-3">
+                  <h4 className="text-lg font-semibold text-yellow-50 mb-4 text-center">Questions</h4>
+                  {currentQuestionData.options.map((option, optionIndex) => (
+                    <div 
+                      key={`q-${optionIndex}`}
+                      id={`question-${optionIndex}`}
+                      className={`p-4 bg-richblack-700 rounded-lg border-2 ${
+                        selectedQuestion === optionIndex 
+                          ? 'border-yellow-50' 
+                          : Object.keys(quizAnswers).some(key => 
+                              key.startsWith(currentQuestionData._id) && 
+                              parseInt(key.split('_')[1]) === optionIndex
+                            )
+                          ? 'border-green-500'
+                          : 'border-richblack-600'
+                      } hover:border-yellow-50 transition-colors cursor-pointer relative z-10`}
+                      onClick={() => handleQuestionClick(optionIndex)}
+                    >
+                      <div className="flex items-center">
+                        <span className="text-richblack-25 flex-1">{option}</span>
+                      </div>
+                    </div>
                   ))}
-                </select>
+                </div>
+
+                {/* Right Column - Shuffled Answers */}
+                <div className="space-y-3">
+                  <h4 className="text-lg font-semibold text-yellow-50 mb-4 text-center">Answers</h4>
+                  {(() => {
+                    const questionShuffledAnswers = shuffledAnswers[currentQuestionData._id] || []
+                    
+                    return questionShuffledAnswers.map((item, displayIndex) => (
+                      <div 
+                        key={`a-${displayIndex}`}
+                        id={`answer-${item.originalIndex}`}
+                      className={`p-4 bg-richblack-700 rounded-lg border-2 ${
+                        Object.values(quizAnswers).includes(item.originalIndex)
+                          ? 'border-green-500'
+                          : 'border-richblack-600'
+                      } hover:border-yellow-50 transition-colors cursor-pointer relative z-10`}
+                      onClick={() => handleAnswerClick(item.originalIndex)}
+                      >
+                      <div className="flex items-center">
+                          <span className="text-richblack-25 flex-1">{item.answer}</span>
+                        </div>
+                      </div>
+                    ))
+                  })()}
+                </div>
+
+                {/* Connection Lines */}
+                {Object.entries(quizAnswers)
+                  .filter(([key]) => key.startsWith(currentQuestionData._id))
+                  .map(([key, value]) => {
+                    const questionIndex = parseInt(key.split('_')[1])
+                    // Define different colors for each question index
+                    const colors = [
+                      "#22C55E", // Green for question 1
+                      "#3B82F6", // Blue for question 2
+                      "#F59E0B", // Orange for question 3
+                      "#EF4444"  // Red for question 4
+                    ]
+                    const arrowColor = colors[questionIndex] || "#22C55E"
+                    
+                    return (
+                      <Xarrow
+                        key={key}
+                        start={`question-${questionIndex}`}
+                        end={`answer-${value}`}
+                        color={arrowColor}
+                        strokeWidth={2}
+                        path="grid"
+                        gridBreak="50%"
+                        startAnchor="right"
+                        endAnchor="left"
+                        showHead={true}
+                        headSize={6}
+                        headColor={arrowColor}
+                        curveness={0}
+                        dashness={{ strokeLen: 10, nonStrokeLen: 5, animation: -2 }}
+                      />
+                    )
+                  })
+                }
+
               </div>
-            ))}
+            </div>
+
+            {/* Progress indicator */}
+            <div className="mt-8 p-6 bg-richblack-700 rounded-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-lg font-semibold text-yellow-50">Progress</h4>
+                <span className="text-sm text-richblack-300">
+                  {currentQuestionData.options.filter((_, index) => 
+                    quizAnswers[`${currentQuestionData._id}_${index}`] !== undefined
+                  ).length}/{currentQuestionData.options.length} Matched
+                </span>
+              </div>
+              
+              <div className="w-full bg-richblack-800 rounded-full h-2">
+                <div 
+                  className="bg-yellow-50 h-2 rounded-full transition-all duration-300"
+                  style={{ 
+                    width: `${(currentQuestionData.options.filter((_, index) => 
+                      quizAnswers[`${currentQuestionData._id}_${index}`] !== undefined
+                    ).length / currentQuestionData.options.length) * 100}%` 
+                  }}
+                ></div>
+              </div>
+            </div>
+
+            {/* Reset Button */}
+            <div className="flex justify-center mt-6">
+              <button
+                onClick={() => {
+                  setQuizAnswers(prevAnswers => {
+                    const newAnswers = { ...prevAnswers }
+                    // Remove all answers for current question
+                    Object.keys(newAnswers).forEach(key => {
+                      if (key.startsWith(currentQuestionData._id)) {
+                        delete newAnswers[key]
+                      }
+                    })
+                    return newAnswers
+                  })
+                }}
+                className="px-6 py-2 bg-richblack-700 text-yellow-50 rounded-lg hover:bg-richblack-600 transition-all duration-200 flex items-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                  <path fillRule="evenodd" d="M4.755 10.059a7.5 7.5 0 0112.548-3.364l1.903 1.903h-3.183a.75.75 0 100 1.5h4.992a.75.75 0 00.75-.75V4.356a.75.75 0 00-1.5 0v3.18l-1.9-1.9A9 9 0 003.306 9.67a.75.75 0 101.45.388zm15.408 3.352a.75.75 0 00-.919.53 7.5 7.5 0 01-12.548 3.364l-1.902-1.903h3.183a.75.75 0 000-1.5H2.984a.75.75 0 00-.75.75v4.992a.75.75 0 001.5 0v-3.18l1.9 1.9a9 9 0 0015.059-4.035.75.75 0 00-.53-.918z" clipRule="evenodd" />
+                </svg>
+                Reset Matches
+              </button>
+            </div>
+
+            {/* Instructions */}
+            <div className="mt-4 p-4 bg-yellow-800/20 border border-yellow-600 rounded-lg">
+              <p className="text-yellow-200 text-sm">
+                <strong>Instructions:</strong> Click on a question and then click on its matching answer to create a connection. Click the same combination again to remove the connection, or use the Reset button to clear all matches and start over. Questions and answers with active connections will be highlighted in their respective colors.
+              </p>
+            </div>
           </div>
         )}
       </div>

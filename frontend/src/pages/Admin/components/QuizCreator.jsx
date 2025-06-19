@@ -13,6 +13,7 @@ export default function QuizCreator({ subSectionId, existingQuiz, onClose, onSuc
       questionText: "",
       questionType: "multipleChoice",
       options: ["", "", "", ""],
+      answers: ["", "", "", ""], // For match the following
       correctAnswers: [], // For multiple choice (array of indices)
       correctAnswer: null, // For single answer (single index)
       marks: 5,
@@ -27,6 +28,7 @@ export default function QuizCreator({ subSectionId, existingQuiz, onClose, onSuc
         questionText: q.questionText || "",
         questionType: q.questionType || "multipleChoice",
         options: q.options || ["", "", "", ""],
+        answers: q.answers || ["", "", "", ""], // For match the following
         correctAnswers: q.correctAnswers || [],
         correctAnswer: q.correctAnswer !== undefined ? q.correctAnswer : null,
         marks: q.marks || 5,
@@ -48,6 +50,7 @@ export default function QuizCreator({ subSectionId, existingQuiz, onClose, onSuc
         questionText: "",
         questionType: "multipleChoice",
         options: ["", "", "", ""],
+        answers: ["", "", "", ""], // For match the following
         correctAnswers: [],
         correctAnswer: null,
         marks: 5,
@@ -82,10 +85,19 @@ export default function QuizCreator({ subSectionId, existingQuiz, onClose, onSuc
   // Submit quiz
   const onSubmit = async () => {
     // Validate questions
-    const invalidQuestions = questions.filter(q => 
-      !q.questionText.trim() || 
-      (q.questionType !== "shortAnswer" && q.options.some(opt => !opt.trim()))
-    )
+    const invalidQuestions = questions.filter(q => {
+      if (!q.questionText.trim()) return true;
+      
+      if (q.questionType === "shortAnswer") return false;
+      
+      if (q.questionType === "matchTheFollowing") {
+        return q.options.some(opt => !opt.trim()) || 
+               !q.answers || 
+               q.answers.some(ans => !ans || !ans.trim());
+      }
+      
+      return q.options.some(opt => !opt.trim());
+    })
 
     if (invalidQuestions.length > 0) {
       toast.error("Please fill all question texts and options")
@@ -110,15 +122,35 @@ export default function QuizCreator({ subSectionId, existingQuiz, onClose, onSuc
     setLoading(true)
     try {
       // Clean up questions data
-      const cleanedQuestions = questions.map(q => ({
-        questionText: q.questionText.trim(),
-        questionType: q.questionType,
-        options: q.questionType === "shortAnswer" ? [] : q.options.map(opt => opt.trim()),
-        correctAnswers: q.questionType === "multipleChoice" ? (q.correctAnswers || []) : [],
-        correctAnswer: q.questionType === "singleAnswer" ? q.correctAnswer : null,
-        marks: q.marks,
-        required: q.required
-      }))
+      const cleanedQuestions = questions.map(q => {
+        const base = {
+          questionText: q.questionText.trim(),
+          questionType: q.questionType,
+          marks: q.marks,
+          required: q.required
+        }
+
+        if (q.questionType === "shortAnswer") {
+          return { ...base, options: [] }
+        }
+
+        if (q.questionType === "matchTheFollowing") {
+          return {
+            ...base,
+            options: q.options.map(opt => opt.trim()),
+            answers: q.answers.map(ans => ans.trim()),
+            // For match the following, each index maps to its corresponding answer
+            correctAnswers: q.options.map((_, index) => index)
+          }
+        }
+
+        return {
+          ...base,
+          options: q.options.map(opt => opt.trim()),
+          correctAnswers: q.questionType === "multipleChoice" ? (q.correctAnswers || []) : [],
+          correctAnswer: q.questionType === "singleAnswer" ? q.correctAnswer : null
+        }
+      })
 
       const quizData = {
         subSectionId,
@@ -204,50 +236,96 @@ export default function QuizCreator({ subSectionId, existingQuiz, onClose, onSuc
                 <option value="multipleChoice">Multiple Choice</option>
                 <option value="singleAnswer">Single Answer</option>
                 <option value="shortAnswer">Short Answer</option>
+                <option value="matchTheFollowing">Match the Following</option>
               </select>
             </div>
 
-            {/* Options (for multiple choice and single answer) */}
-            {(question.questionType === "multipleChoice" || question.questionType === "singleAnswer") && (
+            {/* Options (for multiple choice, single answer, and match the following) */}
+            {(question.questionType === "multipleChoice" || question.questionType === "singleAnswer" || question.questionType === "matchTheFollowing") && (
               <div className="space-y-4">
-                <label className="text-sm text-richblack-5">Options *</label>
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm text-richblack-5">
+                    {question.questionType === "matchTheFollowing" ? "Match the Following *" : "Options *"}
+                  </label>
+                  {question.questionType === "matchTheFollowing" && (
+                    <p className="text-xs text-richblack-300">
+                      Add questions on the left and their corresponding answers on the right
+                    </p>
+                  )}
+                </div>
                 <div className="space-y-2">
                   {question.options.map((option, oIndex) => (
                     <div key={oIndex} className="flex items-center gap-3">
-                      <input
-                        type="text"
-                        value={option}
-                        onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
-                        placeholder={`Option ${oIndex + 1}`}
-                        className="flex-1 bg-richblack-700 text-richblack-5 rounded-lg p-3"
-                        required
-                      />
-                      <label className="flex items-center gap-2 text-sm text-richblack-300">
+                      {question.questionType === "matchTheFollowing" ? (
+                        <div className="flex-1 grid grid-cols-2 gap-4">
+                          <div className="relative">
+                            <input
+                              type="text"
+                              value={option}
+                              onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
+                              placeholder={`Question ${oIndex + 1}`}
+                              className="w-full bg-richblack-700 text-richblack-5 rounded-lg p-3 border border-richblack-600 focus:border-yellow-50 transition-colors"
+                              required
+                            />
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              value={question.answers?.[oIndex] || ''}
+                              onChange={(e) => {
+                                const newQuestions = [...questions]
+                                if (!newQuestions[qIndex].answers) {
+                                  newQuestions[qIndex].answers = []
+                                }
+                                newQuestions[qIndex].answers[oIndex] = e.target.value
+                                setQuestions(newQuestions)
+                              }}
+                              placeholder={`Answer ${oIndex + 1}`}
+                              className="w-full bg-richblack-700 text-richblack-5 rounded-lg p-3 border border-richblack-600 focus:border-yellow-50 transition-colors"
+                              required
+                            />
+                          </div>
+                        </div>
+                      ) : (
                         <input
-                          type={question.questionType === "multipleChoice" ? "checkbox" : "radio"}
-                          name={`correct-${qIndex}`}
-                          checked={question.questionType === "multipleChoice" 
-                            ? question.correctAnswers?.includes(oIndex)
-                            : question.correctAnswer === oIndex}
-                          onChange={() => {
-                            const newQuestions = [...questions];
-                            if (question.questionType === "multipleChoice") {
-                              // Toggle the option in correctAnswers array
-                              const currentAnswers = newQuestions[qIndex].correctAnswers || [];
-                              if (currentAnswers.includes(oIndex)) {
-                                newQuestions[qIndex].correctAnswers = currentAnswers.filter(i => i !== oIndex);
-                              } else {
-                                newQuestions[qIndex].correctAnswers = [...currentAnswers, oIndex];
-                              }
-                            } else {
-                              // Set single correct answer
-                              newQuestions[qIndex].correctAnswer = oIndex;
-                            }
-                            setQuestions(newQuestions);
-                          }}
-                          className="text-yellow-50"
+                          type="text"
+                          value={option}
+                          onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
+                          placeholder={`Option ${oIndex + 1}`}
+                          className="flex-1 bg-richblack-700 text-richblack-5 rounded-lg p-3"
+                          required
                         />
-                        Correct Answer
+                      )}
+                      <label className="flex items-center gap-2 text-sm text-richblack-300">
+                      {question.questionType !== "matchTheFollowing" && (
+                        <>
+                          <input
+                            type={question.questionType === "multipleChoice" ? "checkbox" : "radio"}
+                            name={`correct-${qIndex}`}
+                            checked={question.questionType === "multipleChoice" 
+                              ? question.correctAnswers?.includes(oIndex)
+                              : question.correctAnswer === oIndex}
+                            onChange={() => {
+                              const newQuestions = [...questions];
+                              if (question.questionType === "multipleChoice") {
+                                // Toggle the option in correctAnswers array
+                                const currentAnswers = newQuestions[qIndex].correctAnswers || [];
+                                if (currentAnswers.includes(oIndex)) {
+                                  newQuestions[qIndex].correctAnswers = currentAnswers.filter(i => i !== oIndex);
+                                } else {
+                                  newQuestions[qIndex].correctAnswers = [...currentAnswers, oIndex];
+                                }
+                              } else {
+                                // Set single correct answer
+                                newQuestions[qIndex].correctAnswer = oIndex;
+                              }
+                              setQuestions(newQuestions);
+                            }}
+                            className="text-yellow-50"
+                          />
+                          Correct Answer
+                        </>
+                      )}
                       </label>
                     </div>
                   ))}
