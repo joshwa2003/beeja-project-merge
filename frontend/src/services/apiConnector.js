@@ -20,7 +20,7 @@ export const apiConnector = (method, url, bodyData, headers, params) => {
     return axiosInstance({
         method: `${method}`,
         url: `${url}`,
-        data: bodyData !== undefined ? bodyData : undefined,
+        data: bodyData !== undefined && bodyData !== null ? bodyData : undefined,
         headers: {
             ...defaultHeaders,
             ...headers

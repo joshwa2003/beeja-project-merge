@@ -8,6 +8,7 @@ const RatingAndReview = require('../models/ratingAndReview')
 
 const { uploadImageToCloudinary, deleteResourceFromCloudinary } = require('../utils/imageUploader');
 const { convertSecondsToDuration } = require("../utils/secToDuration")
+const { cleanupCourseFiles } = require('../utils/fileCleanup');
 const mongoose = require('mongoose');
 
 // Helper function to calculate average rating
@@ -554,35 +555,62 @@ exports.deleteCourse = async (req, res) => {
             })
         }
 
-        // delete course thumbnail From Cloudinary
+        // Delete course thumbnail From Cloudinary
         await deleteResourceFromCloudinary(course?.thumbnail);
 
-        // Delete sections and sub-sections
-        const courseSections = course.courseContent
-        for (const sectionId of courseSections) {
-            // Delete sub-sections of the section
-            const section = await Section.findById(sectionId)
-            if (section) {
-                const subSections = section.subSection
-                for (const subSectionId of subSections) {
-                    const subSection = await SubSection.findById(subSectionId)
-                    if (subSection) {
-                        await deleteResourceFromCloudinary(subSection.videoUrl) // delete course videos From Cloudinary
-                    }
-                    await SubSection.findByIdAndDelete(subSectionId)
-                }
-            }
+        // Delete course reviews
+        await RatingAndReview.deleteMany({ course: courseId });
 
-            // Delete the section
-            await Section.findByIdAndDelete(sectionId)
+        // Delete course progress records
+        await CourseProgress.deleteMany({ courseID: courseId });
+
+        // Delete course certificates
+        const Certificate = require('../models/certificate');
+        await Certificate.deleteMany({ courseId: courseId });
+
+        // Get all sections and subsections
+        const Quiz = require('../models/quiz');
+        const courseSections = course.courseContent;
+        const allSubSectionIds = [];
+        
+        // Get all subsection IDs from all sections
+        for (const sectionId of courseSections) {
+            const section = await Section.findById(sectionId);
+            if (section) {
+                allSubSectionIds.push(...section.subSection);
+            }
         }
 
+        // Get all subsections data for cleanup
+        const allSubSections = await SubSection.find({ _id: { $in: allSubSectionIds } });
+
+        // Delete all associated data in parallel
+        await Promise.all([
+            // Delete all quizzes for this course's subsections
+            Quiz.deleteMany({ subSection: { $in: allSubSectionIds } }),
+            
+            // Delete all subsections and their videos
+            ...allSubSectionIds.map(async (subSectionId) => {
+                const subSection = await SubSection.findById(subSectionId);
+                if (subSection?.videoUrl) {
+                    await deleteResourceFromCloudinary(subSection.videoUrl);
+                }
+                await SubSection.findByIdAndDelete(subSectionId);
+            }),
+
+            // Delete all sections
+            ...courseSections.map(sectionId => Section.findByIdAndDelete(sectionId))
+        ]);
+
+        // Clean up local files
+        await cleanupCourseFiles(courseId, allSubSections);
+
         // Delete the course
-        await Course.findByIdAndDelete(courseId)
+        await Course.findByIdAndDelete(courseId);
 
         return res.status(200).json({
             success: true,
-            message: "Course deleted successfully",
+            message: "Course and associated files deleted successfully",
         })
 
     } catch (error) {

@@ -1,10 +1,16 @@
 const Profile = require('../models/profile');
 const User = require('../models/user');
-const CourseProgress = require('../models/courseProgress')
-const Course = require('../models/course')
+const Course = require('../models/course');
+const Section = require('../models/section');
+const SubSection = require('../models/subSection');
+const Quiz = require('../models/quiz');
+const CourseProgress = require('../models/courseProgress');
+const Certificate = require('../models/certificate');
+const RatingAndReview = require('../models/ratingAndReview');
 
 const { uploadImageToCloudinary, deleteResourceFromCloudinary } = require('../utils/imageUploader');
-const { convertSecondsToDuration } = require('../utils/secToDuration')
+const { convertSecondsToDuration } = require('../utils/secToDuration');
+const { cleanupCourseFiles } = require('../utils/fileCleanup');
 
 
 
@@ -96,6 +102,80 @@ exports.deleteAccount = async (req, res) => {
             })
         }
 
+        // If user is an instructor, handle their courses
+        if (userDetails.accountType === 'Instructor') {
+            const instructorCourses = await Course.find({ instructor: userId });
+            
+            // For each course created by this instructor, delete comprehensively
+            for (const course of instructorCourses) {
+                // Unenroll all students from instructor's courses
+                const studentsEnrolled = course.studentsEnrolled || [];
+                for (const studentId of studentsEnrolled) {
+                    await User.findByIdAndUpdate(studentId, {
+                        $pull: { courses: course._id }
+                    });
+                }
+
+                // Delete course thumbnail from Cloudinary
+                if (course.thumbnail) {
+                    await deleteResourceFromCloudinary(course.thumbnail);
+                }
+
+                // Delete course reviews, progress, and certificates
+                await RatingAndReview.deleteMany({ course: course._id });
+                await CourseProgress.deleteMany({ courseID: course._id });
+                await Certificate.deleteMany({ courseId: course._id });
+
+                // Get all sections and subsections
+                const courseSections = course.courseContent;
+                const allSubSectionIds = [];
+                
+                // Get all subsection IDs from all sections
+                for (const sectionId of courseSections) {
+                    const section = await Section.findById(sectionId);
+                    if (section) {
+                        allSubSectionIds.push(...section.subSection);
+                    }
+                }
+
+                // Get all subsections data for cleanup
+                const allSubSections = await SubSection.find({ _id: { $in: allSubSectionIds } });
+
+                // Delete all associated data in parallel
+                await Promise.all([
+                    // Delete all quizzes for this course's subsections
+                    Quiz.deleteMany({ subSection: { $in: allSubSectionIds } }),
+                    
+                    // Delete all subsections and their videos
+                    ...allSubSectionIds.map(async (subSectionId) => {
+                        const subSection = await SubSection.findById(subSectionId);
+                        if (subSection?.videoUrl) {
+                            await deleteResourceFromCloudinary(subSection.videoUrl);
+                        }
+                        await SubSection.findByIdAndDelete(subSectionId);
+                    }),
+
+                    // Delete all sections
+                    ...courseSections.map(sectionId => Section.findByIdAndDelete(sectionId))
+                ]);
+
+                // Clean up local files
+                await cleanupCourseFiles(course._id, allSubSections);
+
+                // Finally delete the course
+                await Course.findByIdAndDelete(course._id);
+            }
+        }
+
+        // Delete user's course progress records
+        await CourseProgress.deleteMany({ userId: userId });
+
+        // Delete user's certificates
+        await Certificate.deleteMany({ userId: userId });
+
+        // Delete user's ratings and reviews
+        await RatingAndReview.deleteMany({ user: userId });
+
         // first - delete profie (profileDetails)
         await Profile.findByIdAndDelete(userDetails.additionalDetails);
 
@@ -112,7 +192,7 @@ exports.deleteAccount = async (req, res) => {
         })
     }
     catch (error) {
-        console.log('Error while updating profile');
+        console.log('Error while deleting profile');
         console.log(error);
         res.status(500).json({
             success: false,
