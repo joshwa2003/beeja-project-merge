@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 
 require('dotenv').config();
 // MongoDB container connection
-const MONGO_URI = process.env.MONGODB_URL || "mongodb://localhost:27017/learnhub";
+const MONGO_URI = process.env.MONGODB_URL;
 
 const createAdminUser = async () => {
   try {

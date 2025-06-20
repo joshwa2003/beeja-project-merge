@@ -43,19 +43,23 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="flex">
         {/* Modern Sidebar */}
-        <AdminSidebar activeTab={activeTab} onTabChange={handleTabChange} />
+        <div className="sm:fixed sm:left-0 sm:top-16 h-[calc(100vh-4rem)] z-30 transition-all duration-300">
+          <AdminSidebar activeTab={activeTab} onTabChange={handleTabChange} />
+        </div>
 
         {/* Main Content */}
-        <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-[80px]' : 'ml-[280px]'} mt-[3.5rem]`}>
-          <div className="p-6">
+        <div className={`flex-1 mt-16 min-h-[calc(100vh-4rem)] transition-all duration-300 ${
+          isCollapsed ? 'sm:ml-16' : 'sm:ml-64'
+        } w-full px-4 sm:px-0`}>
+          <div className="p-4 sm:p-6 overflow-x-hidden">
             {/* Header */}
             <motion.div 
-              className="mb-8 bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 p-6 rounded-2xl"
+              className="mb-4 sm:mb-8 bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 p-4 sm:p-6 rounded-xl sm:rounded-2xl"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+              <h1 className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
                 {showCreateCourse ? 'Create Course' : sidebarItems.find(item => item.id === activeTab)?.label}
               </h1>
               <p className="text-slate-400 mt-2">
@@ -65,7 +69,7 @@ const AdminDashboard = () => {
 
             {/* Content */}
             <motion.div 
-              className="bg-slate-800/30 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6"
+              className="bg-slate-800/30 backdrop-blur-xl border border-slate-700/50 rounded-xl sm:rounded-2xl p-4 sm:p-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.1 }}

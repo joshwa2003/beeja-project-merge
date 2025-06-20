@@ -8,6 +8,15 @@ export const axiosInstance = axios.create({
 });
 
 export const apiConnector = (method, url, bodyData, headers, params) => {
+    // Debug logging
+    console.log('API Request:', {
+        method,
+        url,
+        bodyData,
+        headers,
+        params
+    });
+
     // Determine if we're sending FormData (for file uploads)
     const isFormData = bodyData instanceof FormData;
     
@@ -16,6 +25,11 @@ export const apiConnector = (method, url, bodyData, headers, params) => {
         ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
         ...(headers?.Authorization ? { 'Authorization': headers.Authorization } : {})
     };
+
+    // Debug token
+    if (headers?.Authorization) {
+        console.log('Token being used:', headers.Authorization);
+    }
 
     return axiosInstance({
         method: `${method}`,
@@ -27,5 +41,20 @@ export const apiConnector = (method, url, bodyData, headers, params) => {
         },
         params: params ? params : null,
         withCredentials: true
+    }).then(response => {
+        console.log('API Response:', {
+            url,
+            status: response.status,
+            data: response.data
+        });
+        return response;
+    }).catch(error => {
+        console.error('API Error:', {
+            url,
+            status: error.response?.status,
+            data: error.response?.data,
+            message: error.message
+        });
+        throw error;
     });
 }

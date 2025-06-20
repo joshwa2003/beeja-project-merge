@@ -90,33 +90,33 @@ export default function AccessRequests() {
   return (
     <div className="animate-fade-in-up space-y-6">
       {/* Header Section */}
-      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-6 border border-slate-700/50">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-4 border border-slate-700/50">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
               My Course Requests
             </h1>
-            <p className="text-slate-400 mt-2">
+            <p className="text-sm text-slate-400 mt-1">
               Track your course access requests and their status
             </p>
           </div>
           
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="bg-slate-700/30 rounded-xl p-3 text-center">
-              <p className="text-2xl font-bold text-white">{stats.total}</p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+            <div className="bg-slate-700/30 rounded p-2 text-center">
+              <p className="text-lg font-semibold text-white">{stats.total}</p>
               <p className="text-xs text-slate-400">Total</p>
             </div>
-            <div className="bg-yellow-500/10 rounded-xl p-3 text-center border border-yellow-500/20">
-              <p className="text-2xl font-bold text-yellow-400">{stats.pending}</p>
+            <div className="bg-yellow-500/10 rounded p-2 text-center border border-yellow-500/20">
+              <p className="text-lg font-semibold text-yellow-400">{stats.pending}</p>
               <p className="text-xs text-yellow-400">Pending</p>
             </div>
-            <div className="bg-green-500/10 rounded-xl p-3 text-center border border-green-500/20">
-              <p className="text-2xl font-bold text-green-400">{stats.approved}</p>
+            <div className="bg-green-500/10 rounded p-2 text-center border border-green-500/20">
+              <p className="text-lg font-semibold text-green-400">{stats.approved}</p>
               <p className="text-xs text-green-400">Approved</p>
             </div>
-            <div className="bg-red-500/10 rounded-xl p-3 text-center border border-red-500/20">
-              <p className="text-2xl font-bold text-red-400">{stats.rejected}</p>
+            <div className="bg-red-500/10 rounded p-2 text-center border border-red-500/20">
+              <p className="text-lg font-semibold text-red-400">{stats.rejected}</p>
               <p className="text-xs text-red-400">Rejected</p>
             </div>
           </div>
@@ -124,7 +124,7 @@ export default function AccessRequests() {
       </div>
 
       {/* Filters Section */}
-      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-6 border border-slate-700/50">
+      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-4 border border-slate-700/50">
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Search */}
           <div className="relative flex-1">

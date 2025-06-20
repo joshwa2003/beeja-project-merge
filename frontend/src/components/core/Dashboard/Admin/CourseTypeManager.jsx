@@ -92,33 +92,33 @@ export default function CourseTypeManager() {
   return (
     <div className="animate-fade-in-up space-y-6">
       {/* Header Section */}
-      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-6 border border-slate-700/50">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-4 border border-slate-700/50">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
               Course Type Management
             </h1>
-            <p className="text-slate-400 mt-2">
+            <p className="text-sm text-slate-400 mt-1">
               Manage course pricing and availability settings
             </p>
           </div>
           
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="bg-slate-700/30 rounded-xl p-3 text-center">
-              <p className="text-2xl font-bold text-white">{stats.total}</p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+            <div className="bg-slate-700/30 rounded p-2 text-center">
+              <p className="text-lg font-semibold text-white">{stats.total}</p>
               <p className="text-xs text-slate-400">Total</p>
             </div>
-            <div className="bg-green-500/10 rounded-xl p-3 text-center border border-green-500/20">
-              <p className="text-2xl font-bold text-green-400">{stats.free}</p>
+            <div className="bg-green-500/10 rounded p-2 text-center border border-green-500/20">
+              <p className="text-lg font-semibold text-green-400">{stats.free}</p>
               <p className="text-xs text-green-400">Free</p>
             </div>
-            <div className="bg-yellow-500/10 rounded-xl p-3 text-center border border-yellow-500/20">
-              <p className="text-2xl font-bold text-yellow-400">{stats.paid}</p>
+            <div className="bg-yellow-500/10 rounded p-2 text-center border border-yellow-500/20">
+              <p className="text-lg font-semibold text-yellow-400">{stats.paid}</p>
               <p className="text-xs text-yellow-400">Paid</p>
             </div>
-            <div className="bg-red-500/10 rounded-xl p-3 text-center border border-red-500/20">
-              <p className="text-2xl font-bold text-red-400">{stats.noInstructor}</p>
+            <div className="bg-red-500/10 rounded p-2 text-center border border-red-500/20">
+              <p className="text-lg font-semibold text-red-400">{stats.noInstructor}</p>
               <p className="text-xs text-red-400">No Instructor</p>
             </div>
           </div>
@@ -126,7 +126,7 @@ export default function CourseTypeManager() {
       </div>
 
       {/* Filters Section */}
-      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-6 border border-slate-700/50">
+      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-4 border border-slate-700/50">
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Search */}
           <div className="relative flex-1">
@@ -184,96 +184,39 @@ export default function CourseTypeManager() {
           <>
             {/* Desktop Table View */}
             <div className="hidden lg:block overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-slate-700/30">
-                  <tr>
-                    <th className="text-left py-4 px-6 text-sm font-semibold text-slate-300">
-                      <div className="flex items-center gap-2">
-                        <FiBook className="w-4 h-4" />
-                        Course
-                      </div>
-                    </th>
-                    <th className="text-left py-4 px-6 text-sm font-semibold text-slate-300">
-                      <div className="flex items-center gap-2">
-                        <FiUser className="w-4 h-4" />
-                        Instructor
-                      </div>
-                    </th>
-                    <th className="text-left py-4 px-6 text-sm font-semibold text-slate-300">
-                      <div className="flex items-center gap-2">
-                        <FiDollarSign className="w-4 h-4" />
-                        Original Price
-                      </div>
-                    </th>
-                    <th className="text-left py-4 px-6 text-sm font-semibold text-slate-300">
-                      <div className="flex items-center gap-2">
-                        <FiDollarSign className="w-4 h-4" />
-                        Current Price
-                      </div>
-                    </th>
-                    <th className="text-left py-4 px-6 text-sm font-semibold text-slate-300">
-                      <div className="flex items-center gap-2">
-                        <FiTag className="w-4 h-4" />
-                        Type
-                      </div>
-                    </th>
-                    <th className="text-left py-4 px-6 text-sm font-semibold text-slate-300 min-w-[150px]">
-                      <div className="flex items-center gap-2">
-                        <FiSettings className="w-4 h-4" />
-                        Actions
-                      </div>
-                    </th>
+              <table className="w-full text-white text-left border-collapse text-sm">
+                <thead>
+                  <tr className="bg-richblack-700">
+                    <th className="p-3 border border-richblack-600">Course</th>
+                    <th className="p-3 border border-richblack-600">Instructor</th>
+                    <th className="p-3 border border-richblack-600">Original Price</th>
+                    <th className="p-3 border border-richblack-600">Current Price</th>
+                    <th className="p-3 border border-richblack-600">Type</th>
+                    <th className="p-3 border border-richblack-600">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-700/50">
+                <tbody>
                   {filteredCourses.map((course) => (
-                    <tr key={course._id} className="hover:bg-slate-700/20 transition-colors">
-                      <td className="py-4 px-6">
+                    <tr key={course._id} className="border-b border-richblack-600 hover:bg-richblack-700/50">
+                      <td className="p-3">
                         <div className="flex items-center gap-3">
-                          <div className="relative group-hover:scale-105 transition-transform duration-300">
-                            <img
-                              src={course.thumbnail}
-                              alt={course.courseName}
-                              className="w-16 h-10 rounded-lg object-cover ring-2 ring-slate-600/50"
-                            />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-medium text-white line-clamp-1">{course.courseName}</p>
-                            <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
-                              <FiCalendar className="w-3 h-3" />
-                              <span>{getRelativeTime(course.createdAt)}</span>
-                            </div>
-                          </div>
+                          <img
+                            src={course.thumbnail}
+                            alt={course.courseName}
+                            className="w-12 h-8 rounded object-cover"
+                          />
+                          <span className="font-medium">{course.courseName}</span>
                         </div>
                       </td>
-                      <td className="py-4 px-6">
+                      <td className="p-3">
                         {course.instructor ? (
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={course.instructor.image}
-                              alt={course.instructor.firstName}
-                              className="w-10 h-10 rounded-full object-cover ring-2 ring-slate-600/50"
-                            />
-                            <div className="min-w-0">
-                              <p className="font-medium text-white">
-                                {course.instructor.firstName} {course.instructor.lastName}
-                              </p>
-                              <p className="text-sm text-slate-400 truncate">
-                                {course.instructor.email}
-                              </p>
-                            </div>
-                          </div>
+                          `${course.instructor.firstName} ${course.instructor.lastName}`
                         ) : (
-                          <div className="flex items-center gap-2 text-red-400">
-                            <FiUser className="w-4 h-4" />
-                            <span className="text-sm">No instructor assigned</span>
-                          </div>
+                          <span className="text-red-400">No instructor</span>
                         )}
                       </td>
-                      <td className="py-4 px-6">
-                        <span className="text-white font-medium">₹{course.originalPrice}</span>
-                      </td>
-                      <td className="py-4 px-6">
+                      <td className="p-3">₹{course.originalPrice}</td>
+                      <td className="p-3">
                         <span className={`font-medium ${
                           course.courseType === 'Free' 
                             ? 'text-green-400' 
@@ -282,35 +225,51 @@ export default function CourseTypeManager() {
                           {course.courseType === 'Free' ? 'Free' : `₹${course.price}`}
                         </span>
                       </td>
-                      <td className="py-4 px-6">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                      <td className="p-3">
+                        <span className={`px-2 py-1 rounded text-xs ${
                           course.courseType === 'Free' 
-                            ? 'bg-green-500/10 text-green-400 border-green-500/20' 
-                            : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                            ? 'bg-green-500/20 text-green-400' 
+                            : 'bg-yellow-500/20 text-yellow-400'
                         }`}>
                           {course.courseType}
                         </span>
                       </td>
-                      <td className="py-4 px-6">
-                        {course.courseType === 'Paid' ? (
-                          <button
-                            onClick={() => handleCourseTypeChange(course._id, 'Free')}
-                            disabled={processingId === course._id}
-                            className="flex items-center gap-2 px-4 py-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <FiTag className="w-4 h-4" />
-                            <span className="text-sm font-medium">Make Free</span>
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleCourseTypeChange(course._id, 'Paid')}
-                            disabled={processingId === course._id}
-                            className="flex items-center gap-2 px-4 py-2 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 border border-yellow-500/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <FiDollarSign className="w-4 h-4" />
-                            <span className="text-sm font-medium">Make Paid</span>
-                          </button>
-                        )}
+                      <td className="p-3">
+                        <div className="flex items-center gap-2">
+                          {course.courseType === 'Paid' ? (
+                            <button
+                              onClick={() => handleCourseTypeChange(course._id, 'Free')}
+                              disabled={processingId === course._id}
+                              className="flex items-center gap-2 px-3 py-1.5 bg-green-500/10 text-green-400 hover:bg-green-500/20 rounded-lg transition-colors disabled:opacity-50"
+                              title="Make Free"
+                            >
+                              {processingId === course._id ? (
+                                <div className="w-4 h-4 animate-spin rounded-full border-b-2 border-green-400"/>
+                              ) : (
+                                <>
+                                  <FiTag size={16} />
+                                  <span className="text-xs font-medium">Make Free</span>
+                                </>
+                              )}
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleCourseTypeChange(course._id, 'Paid')}
+                              disabled={processingId === course._id}
+                              className="flex items-center gap-2 px-3 py-1.5 bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 rounded-lg transition-colors disabled:opacity-50"
+                              title="Make Paid"
+                            >
+                              {processingId === course._id ? (
+                                <div className="w-4 h-4 animate-spin rounded-full border-b-2 border-yellow-400"/>
+                              ) : (
+                                <>
+                                  <FiDollarSign size={16} />
+                                  <span className="text-xs font-medium">Make Paid</span>
+                                </>
+                              )}
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -318,84 +277,47 @@ export default function CourseTypeManager() {
               </table>
             </div>
 
-            {/* Mobile Card View */}
-            <div className="lg:hidden space-y-4 p-6">
+            {/* Mobile/Tablet Card View */}
+            <div className="lg:hidden p-4 space-y-4">
               {filteredCourses.map((course) => (
-                <div key={course._id} className="bg-slate-700/30 rounded-2xl p-6 space-y-4 hover:bg-slate-700/40 transition-colors group">
+                <div key={course._id} className="bg-slate-700/30 rounded-xl p-4 space-y-3">
                   {/* Course Header */}
-                  <div className="flex gap-4">
-                    <div className="relative group-hover:scale-105 transition-transform duration-300">
-                      <img
-                        src={course.thumbnail}
-                        alt={course.courseName}
-                        className="w-20 h-14 rounded-xl object-cover ring-2 ring-slate-600/50"
-                      />
-                    </div>
+                  <div className="flex items-start gap-3">
+                    <img
+                      src={course.thumbnail}
+                      alt={course.courseName}
+                      className="w-16 h-12 sm:w-20 sm:h-14 rounded object-cover flex-shrink-0"
+                    />
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-white text-lg line-clamp-2 mb-2">
+                      <h3 className="font-semibold text-white text-sm sm:text-base truncate">
                         {course.courseName}
                       </h3>
-                      <div className="flex items-center gap-2 text-sm text-slate-400">
-                        <FiCalendar className="w-4 h-4" />
-                        <span>Created {getRelativeTime(course.createdAt)}</span>
-                      </div>
+                      <p className="text-slate-400 text-xs sm:text-sm">
+                        {course.instructor ? (
+                          `${course.instructor.firstName} ${course.instructor.lastName}`
+                        ) : (
+                          <span className="text-red-400">No instructor</span>
+                        )}
+                      </p>
                     </div>
-                    {/* Type Badge */}
-                    <div className="flex-shrink-0">
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium border ${
-                        course.courseType === 'Free' 
-                          ? 'bg-green-500/10 text-green-400 border-green-500/20' 
-                          : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
-                      }`}>
-                        {course.courseType}
-                      </span>
-                    </div>
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      course.courseType === 'Free' 
+                        ? 'bg-green-500/20 text-green-400' 
+                        : 'bg-yellow-500/20 text-yellow-400'
+                    }`}>
+                      {course.courseType}
+                    </span>
                   </div>
 
-                  {/* Instructor Info */}
-                  <div className="bg-slate-800/50 rounded-xl p-4">
-                    {course.instructor ? (
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={course.instructor.image}
-                          alt={course.instructor.firstName}
-                          className="w-12 h-12 rounded-full object-cover ring-2 ring-slate-600/50"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <FiUser className="w-4 h-4 text-slate-400" />
-                            <span className="text-sm font-medium text-slate-300">Instructor</span>
-                          </div>
-                          <p className="font-medium text-white">
-                            {course.instructor.firstName} {course.instructor.lastName}
-                          </p>
-                          <p className="text-sm text-slate-400">
-                            {course.instructor.email}
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 text-red-400">
-                        <FiUser className="w-4 h-4" />
-                        <span className="text-sm font-medium">No instructor assigned</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Pricing Info */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-slate-800/50 rounded-xl p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <FiDollarSign className="w-4 h-4 text-slate-400" />
-                        <span className="text-sm font-medium text-slate-300">Original Price</span>
-                      </div>
-                      <p className="text-xl font-bold text-white">₹{course.originalPrice}</p>
+                  {/* Course Details */}
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-slate-400">Original Price:</span>
+                      <p className="text-white font-medium">₹{course.originalPrice}</p>
                     </div>
-                    <div className="bg-slate-800/50 rounded-xl p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <FiTag className="w-4 h-4 text-slate-400" />
-                      </div>
-                      <p className={`text-xl font-bold ${
+                    <div>
+                      <span className="text-slate-400">Current Price:</span>
+                      <p className={`font-medium ${
                         course.courseType === 'Free' 
                           ? 'text-green-400' 
                           : 'text-yellow-400'
@@ -405,32 +327,37 @@ export default function CourseTypeManager() {
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center justify-between mt-4">
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium border ${
-                      course.courseType === 'Free' 
-                        ? 'bg-green-500/10 text-green-400 border-green-500/20' 
-                        : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
-                    }`}>
-                      {course.courseType}
-                    </span>
+                  {/* Action Button */}
+                  <div className="flex justify-end pt-2 border-t border-slate-600/50">
                     {course.courseType === 'Paid' ? (
                       <button
                         onClick={() => handleCourseTypeChange(course._id, 'Free')}
                         disabled={processingId === course._id}
-                        className="flex items-center gap-2 px-4 py-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-2 px-4 py-2 bg-green-500/10 text-green-400 hover:bg-green-500/20 rounded-lg transition-colors disabled:opacity-50 text-sm"
                       >
-                        <FiTag className="w-4 h-4" />
-                        <span className="text-sm font-medium">Make Free</span>
+                        {processingId === course._id ? (
+                          <div className="w-4 h-4 animate-spin rounded-full border-b-2 border-green-400"/>
+                        ) : (
+                          <>
+                            <FiTag size={14} />
+                            <span>Make Free</span>
+                          </>
+                        )}
                       </button>
                     ) : (
                       <button
                         onClick={() => handleCourseTypeChange(course._id, 'Paid')}
                         disabled={processingId === course._id}
-                        className="flex items-center gap-2 px-4 py-2 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 border border-yellow-500/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-2 px-4 py-2 bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 rounded-lg transition-colors disabled:opacity-50 text-sm"
                       >
-                        <FiDollarSign className="w-4 h-4" />
-                        <span className="text-sm font-medium">Make Paid</span>
+                        {processingId === course._id ? (
+                          <div className="w-4 h-4 animate-spin rounded-full border-b-2 border-yellow-400"/>
+                        ) : (
+                          <>
+                            <FiDollarSign size={14} />
+                            <span>Make Paid</span>
+                          </>
+                        )}
                       </button>
                     )}
                   </div>

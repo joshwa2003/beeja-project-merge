@@ -16,22 +16,6 @@ exports.updateSubSection = async (req, res) => {
             });
         }
 
-        // Verify course ownership if sectionId is provided
-        if (sectionId) {
-            const Course = require('../models/course');
-            const course = await Course.findOne({
-                courseContent: sectionId,
-                instructor: req.user.id
-            });
-
-            if (!course) {
-                return res.status(403).json({
-                    success: false,
-                    message: 'Only the course instructor can update subsections'
-                });
-            }
-        }
-
         // find in DB
         const subSection = await SubSection.findById(subSectionId);
 
@@ -103,77 +87,42 @@ exports.updateSubSection = async (req, res) => {
 // ================ create SubSection ================
 exports.createSubSection = async (req, res) => {
     try {
-        console.log('Creating SubSection - Request body:', req.body);
-        console.log('Creating SubSection - File:', req.file);
-
         // extract data
         const { title, description, sectionId, questions } = req.body;
 
         // extract video file
         const videoFile = req.file;
+        console.log('req.file:', req.file);
 
         // validation
         if (!title || !description || !sectionId) {
-            console.log('Validation failed: Missing required fields');
             return res.status(400).json({
                 success: false,
                 message: 'Title, description, and sectionId are required'
             });
         }
 
-        // Find the section and course to verify ownership
-        const Course = require('../models/course');
-        const course = await Course.findOne({
-            courseContent: sectionId,
-            instructor: req.user.id
-        });
-
-        if (!course) {
-            return res.status(403).json({
-                success: false,
-                message: 'Only the course instructor can add subsections'
-            });
-        }
-
         if (!videoFile) {
-            console.log('Validation failed: No video file provided');
             return res.status(400).json({
                 success: false,
                 message: 'Video file is required'
             });
         }
 
-        console.log('Starting video upload to Cloudinary...');
-        
-        // upload video to cloudinary with timeout
-        const uploadPromise = uploadImageToCloudinary(videoFile, process.env.FOLDER_NAME);
-        const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Upload timeout')), 300000) // 5 minutes timeout
-        );
-        
-        const videoFileDetails = await Promise.race([uploadPromise, timeoutPromise]);
-        console.log('Video uploaded successfully:', videoFileDetails.secure_url);
+        // upload video to cloudinary
+        const videoFileDetails = await uploadImageToCloudinary(videoFile, process.env.FOLDER_NAME);
 
-        // create entry in DB
-        const SubSectionDetails = await SubSection.create({
-            title, 
-            timeDuration: videoFileDetails.duration || 0, 
-            description, 
-            videoUrl: videoFileDetails.secure_url 
-        });
-
-        console.log('SubSection created in DB:', SubSectionDetails._id);
+// create entry in DB
+        const SubSectionDetails = await SubSection.create(
+            { title, timeDuration: videoFileDetails.duration, description, videoUrl: videoFileDetails.secure_url });
 
         // Handle quiz attachment
-        if (req.body.quiz && req.body.quiz !== '') {
-            console.log('Attaching quiz:', req.body.quiz);
+        if (req.body.quiz) {
             const quizExists = await Quiz.findById(req.body.quiz);
             if (quizExists) {
                 SubSectionDetails.quiz = req.body.quiz;
                 await SubSectionDetails.save();
-                console.log('Quiz attached successfully');
             } else {
-                console.log('Quiz not found:', req.body.quiz);
                 return res.status(400).json({
                     success: false,
                     message: 'Quiz not found'
@@ -182,22 +131,12 @@ exports.createSubSection = async (req, res) => {
         }
 
         // link subsection id to section
-        console.log('Updating section with new subsection...');
+        // Update the corresponding section with the newly created sub-section
         const updatedSection = await Section.findByIdAndUpdate(
             { _id: sectionId },
             { $push: { subSection: SubSectionDetails._id } },
             { new: true }
         ).populate("subSection");
-
-        if (!updatedSection) {
-            console.log('Section not found:', sectionId);
-            return res.status(404).json({
-                success: false,
-                message: 'Section not found'
-            });
-        }
-
-        console.log('SubSection created successfully');
 
         // return response
         res.status(200).json({
@@ -207,7 +146,8 @@ exports.createSubSection = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Error while creating SubSection:', error);
+        console.log('Error while creating SubSection');
+        console.log(error);
         res.status(500).json({
             success: false,
             error: error.message,
@@ -225,21 +165,6 @@ exports.createSubSection = async (req, res) => {
 exports.deleteSubSection = async (req, res) => {
     try {
         const { subSectionId, sectionId } = req.body
-
-        // Verify course ownership
-        const Course = require('../models/course');
-        const course = await Course.findOne({
-            courseContent: sectionId,
-            instructor: req.user.id
-        });
-
-        if (!course) {
-            return res.status(403).json({
-                success: false,
-                message: 'Only the course instructor can delete subsections'
-            });
-        }
-
         await Section.findByIdAndUpdate(
             { _id: sectionId },
             {

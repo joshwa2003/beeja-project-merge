@@ -216,7 +216,7 @@ exports.getAllCourses = async (req, res) => {
             {
                 courseName: true, courseDescription: true, price: true, thumbnail: true, instructor: true,
                 ratingAndReviews: true, studentsEnrolled: true, courseType: true, originalPrice: true,
-                adminSetFree: true, status: true, createdAt: true
+                adminSetFree: true
             })
             .populate({
                 path: 'instructor',

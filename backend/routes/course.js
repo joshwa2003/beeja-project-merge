@@ -69,11 +69,11 @@ router.post('/updateSection', auth, isAdmin, updateSection);
 router.post('/deleteSection', auth, isAdmin, deleteSection);
 
 // Add a Sub Section to a Section
-router.post('/addSubSection', auth, isInstructor, upload.single('video'), createSubSection);
+router.post('/addSubSection', auth, isAdmin, upload.single('video'), createSubSection);
 // Edit Sub Section
-router.post('/updateSubSection', auth, isInstructor, upload.single('videoFile'), updateSubSection);
+router.post('/updateSubSection', auth, isAdmin, upload.single('videoFile'), updateSubSection);
 // Delete Sub Section
-router.post('/deleteSubSection', auth, isInstructor, deleteSubSection);
+router.post('/deleteSubSection', auth, isAdmin, deleteSubSection);
 
 
 // Get Details for a Specific Courses
@@ -121,7 +121,7 @@ router.post("/getCategoryPageDetails", getCategoryPageDetails)
 // ********************************************************************************************************
 //                                      Rating and Review
 // ********************************************************************************************************
-router.post('/createRating', auth, createRating);
+router.post('/createRating', auth, isStudent, createRating);
 router.get('/getAverageRating', getAverageRating);
 router.get('/getReviews', getAllRatingReview);
 

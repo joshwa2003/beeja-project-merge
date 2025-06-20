@@ -7,7 +7,7 @@ import { toast } from "react-hot-toast";
 
 const UserManagement = () => {
   const { token } = useSelector((state) => state.auth);
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState([]); // Initialize as empty array
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -27,17 +27,31 @@ const UserManagement = () => {
 
   const loadUsers = useCallback(async (mounted = true) => {
     try {
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+      
       setLoading(true);
-      const users = await getAllUsers(token);
+      console.log("Loading users with token:", token);
+      
+      const response = await getAllUsers(token);
+      console.log("Users response:", response);
+      
       if (mounted) {
-        setUsers(users);
+        setUsers(response || []);
         setError(null);
       }
     } catch (err) {
-      console.error('Error fetching users:', err);
+      console.error('Error fetching users:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status
+      });
+      
       if (mounted) {
-        setError(err.message || 'Failed to fetch users');
-        toast.error('Failed to fetch users');
+        const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch users';
+        setError(errorMessage);
+        toast.error(errorMessage);
       }
     } finally {
       if (mounted) {
@@ -48,11 +62,34 @@ const UserManagement = () => {
 
   useEffect(() => {
     let mounted = true;
+    
+    // Import and use debug utilities
+    import('../../../utils/apiDebugger').then(({ debugAPIIssues, testAdminAPI }) => {
+      debugAPIIssues();
+      if (token) {
+        testAdminAPI(token).catch(console.error);
+      }
+    });
+
+    if (!token) {
+      console.error("No token available in Redux state");
+      setError("Authentication required");
+      return;
+    }
+
+    // Log token details
+    console.log('Token details:', {
+      exists: !!token,
+      length: token?.length,
+      preview: token ? `${token.substring(0, 20)}...` : 'none',
+      fromLocalStorage: !!localStorage.getItem('token')
+    });
+
     loadUsers(mounted);
     return () => {
       mounted = false;
     };
-  }, [loadUsers]);
+  }, [loadUsers, token]);
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
@@ -166,11 +203,11 @@ const UserManagement = () => {
 
   return (
     <div className="text-richblack-5">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
         <h4 className="text-lg font-semibold">User Management</h4>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="bg-yellow-50 text-richblack-900 px-4 py-2 rounded-lg"
+          className="bg-yellow-50 text-richblack-900 px-3 py-2 rounded-lg text-sm w-full sm:w-auto"
         >
           Add New User
         </button>
@@ -178,8 +215,8 @@ const UserManagement = () => {
 
       {/* Create User Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-richblack-900 bg-opacity-50 flex items-center justify-center">
-          <div className="bg-richblack-800 p-6 rounded-lg w-96">
+        <div className="fixed inset-0 bg-richblack-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-richblack-800 p-4 sm:p-6 rounded-lg w-full max-w-md">
             <h3 className="text-xl font-semibold mb-4">Create New User</h3>
             <form onSubmit={handleCreateUser}>
               <div className="space-y-4">
@@ -255,8 +292,8 @@ const UserManagement = () => {
 
       {/* Edit User Modal */}
       {showEditModal && (
-        <div className="fixed inset-0 bg-richblack-900 bg-opacity-50 flex items-center justify-center">
-          <div className="bg-richblack-800 p-6 rounded-lg w-96">
+        <div className="fixed inset-0 bg-richblack-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-richblack-800 p-4 sm:p-6 rounded-lg w-full max-w-md">
             <h3 className="text-xl font-semibold mb-4">Edit User</h3>
             <form onSubmit={handleUpdateUser}>
               <div className="space-y-4">
@@ -325,79 +362,168 @@ const UserManagement = () => {
       {loading && <p>Loading users...</p>}
       {error && <p className="text-red-500">{error}</p>}
       {!loading && !error && (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-richblack-700">
-                <th className="p-4 border border-richblack-600">Name</th>
-                <th className="p-4 border border-richblack-600">Email</th>
-                <th className="p-4 border border-richblack-600">Account Type</th>
-                <th className="p-4 border border-richblack-600">Contact</th>
-                <th className="p-4 border border-richblack-600">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.length === 0 ? (
-                <tr>
-                  <td colSpan="5" className="p-4 text-center">No users found.</td>
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr className="bg-richblack-700">
+                  <th className="p-3 border border-richblack-600">Name</th>
+                  <th className="p-3 border border-richblack-600">Email</th>
+                  <th className="p-3 border border-richblack-600">Type</th>
+                  <th className="p-3 border border-richblack-600">Contact</th>
+                  <th className="p-3 border border-richblack-600">Actions</th>
                 </tr>
-              ) : (
-                users.map((user) => (
-                  <tr key={user._id} className="border-b border-richblack-600">
-                    <td className="p-4">{user.firstName} {user.lastName}</td>
-                    <td className="p-4">{user.email}</td>
-                    <td className="p-4">{user.accountType}</td>
-                    <td className="p-4">{user.additionalDetails?.contactNumber || 'N/A'}</td>
-                    <td className="p-4 flex items-center">
-                      <button
-                        onClick={() => handleToggleUserStatus(user._id)}
-                        className={`mr-4 ${user.active ? 'text-green-500' : 'text-gray-500'} hover:text-green-600`}
-                        disabled={togglingUserId === user._id}
-                        title={user.active ? 'Deactivate User' : 'Activate User'}
-                      >
-                        {togglingUserId === user._id ? (
-                          <div className="w-5 h-5 animate-spin rounded-full border-b-2 border-green-500"/>
-                        ) : (
-                          user.active ? <FaEye size={20} /> : <FaEyeSlash size={20} />
-                        )}
-                      </button>
-                      <button
-                        onClick={() => handleEditClick(user)}
-                        className="text-yellow-50 hover:text-yellow-100 mr-4"
-                        title="Edit User"
-                      >
-                        <FaEdit size={20} />
-                      </button>
-                      <button
-                        onClick={() => {
-                          setConfirmationModal({
-                            text1: "Delete User?",
-                            text2: "This action cannot be undone. The user will be permanently deleted.",
-                            btn1Text: "Delete",
-                            btn2Text: "Cancel",
-                            btn1Handler: () => handleDeleteUser(user._id),
-                            btn2Handler: () => setConfirmationModal(null),
-                          })
-                        }}
-                        disabled={deletingUserId === user._id}
-                        className={`text-red-500 hover:text-red-600 ${
-                          deletingUserId === user._id ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
-                        title="Delete User"
-                      >
-                        {deletingUserId === user._id ? (
-                          <div className="w-5 h-5 animate-spin rounded-full border-b-2 border-red-500"/>
-                        ) : (
-                          <FaTrash size={20} />
-                        )}
-                      </button>
-                    </td>
+              </thead>
+              <tbody>
+                {users.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="p-3 text-center">No users found.</td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  users.map((user) => (
+                    <tr key={user._id} className="border-b border-richblack-600 hover:bg-richblack-700/50">
+                      <td className="p-3">{user.firstName} {user.lastName}</td>
+                      <td className="p-3">{user.email}</td>
+                      <td className="p-3">
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          user.accountType === 'Admin' ? 'bg-red-500/20 text-red-400' :
+                          user.accountType === 'Instructor' ? 'bg-purple-500/20 text-purple-400' :
+                          'bg-blue-500/20 text-blue-400'
+                        }`}>
+                          {user.accountType}
+                        </span>
+                      </td>
+                      <td className="p-3">{user.additionalDetails?.contactNumber || 'N/A'}</td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleToggleUserStatus(user._id)}
+                            className={`${user.active ? 'text-green-500' : 'text-gray-500'} hover:text-green-600`}
+                            disabled={togglingUserId === user._id}
+                            title={user.active ? 'Deactivate User' : 'Activate User'}
+                          >
+                            {togglingUserId === user._id ? (
+                              <div className="w-4 h-4 animate-spin rounded-full border-b-2 border-green-500"/>
+                            ) : (
+                              user.active ? <FaEye size={16} /> : <FaEyeSlash size={16} />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => handleEditClick(user)}
+                            className="text-yellow-50 hover:text-yellow-100"
+                            title="Edit User"
+                          >
+                            <FaEdit size={16} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setConfirmationModal({
+                                text1: "Delete User?",
+                                text2: "This action cannot be undone. The user will be permanently deleted.",
+                                btn1Text: "Delete",
+                                btn2Text: "Cancel",
+                                btn1Handler: () => handleDeleteUser(user._id),
+                                btn2Handler: () => setConfirmationModal(null),
+                              })
+                            }}
+                            disabled={deletingUserId === user._id}
+                            className={`text-red-500 hover:text-red-600 ${
+                              deletingUserId === user._id ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                            title="Delete User"
+                          >
+                            {deletingUserId === user._id ? (
+                              <div className="w-4 h-4 animate-spin rounded-full border-b-2 border-red-500"/>
+                            ) : (
+                              <FaTrash size={16} />
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4">
+            {users.length === 0 ? (
+              <div className="text-center p-6 bg-richblack-700 rounded-lg">
+                <p>No users found.</p>
+              </div>
+            ) : (
+              users.map((user) => (
+                <div key={user._id} className="bg-richblack-700 rounded-lg p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h5 className="font-semibold text-white">{user.firstName} {user.lastName}</h5>
+                      <p className="text-sm text-richblack-300">{user.email}</p>
+                    </div>
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      user.accountType === 'Admin' ? 'bg-red-500/20 text-red-400' :
+                      user.accountType === 'Instructor' ? 'bg-purple-500/20 text-purple-400' :
+                      'bg-blue-500/20 text-blue-400'
+                    }`}>
+                      {user.accountType}
+                    </span>
+                  </div>
+                  
+                  <div className="text-sm text-richblack-300">
+                    <p><span className="font-medium">Contact:</span> {user.additionalDetails?.contactNumber || 'N/A'}</p>
+                  </div>
+                  
+                  <div className="flex justify-end gap-3 pt-2 border-t border-richblack-600">
+                    <button
+                      onClick={() => handleToggleUserStatus(user._id)}
+                      className={`p-2 rounded ${user.active ? 'text-green-500' : 'text-gray-500'} hover:bg-richblack-600`}
+                      disabled={togglingUserId === user._id}
+                      title={user.active ? 'Deactivate User' : 'Activate User'}
+                    >
+                      {togglingUserId === user._id ? (
+                        <div className="w-4 h-4 animate-spin rounded-full border-b-2 border-green-500"/>
+                      ) : (
+                        user.active ? <FaEye size={16} /> : <FaEyeSlash size={16} />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handleEditClick(user)}
+                      className="p-2 rounded text-yellow-50 hover:bg-richblack-600"
+                      title="Edit User"
+                    >
+                      <FaEdit size={16} />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setConfirmationModal({
+                          text1: "Delete User?",
+                          text2: "This action cannot be undone. The user will be permanently deleted.",
+                          btn1Text: "Delete",
+                          btn2Text: "Cancel",
+                          btn1Handler: () => handleDeleteUser(user._id),
+                          btn2Handler: () => setConfirmationModal(null),
+                        })
+                      }}
+                      disabled={deletingUserId === user._id}
+                      className={`p-2 rounded text-red-500 hover:bg-richblack-600 ${
+                        deletingUserId === user._id ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                      title="Delete User"
+                    >
+                      {deletingUserId === user._id ? (
+                        <div className="w-4 h-4 animate-spin rounded-full border-b-2 border-red-500"/>
+                      ) : (
+                        <FaTrash size={16} />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </>
       )}
 
       {/* Confirmation Modal */}

@@ -683,7 +683,7 @@ const EnhancedAnalytics = () => {
   if (!analytics) return null;
 
   return (
-    <div id="analytics-dashboard" className="min-h-screen bg-[#2B2D31] p-6">
+<div id="analytics-dashboard" className="min-h-screen bg-[#2B2D31] p-4">
       {/* Notifications */}
       <div className="fixed top-4 right-4 z-50 space-y-2">
         {notifications.map(notification => (
@@ -707,66 +707,67 @@ const EnhancedAnalytics = () => {
       </div>
 
       {/* Enhanced Header with Controls */}
-      <div className="mb-6">
+      <div className="mb-4">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
               Analytics Dashboard
             </h1>
-            <p className="text-white">
+            <p className="text-sm sm:text-base text-white">
               Real-time insights and performance metrics
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-2 w-full lg:w-auto">
             {/* Auto Refresh Toggle */}
             <button
               onClick={() => setAutoRefresh(!autoRefresh)}
-              className={`px-4 py-2 rounded-xl transition-colors flex items-center gap-2 ${autoRefresh
+              className={`px-3 sm:px-4 py-2 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm ${autoRefresh
                   ? 'bg-blue-600 text-white hover:bg-blue-700'
                   : 'bg-[#36393F] text-white hover:bg-[#40444B]'
                 }`}
             >
               <FaRedo className={autoRefresh ? 'animate-spin' : ''} />
-              Auto Refresh
+              <span className="hidden sm:inline">Auto Refresh</span>
+              <span className="sm:hidden">Auto</span>
             </button>
 
             {/* Manual Refresh */}
             <button
               onClick={fetchAnalytics}
               disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+              className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 text-sm"
             >
               <FaRedo className={loading ? 'animate-spin' : ''} />
-              Refresh
+              <span>Refresh</span>
             </button>
 
             {/* Export Buttons */}
             <button
               onClick={exportToPDF}
-              className="px-4 py-2 bg-[#36393F] text-white rounded-xl hover:bg-[#40444B] transition-colors flex items-center gap-2"
+              className="px-3 sm:px-4 py-2 bg-[#36393F] text-white rounded-xl hover:bg-[#40444B] transition-colors flex items-center justify-center gap-2 text-sm"
             >
               <FaDownload />
-              PDF
+              <span>PDF</span>
             </button>
 
             <button
               onClick={exportToExcel}
-              className="px-4 py-2 bg-[#36393F] text-white rounded-xl hover:bg-[#40444B] transition-colors flex items-center gap-2"
+              className="px-3 sm:px-4 py-2 bg-[#36393F] text-white rounded-xl hover:bg-[#40444B] transition-colors flex items-center justify-center gap-2 text-sm"
             >
               <FaDownload />
-              CSV
+              <span>CSV</span>
             </button>
           </div>
         </div>
 
         {/* Date Range Selector */}
-        <div className="mt-6 flex gap-2">
+        <div className="mt-6 flex flex-wrap gap-2">
           {['7d', '30d', '90d', '1y'].map(range => (
             <button
               key={range}
               onClick={() => setDateRange(range)}
-              className={`px-4 py-2 rounded-xl text-sm transition-colors ${dateRange === range
+              className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm transition-colors ${dateRange === range
                   ? 'bg-blue-600 text-white'
                   : 'bg-[#36393F] text-white hover:bg-[#40444B]'
                 }`}
@@ -778,79 +779,79 @@ const EnhancedAnalytics = () => {
       </div>
 
       {/* Key Metrics Cards - Matching Reference Design */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {/* Total Users Card */}
-        <div className="bg-[#FDF5E6] p-8 rounded-3xl border border-gray-200 hover:shadow-2xl hover:border-blue-300 hover:-translate-y-2 transition-all duration-500 shadow-md cursor-pointer">
-          <div className="flex items-start justify-between mb-6">
-            <div className="p-4 bg-blue-100 rounded-2xl hover:bg-blue-200 transition-colors duration-300">
-              <FaUsers className="text-blue-600 text-2xl" />
+        <div className="bg-[#FDF5E6] p-4 sm:p-6 rounded-xl border border-gray-200 hover:shadow-lg hover:border-blue-300 hover:-translate-y-1 transition-all duration-300 shadow-sm cursor-pointer">
+          <div className="flex items-start justify-between mb-4 sm:mb-6">
+            <div className="p-3 sm:p-4 bg-blue-100 rounded-2xl hover:bg-blue-200 transition-colors duration-300">
+              <FaUsers className="text-blue-600 text-xl sm:text-2xl" />
             </div>
             <div className="text-right">
               <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Total Users</p>
             </div>
           </div>
           <div>
-            <h3 className="text-3xl font-bold text-gray-900 mb-2">
+            <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               {analytics.users.total.toLocaleString()}
             </h3>
-            <div className="flex items-center gap-2 mb-4">
-              <span className="text-green-600 text-sm font-medium bg-green-50 px-2 py-1 rounded-full">↗ 7.2%</span>
-              <span className="text-gray-600 text-sm">Last Week</span>
+            <div className="flex items-center gap-2 mb-2 sm:mb-4">
+              <span className="text-green-600 text-xs sm:text-sm font-medium bg-green-50 px-2 py-1 rounded-full">↗ 7.2%</span>
+              <span className="text-gray-600 text-xs sm:text-sm">Last Week</span>
             </div>
           </div>
         </div>
 
         {/* Students Card */}
-        <div className="bg-[#FDF5E6] p-8 rounded-3xl border border-gray-200 hover:shadow-2xl hover:border-green-300 hover:-translate-y-2 transition-all duration-500 shadow-md cursor-pointer">
-          <div className="flex items-start justify-between mb-6">
-            <div className="p-4 bg-green-100 rounded-2xl hover:bg-green-200 transition-colors duration-300">
-              <FaGraduationCap className="text-green-600 text-2xl" />
+        <div className="bg-[#FDF5E6] p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-3xl border border-gray-200 hover:shadow-2xl hover:border-green-300 hover:-translate-y-2 transition-all duration-500 shadow-md cursor-pointer">
+          <div className="flex items-start justify-between mb-4 sm:mb-6">
+            <div className="p-3 sm:p-4 bg-green-100 rounded-2xl hover:bg-green-200 transition-colors duration-300">
+              <FaGraduationCap className="text-green-600 text-xl sm:text-2xl" />
             </div>
             <div className="text-right">
               <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Students</p>
             </div>
           </div>
           <div>
-            <h3 className="text-3xl font-bold text-gray-900 mb-2">
+            <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               {analytics.users.students.toLocaleString()}
             </h3>
-            <div className="flex items-center gap-2 mb-4">
-              <span className="text-green-600 text-sm font-medium bg-green-50 px-2 py-1 rounded-full">↗ 6.2%</span>
-              <span className="text-gray-600 text-sm">Last Month</span>
+            <div className="flex items-center gap-2 mb-2 sm:mb-4">
+              <span className="text-green-600 text-xs sm:text-sm font-medium bg-green-50 px-2 py-1 rounded-full">↗ 6.2%</span>
+              <span className="text-gray-600 text-xs sm:text-sm">Last Month</span>
             </div>
           </div>
         </div>
 
         {/* Instructors Card */}
-        <div className="bg-[#FDF5E6] p-8 rounded-3xl border border-gray-200 hover:shadow-2xl hover:border-purple-300 hover:-translate-y-2 transition-all duration-500 shadow-md cursor-pointer">
-          <div className="flex items-start justify-between mb-6">
-            <div className="p-4 bg-purple-100 rounded-2xl hover:bg-purple-200 transition-colors duration-300">
-              <FaChalkboardTeacher className="text-purple-600 text-2xl" />
+        <div className="bg-[#FDF5E6] p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-3xl border border-gray-200 hover:shadow-2xl hover:border-purple-300 hover:-translate-y-2 transition-all duration-500 shadow-md cursor-pointer">
+          <div className="flex items-start justify-between mb-4 sm:mb-6">
+            <div className="p-3 sm:p-4 bg-purple-100 rounded-2xl hover:bg-purple-200 transition-colors duration-300">
+              <FaChalkboardTeacher className="text-purple-600 text-xl sm:text-2xl" />
             </div>
             <div className="text-right">
               <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Instructors</p>
             </div>
           </div>
           <div>
-            <h3 className="text-3xl font-bold text-gray-900 mb-2">
+            <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               {analytics.users.instructors.toLocaleString()}
             </h3>
-            <div className="flex items-center gap-2 mb-4">
-              <span className="text-red-500 text-sm font-medium bg-red-50 px-2 py-1 rounded-full">↘ 0.5%</span>
-              <span className="text-gray-600 text-sm">Last Week</span>
+            <div className="flex items-center gap-2 mb-2 sm:mb-4">
+              <span className="text-red-500 text-xs sm:text-sm font-medium bg-red-50 px-2 py-1 rounded-full">↘ 0.5%</span>
+              <span className="text-gray-600 text-xs sm:text-sm">Last Week</span>
             </div>
           </div>
         </div>
 
         {/* Revenue Card */}
-        <div className="bg-[#FDF5E6] p-8 rounded-3xl border border-gray-200 hover:shadow-2xl hover:border-yellow-300 hover:-translate-y-2 transition-all duration-500 shadow-md cursor-pointer">
-          <div className="flex items-start justify-between mb-6">
-            <div className="p-4 bg-yellow-100 rounded-2xl hover:bg-yellow-200 transition-colors duration-300">
-              <FaDollarSign className="text-yellow-600 text-2xl" />
+        <div className="bg-[#FDF5E6] p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-3xl border border-gray-200 hover:shadow-2xl hover:border-yellow-300 hover:-translate-y-2 transition-all duration-500 shadow-md cursor-pointer">
+          <div className="flex items-start justify-between mb-4 sm:mb-6">
+            <div className="p-3 sm:p-4 bg-yellow-100 rounded-2xl hover:bg-yellow-200 transition-colors duration-300">
+              <FaDollarSign className="text-yellow-600 text-xl sm:text-2xl" />
             </div>
             <div className="text-right">
               <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Revenue</p>
-              <div className="flex gap-2 mt-2">
+              <div className="hidden sm:flex gap-2 mt-2">
                 <span className="text-xs text-gray-500 hover:text-gray-700 cursor-pointer">All</span>
                 <span className="text-xs text-gray-500 hover:text-gray-700 cursor-pointer">1M</span>
                 <span className="text-xs text-gray-500 hover:text-gray-700 cursor-pointer">6M</span>
@@ -859,14 +860,14 @@ const EnhancedAnalytics = () => {
             </div>
           </div>
           <div>
-            <h3 className="text-3xl font-bold text-gray-900 mb-2">
+            <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
               ₹{(analytics.revenue?.totalRevenue || 0).toLocaleString()}
             </h3>
-            <div className="flex items-center gap-2 mb-4">
-              <span className="text-green-600 text-sm font-medium bg-green-50 px-2 py-1 rounded-full">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 mb-2 sm:mb-4">
+              <span className="text-green-600 text-xs sm:text-sm font-medium bg-green-50 px-2 py-1 rounded-full">
                 ↗ {analytics.revenue?.growthPercentage || 0}%
               </span>
-              <span className="text-gray-600 text-sm">
+              <span className="text-gray-600 text-xs sm:text-sm">
                 ₹{(analytics.revenue?.monthlyRevenue || 0).toLocaleString()}
               </span>
             </div>
@@ -875,7 +876,7 @@ const EnhancedAnalytics = () => {
       </div>
 
       {/* Enhanced Charts Section with Expand/Collapse */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* User Distribution Pie Chart */}
         <div className={`bg-[#242424] p-6 rounded-xl border border-[#2F2F2F] hover:border-blue-500 transition-all duration-300 ${expandedChart === 'userDist' ? 'lg:col-span-3' : ''
           }`}>
@@ -890,7 +891,7 @@ const EnhancedAnalytics = () => {
               {expandedChart === 'userDist' ? <FaCompress /> : <FaExpand />}
             </button>
           </div>
-          <div className={`flex items-center justify-center ${expandedChart === 'userDist' ? 'h-96' : 'h-64'}`}>
+          <div className={`flex items-center justify-center ${expandedChart === 'userDist' ? 'h-80' : 'h-56'}`}>
             {userDistributionData && (
               <Pie data={userDistributionData} options={pieChartOptions} />
             )}
@@ -941,7 +942,7 @@ const EnhancedAnalytics = () => {
       </div>
 
       {/* Enhanced Bar Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* User Comparison Bar Chart */}
         <div className="bg-[#242424] p-6 rounded-xl border border-[#2F2F2F] hover:border-blue-500 transition-all duration-300">
           <h3 className="text-lg font-semibold text-white mb-4">
@@ -1038,7 +1039,7 @@ const EnhancedAnalytics = () => {
       </div>
 
       {/* Enhanced Additional Metrics with System Health */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <div className="bg-[#242424] p-6 rounded-xl border border-[#2F2F2F] hover:border-blue-500 transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
@@ -1095,17 +1096,21 @@ const EnhancedAnalytics = () => {
           <span className="text-sm text-gray-400">Last 7 days</span>
         </div>
         <div className="space-y-4">
-          {analytics.recentCourses?.slice(0, 5).map((course) => (
-            <div key={course.id} className="flex items-center justify-between p-4 rounded-lg bg-[#2F2F2F] hover:bg-[#3A3A3A] transition-all duration-300">
+          {analytics.recentCourses?.slice(0, 5).map((course, index) => (
+            <div key={course._id || course.id || index} className="flex items-center justify-between p-4 rounded-lg bg-[#2F2F2F] hover:bg-[#3A3A3A] transition-all duration-300">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
                   <FaBookOpen className="text-white text-lg" />
                 </div>
                 <div>
-                  <h4 className="text-white font-medium">{course.title}</h4>
-                  <p className="text-sm text-gray-400">by {course.instructor}</p>
+                  <h4 className="text-white font-medium">{course.courseName || course.title}</h4>
+                  <p className="text-sm text-gray-400">
+                    by {course.instructor?.firstName} {course.instructor?.lastName || course.instructor}
+                  </p>
                   <p className="text-xs text-gray-500">
-                    {new Date(course.createdAt).toLocaleDateString()} • {course.enrollments} enrollments
+                    {new Date(course.createdAt).toLocaleDateString()} • 
+                    {course.category?.name && ` ${course.category.name} • `}
+                    ₹{course.price || 0}
                   </p>
                 </div>
               </div>
@@ -1120,6 +1125,13 @@ const EnhancedAnalytics = () => {
               </div>
             </div>
           ))}
+          {(!analytics.recentCourses || analytics.recentCourses.length === 0) && (
+            <div className="text-center py-8">
+              <FaBookOpen className="text-gray-500 text-3xl mx-auto mb-3" />
+              <p className="text-gray-400">No recent courses found</p>
+              <p className="text-gray-500 text-sm">Courses added in the last 7 days will appear here</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1133,40 +1145,53 @@ const EnhancedAnalytics = () => {
           <span className="text-sm text-gray-400">Last 24 hours</span>
         </div>
         <div className="space-y-4">
-          {analytics.recentLogins?.slice(0, 5).map((login) => (
-            <div key={login.id} className="flex items-center justify-between p-4 rounded-lg bg-[#2F2F2F] hover:bg-[#3A3A3A] transition-all duration-300">
+          {analytics.recentLogins?.slice(0, 5).map((login, index) => (
+            <div key={login._id || login.id || index} className="flex items-center justify-between p-4 rounded-lg bg-[#2F2F2F] hover:bg-[#3A3A3A] transition-all duration-300">
               <div className="flex items-center gap-4">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  login.role === 'Admin' ? 'bg-red-500/20' :
-                  login.role === 'Instructor' ? 'bg-purple-500/20' : 'bg-blue-500/20'
+                  login.accountType === 'Admin' || login.role === 'Admin' ? 'bg-red-500/20' :
+                  login.accountType === 'Instructor' || login.role === 'Instructor' ? 'bg-purple-500/20' : 'bg-blue-500/20'
                 }`}>
-                  {login.role === 'Admin' ? <FaUserShield className="text-red-400" /> :
-                   login.role === 'Instructor' ? <FaChalkboardTeacher className="text-purple-400" /> :
+                  {(login.accountType === 'Admin' || login.role === 'Admin') ? <FaUserShield className="text-red-400" /> :
+                   (login.accountType === 'Instructor' || login.role === 'Instructor') ? <FaChalkboardTeacher className="text-purple-400" /> :
                    <FaGraduationCap className="text-blue-400" />}
                 </div>
                 <div>
-                  <h4 className="text-white font-medium">{login.user}</h4>
+                  <h4 className="text-white font-medium">
+                    {login.firstName && login.lastName ? `${login.firstName} ${login.lastName}` : login.user}
+                  </h4>
                   <p className="text-sm text-gray-400">{login.email}</p>
-                  <p className="text-xs text-gray-500">{login.location}</p>
+                  <p className="text-xs text-gray-500">
+                    {new Date(login.createdAt || login.loginTime).toLocaleDateString()}
+                  </p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-sm text-white">{new Date(login.loginTime).toLocaleTimeString()}</p>
-                <p className="text-xs text-gray-400">{login.role}</p>
+                <p className="text-sm text-white">
+                  {new Date(login.createdAt || login.loginTime).toLocaleTimeString()}
+                </p>
+                <p className="text-xs text-gray-400">{login.accountType || login.role}</p>
               </div>
             </div>
           ))}
+          {(!analytics.recentLogins || analytics.recentLogins.length === 0) && (
+            <div className="text-center py-8">
+              <FaSignInAlt className="text-gray-500 text-3xl mx-auto mb-3" />
+              <p className="text-gray-400">No recent activity found</p>
+              <p className="text-gray-500 text-sm">Recent user registrations will appear here</p>
+            </div>
+          )}
         </div>
       </div>
 
       
 
       {/* System Health Monitor */}
-      <div className="bg-[#242424] p-6 rounded-xl border border-[#2F2F2F]">
-        <h3 className="text-lg font-semibold text-white mb-6">
+      <div className="bg-[#242424] p-4 sm:p-6 rounded-xl border border-[#2F2F2F]">
+        <h3 className="text-base sm:text-lg font-semibold text-white mb-4 sm:mb-6">
           System Health Monitor
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="flex items-center gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
             <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
             <div>

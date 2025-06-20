@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
-const Category = require('./models/category');
-const Course = require('./models/course');
-const User = require('./models/user');
+const Category = require('../models/category');
+const Course = require('../models/course');
+const User = require('../models/user');
 
 // MongoDB connection
 const MONGO_URI = "mongodb://localhost:27017/learnhub";
@@ -31,20 +31,13 @@ const categories = [
 ];
 
 // Sample instructor data
-const instructorProfileData = {
-    gender: "Male",
-    dateOfBirth: "1990-01-01",
-    about: "Experienced web development instructor",
-    contactNumber: "+1234567890"
-};
-
 const instructorData = {
     firstName: "John",
     lastName: "Doe",
     email: "john.instructor@example.com",
     password: "instructor123",
     accountType: "Instructor",
-    image: "https://example.com/instructor-profile.jpg"  // Added default image URL
+    additionalDetails: "Experienced web development instructor"
 };
 
 // Sample courses data
@@ -100,22 +93,12 @@ const seedDatabase = async () => {
         console.log("Connected to MongoDB");
 
         // Clear existing data
-        const Profile = require('./models/profile');
         await Category.deleteMany({});
         await Course.deleteMany({});
-        await User.deleteMany({});
-        await Profile.deleteMany({});
-        console.log("Cleared existing categories, courses, users, and profiles");
+        console.log("Cleared existing categories and courses");
 
-        // Create instructor profile first
-        const instructorProfile = await Profile.create(instructorProfileData);
-        console.log("Created instructor profile:", instructorProfile);
-
-        // Create instructor with profile reference
-        const instructor = await User.create({
-            ...instructorData,
-            additionalDetails: instructorProfile._id  // Use the profile's ObjectId
-        });
+        // Create instructor
+        const instructor = await User.create(instructorData);
         console.log("Created instructor:", instructor);
 
         // Insert categories

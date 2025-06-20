@@ -59,13 +59,13 @@ export default function CourseAccessRequests() {
   return (
     <div className="animate-fade-in-up space-y-6">
       {/* Header Section */}
-      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-6 border border-slate-700/50">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-4 border border-slate-700/50">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
               Course Access Requests
             </h1>
-            <p className="text-slate-400 mt-2">
+            <p className="text-sm text-slate-400 mt-1">
               Manage student course access requests
             </p>
           </div>

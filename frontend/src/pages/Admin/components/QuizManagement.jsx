@@ -27,33 +27,36 @@ const QuizManagement = () => {
     setLoadingCategories(true);
     try {
       const categoriesData = await showAllCategories();
-      setCategories(categoriesData);
+      setCategories(categoriesData || []);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      console.error("Error fetching categories:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      setCategories([]);
+      // You might want to show a toast error here
+      // toast.error(error.response?.data?.message || error.message);
+    } finally {
+      setLoadingCategories(false);
     }
-    setLoadingCategories(false);
   };
 
   const fetchCourses = async (categoryId) => {
     setLoading(true);
     try {
-      console.log("Fetching courses with token:", !!token);
-      
       if (!token) {
-        console.error("No token available");
-        setLoading(false);
-        return;
+        throw new Error("No authentication token found");
       }
 
+      console.log("Fetching courses with token:", token);
+      
       // Get all courses from admin API
       const coursesData = await getAllCourses(token);
       console.log("Courses data received:", coursesData);
       
-      if (!coursesData || coursesData.length === 0) {
-        console.log("No courses found");
-        setCourses([]);
-        setLoading(false);
-        return;
+      if (!coursesData) {
+        throw new Error("No courses data received");
       }
 
       // Filter courses by category if a category is selected
@@ -68,31 +71,48 @@ const QuizManagement = () => {
         : coursesData;
 
       console.log("Filtered courses:", filteredCourses);
-      setCourses(filteredCourses);
+      setCourses(filteredCourses || []);
     } catch (error) {
-      console.error("Error fetching courses:", error);
+      console.error("Error fetching courses:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      setCourses([]);
+      // You might want to show a toast error here
+      // toast.error(error.response?.data?.message || error.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const fetchCourseDetails = async (courseId) => {
     setLoadingCourseDetails(true);
     try {
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
       const response = await getFullDetailsOfCourse(courseId, token);
       console.log("Course details API response:", response);
       
       if (!response?.courseDetails) {
-        console.error("No course details in response");
-        setSelectedCourseDetails(null);
-        return;
+        throw new Error("No course details in response");
       }
       
       setSelectedCourseDetails(response.courseDetails);
     } catch (error) {
-      console.error("Error fetching course details:", error);
+      console.error("Error fetching course details:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
       setSelectedCourseDetails(null);
+      // You might want to show a toast error here
+      // toast.error(error.response?.data?.message || error.message);
+    } finally {
+      setLoadingCourseDetails(false);
     }
-    setLoadingCourseDetails(false);
   };
 
   const getSubSections = () => {
@@ -143,7 +163,7 @@ const QuizManagement = () => {
   try {
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="text-2xl font-bold text-richblack-5">Quiz Management</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-richblack-5">Quiz Management</h1>
         
         {/* Category Selection */}
         {loadingCategories ? (
@@ -169,7 +189,7 @@ const QuizManagement = () => {
                   console.error("Error in category selection:", error);
                 }
               }}
-              className="w-full bg-richblack-700 text-richblack-5 rounded-lg p-3"
+              className="w-full bg-richblack-700 text-richblack-5 rounded-lg p-3 text-sm sm:text-base"
             >
               <option value="">Select a category</option>
               {categories?.map((category) => (
@@ -205,7 +225,7 @@ const QuizManagement = () => {
                     console.error("Error in course selection:", error);
                   }
                 }}
-                className="w-full bg-richblack-700 text-richblack-5 rounded-lg p-3"
+                className="w-full bg-richblack-700 text-richblack-5 rounded-lg p-3 text-sm sm:text-base"
               >
                 <option value="">Select a course</option>
                 {courses?.map((course) => (
@@ -217,8 +237,8 @@ const QuizManagement = () => {
 
               {courses.length === 0 && (
                 <div className="flex flex-col items-center justify-center gap-3 p-6 text-center">
-                  <p className="text-xl font-semibold text-richblack-100">No courses found</p>
-                  <p className="text-richblack-400">There are no courses available in this category.</p>
+                  <p className="text-lg sm:text-xl font-semibold text-richblack-100">No courses found</p>
+                  <p className="text-sm sm:text-base text-richblack-400">There are no courses available in this category.</p>
                 </div>
               )}
             </div>
@@ -231,16 +251,16 @@ const QuizManagement = () => {
             {loadingCourseDetails && (
               <div className="flex items-center justify-center h-20">
                 <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-yellow-50"></div>
-                <span className="ml-2 text-richblack-300">Loading course details...</span>
+                <span className="ml-2 text-richblack-300 text-sm">Loading course details...</span>
               </div>
             )}
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <label className="text-sm text-richblack-5">Select Lecture</label>
               {selectedSubSection && (
                 selectedSubSection.quiz ? (
                   <button
                     onClick={() => setShowQuizForm(true)}
-                    className="flex items-center gap-2 bg-yellow-50 text-richblack-900 px-4 py-2 rounded-lg hover:scale-95 transition-all duration-200"
+                    className="flex items-center gap-2 bg-yellow-50 text-richblack-900 px-3 sm:px-4 py-2 rounded-lg hover:scale-95 transition-all duration-200 text-sm w-full sm:w-auto justify-center"
                   >
                     <FaEdit className="text-sm" />
                     <span>Edit Quiz</span>
@@ -248,7 +268,7 @@ const QuizManagement = () => {
                 ) : (
                   <button
                     onClick={() => setShowQuizForm(true)}
-                    className="flex items-center gap-2 bg-yellow-50 text-richblack-900 px-4 py-2 rounded-lg hover:scale-95 transition-all duration-200"
+                    className="flex items-center gap-2 bg-yellow-50 text-richblack-900 px-3 sm:px-4 py-2 rounded-lg hover:scale-95 transition-all duration-200 text-sm w-full sm:w-auto justify-center"
                   >
                     <FaPlus className="text-sm" />
                     <span>Add Quiz</span>
@@ -269,7 +289,7 @@ const QuizManagement = () => {
                     console.error("Error in subsection selection:", error);
                   }
                 }}
-                className="w-full bg-richblack-700 text-richblack-5 rounded-lg p-3"
+                className="w-full bg-richblack-700 text-richblack-5 rounded-lg p-3 text-sm sm:text-base"
               >
                 <option value="">Select a lecture</option>
                 {getSubSections().map((subsection) => (
@@ -285,30 +305,36 @@ const QuizManagement = () => {
 
         {/* Quiz Details */}
         {selectedSubSection?.quiz && (
-          <div className="bg-richblack-700 rounded-lg p-6 space-y-4">
-            <h3 className="text-lg font-semibold text-richblack-5">Quiz Details</h3>
-            <div className="space-y-2">
-              <p className="text-sm text-richblack-100">
-                Number of Questions: {selectedSubSection.quiz.questions?.length || 0}
-              </p>
-              <p className="text-sm text-richblack-100">
-                Total Marks: {selectedSubSection.quiz.questions?.reduce((sum, q) => sum + (q.marks || 0), 0) || 0}
-              </p>
+          <div className="bg-richblack-700 rounded-lg p-4 sm:p-6 space-y-4">
+            <h3 className="text-base sm:text-lg font-semibold text-richblack-5">Quiz Details</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="bg-richblack-600 rounded-lg p-3">
+                <p className="text-xs text-richblack-300">Questions</p>
+                <p className="text-lg font-semibold text-richblack-5">
+                  {selectedSubSection.quiz.questions?.length || 0}
+                </p>
+              </div>
+              <div className="bg-richblack-600 rounded-lg p-3">
+                <p className="text-xs text-richblack-300">Total Marks</p>
+                <p className="text-lg font-semibold text-richblack-5">
+                  {selectedSubSection.quiz.questions?.reduce((sum, q) => sum + (q.marks || 0), 0) || 0}
+                </p>
+              </div>
             </div>
           </div>
         )}
 
         {/* Quiz Creator Modal */}
         {showQuizForm && selectedSubSection && (
-          <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-richblack-800 rounded-lg p-6 w-11/12 max-w-[800px] max-h-[90vh] overflow-auto">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-semibold text-richblack-5">
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-50 p-4">
+            <div className="bg-richblack-800 rounded-lg p-4 sm:p-6 w-full max-w-[800px] max-h-[90vh] overflow-auto">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
+                <h3 className="text-lg sm:text-xl font-semibold text-richblack-5">
                   {selectedSubSection.quiz ? 'Edit' : 'Add'} Quiz - {selectedSubSection.title}
                 </h3>
                 <button
                   onClick={() => setShowQuizForm(false)}
-                  className="text-richblack-300 hover:text-richblack-50"
+                  className="text-richblack-300 hover:text-richblack-50 text-xl self-end sm:self-auto"
                 >
                   ✕
                 </button>

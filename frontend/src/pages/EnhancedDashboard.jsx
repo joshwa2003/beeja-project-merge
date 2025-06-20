@@ -220,13 +220,17 @@ const EnhancedDashboard = () => {
             </div>
 
             {/* Enhanced Sidebar */}
-            <div className={`transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-64'} mt-16`}>
+            <div className={`fixed left-0 top-16 h-[calc(100vh-4rem)] z-30 transition-all duration-300 ${
+                sidebarCollapsed ? 'w-16' : 'w-64'
+            }`}>
                 <Sidebar collapsed={sidebarCollapsed} />
             </div>
 
             {/* Enhanced Main Content */}
-            <div className={`flex-1 mt-16 h-[calc(100vh-4rem)] overflow-auto modern-scrollbar transition-all duration-300`}>
-                <div className='mx-auto w-11/12 max-w-[1400px] py-8 px-4'>
+            <div className={`flex-1 mt-16 min-h-[calc(100vh-4rem)] transition-all duration-300 ${
+                sidebarCollapsed ? 'ml-16' : 'ml-64'
+            }`}>
+                <div className='mx-auto w-11/12 max-w-[1400px] py-8 px-4 overflow-x-hidden'>
                     {/* Quick Stats Bar */}
                     <div className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div className="glass-effect p-4 rounded-xl transform hover:scale-105 transition-all duration-300">
