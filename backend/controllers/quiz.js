@@ -226,17 +226,17 @@ exports.validateSectionAccess = async (req, res) => {
             });
         }
 
-        // Check if all previous quizzes are completed
+        // Check if all previous quizzes are passed with 60% or higher
         for (const subsection of subsections) {
             if (subsection._id === sectionId) {
                 break;
             }
             
-            if (!courseProgress.completedQuizzes.includes(subsection._id)) {
+            if (!courseProgress.passedQuizzes.includes(subsection._id)) {
                 return res.status(200).json({
                     success: true,
                     canAccess: false,
-                    message: 'Complete previous quizzes first'
+                    message: 'Pass previous quizzes with at least 60% to unlock this section'
                 });
             }
         }
@@ -256,6 +256,66 @@ exports.validateSectionAccess = async (req, res) => {
 };
 
 // Submit quiz answers and validate
+// Get quiz status (passed/failed/attempts)
+exports.getQuizStatus = async (req, res) => {
+    try {
+        const { quizId } = req.params;
+        const userId = req.user.id;
+
+        const courseProgress = await CourseProgress.findOne({
+            userId,
+            'quizResults.quiz': quizId
+        });
+
+        if (!courseProgress) {
+            return res.status(200).json({
+                success: true,
+                data: {
+                    attempts: 0,
+                    passed: false,
+                    lastAttempt: null
+                }
+            });
+        }
+
+        const quizResult = courseProgress.quizResults.find(
+            result => result.quiz.toString() === quizId
+        );
+
+        if (!quizResult) {
+            return res.status(200).json({
+                success: true,
+                data: {
+                    attempts: 0,
+                    passed: false,
+                    lastAttempt: null
+                }
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                attempts: quizResult.attempts,
+                passed: quizResult.passed,
+                lastAttempt: {
+                    score: quizResult.score,
+                    totalMarks: quizResult.totalMarks,
+                    percentage: quizResult.percentage,
+                    completedAt: quizResult.completedAt
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error getting quiz status:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error getting quiz status',
+            error: error.message
+        });
+    }
+};
+
 exports.submitQuiz = async (req, res) => {
     try {
         const { quizId, courseId, subsectionId, answers } = req.body;
@@ -277,22 +337,31 @@ exports.submitQuiz = async (req, res) => {
             });
         }
 
+        // Find existing course progress
+        let courseProgress = await CourseProgress.findOne({ userId, courseID: courseId });
+        
+        // Check if quiz is already passed
+        const existingResult = courseProgress?.quizResults?.find(
+            result => result.quiz.toString() === quiz._id.toString() && result.passed
+        );
+        
+        if (existingResult) {
+            return res.status(400).json({
+                success: false,
+                message: 'Quiz already passed. Retakes not allowed for passed quizzes.',
+                data: {
+                    score: existingResult.score,
+                    totalMarks: existingResult.totalMarks,
+                    percentage: existingResult.percentage,
+                    passed: true
+                }
+            });
+        }
+
         // Validate required questions and calculate score
         let score = 0;
         let totalMarks = 0;
         const unansweredQuestions = [];
-
-        console.log('Quiz questions:', quiz.questions.length);
-        console.log('Received answers:', JSON.stringify(answers, null, 2));
-
-        // Debug: Log the entire quiz structure
-        console.log('Quiz structure:', JSON.stringify(quiz.questions.map(q => ({
-            id: q._id,
-            type: q.questionType,
-            correctAnswer: q.correctAnswer,
-            correctAnswers: q.correctAnswers,
-            options: q.options
-        })), null, 2));
 
         for (let i = 0; i < quiz.questions.length; i++) {
             const question = quiz.questions[i];
@@ -304,13 +373,8 @@ exports.submitQuiz = async (req, res) => {
             let isAnswered = false;
             let isCorrect = false;
 
-            console.log(`Checking question ${i + 1} (ID: ${questionId}), type: ${question.questionType}`);
-            console.log(`Question correct answer:`, question.correctAnswer);
-            console.log(`Question correct answers:`, question.correctAnswers);
-
             // Check if answer exists for this question
             const answer = answers[questionId];
-            console.log(`Answer for question ${questionId}:`, answer, typeof answer);
 
             if (question.questionType === 'matchTheFollowing') {
                 // For match the following, check if all pairs are answered
@@ -326,14 +390,6 @@ exports.submitQuiz = async (req, res) => {
                         const userAnswer = answers[`${questionId}_${optionIndex}`];
                         // The correct answer should match the option index
                         return parseInt(userAnswer) === optionIndex;
-                    });
-                    
-                    console.log(`Match the following question ${questionId}: all correct = ${isCorrect}`);
-                    
-                    // Log individual matches for debugging
-                    question.options.forEach((_, optionIndex) => {
-                        const userAnswer = answers[`${questionId}_${optionIndex}`];
-                        console.log(`  Match ${optionIndex}: user=${userAnswer}, correct=${optionIndex}, match=${parseInt(userAnswer) === optionIndex}`);
                     });
                 }
             } else if (question.questionType === 'multipleChoice') {
@@ -362,7 +418,6 @@ exports.submitQuiz = async (req, res) => {
                 if (isAnswered) {
                     const correctNum = Number(question.correctAnswer);
                     isCorrect = answerNum === correctNum;
-                    console.log(`Answer comparison: ${answerNum} === ${correctNum} = ${isCorrect}`);
                 }
             } else {
                 // For other question types (shortAnswer, longAnswer)
@@ -373,8 +428,6 @@ exports.submitQuiz = async (req, res) => {
                     isCorrect = true; // Give full marks for text answers
                 }
             }
-
-            console.log(`Question ${i + 1}: answered = ${isAnswered}, correct = ${isCorrect}, answer = ${answer}`);
 
             // Track unanswered required questions
             if (question.required && !isAnswered) {
@@ -389,31 +442,50 @@ exports.submitQuiz = async (req, res) => {
 
         // Check if there are unanswered required questions
         if (unansweredQuestions.length > 0) {
-            console.log('Unanswered questions:', unansweredQuestions);
             return res.status(400).json({
                 success: false,
                 message: `Please answer all questions before submitting. Unanswered questions: ${unansweredQuestions.join(', ')}`
             });
         }
 
+        // Calculate percentage
+        const percentage = (score / totalMarks) * 100;
+        const passed = percentage >= 60;
+
         // Update course progress
-        let courseProgress = await CourseProgress.findOne({ userId, courseId });
         if (!courseProgress) {
             courseProgress = await CourseProgress.create({
                 userId,
-                courseId,
+                courseID: courseId,
                 completedVideos: [],
-                completedQuizzes: [subsectionId],
+                completedQuizzes: passed ? [subsectionId] : [],
+                passedQuizzes: passed ? [subsectionId] : [],
                 quizResults: [{
                     quiz: quiz._id,
+                    subSection: subsectionId,
                     score,
                     totalMarks,
-                    submittedAt: new Date()
+                    percentage,
+                    passed,
+                    attempts: 1,
+                    completedAt: new Date()
                 }]
             });
         } else {
-            if (!courseProgress.completedQuizzes.includes(subsectionId)) {
-                courseProgress.completedQuizzes.push(subsectionId);
+            // Get existing quiz result to update attempts
+            const existingQuizResult = courseProgress.quizResults.find(
+                result => result.quiz.toString() === quiz._id.toString()
+            );
+            const attempts = existingQuizResult ? existingQuizResult.attempts + 1 : 1;
+
+            // Update completedQuizzes and passedQuizzes arrays
+            if (passed) {
+                if (!courseProgress.completedQuizzes.includes(subsectionId)) {
+                    courseProgress.completedQuizzes.push(subsectionId);
+                }
+                if (!courseProgress.passedQuizzes.includes(subsectionId)) {
+                    courseProgress.passedQuizzes.push(subsectionId);
+                }
             }
             
             // Remove any existing result for this quiz and add new one
@@ -423,9 +495,13 @@ exports.submitQuiz = async (req, res) => {
             
             courseProgress.quizResults.push({
                 quiz: quiz._id,
+                subSection: subsectionId,
                 score,
                 totalMarks,
-                submittedAt: new Date()
+                percentage,
+                passed,
+                attempts,
+                completedAt: new Date()
             });
             
             await courseProgress.save();
@@ -433,11 +509,13 @@ exports.submitQuiz = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'Quiz submitted successfully',
+            message: passed ? 'Quiz passed successfully!' : 'Quiz submitted successfully, but did not meet passing score.',
             data: {
                 score,
                 totalMarks,
-                percentage: ((score / totalMarks) * 100).toFixed(1)
+                percentage: percentage.toFixed(1),
+                passed,
+                requiredPercentage: 60
             }
         });
     } catch (error) {

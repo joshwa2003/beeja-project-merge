@@ -10,16 +10,18 @@ const {
   getQuizById,
   getQuizResults,
   validateSectionAccess,
-  submitQuiz
+  submitQuiz,
+  getQuizStatus
 } = require('../controllers/quiz');
 
 // Routes
 router.get('/all', auth, getAllQuizzes);
 router.post('/create', auth, isAdmin, createQuiz);
+router.get('/status/:quizId', auth, getQuizStatus);
+router.get('/results/:quizId', auth, getQuizResults);
+router.get('/validate-access/:sectionId', auth, validateSectionAccess);
 router.get('/:quizId', auth, getQuizById);
 router.put('/update/:quizId', auth, isAdmin, updateQuiz);
 router.post('/submit', auth, isStudent, submitQuiz);
-router.get('/results/:quizId', auth, getQuizResults);
-router.get('/validate-access/:sectionId', auth, validateSectionAccess);
 
 module.exports = router;

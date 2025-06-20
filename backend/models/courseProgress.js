@@ -21,14 +21,33 @@ const courseProgressSchema = new mongoose.Schema({
             ref: "SubSection",
         }
     ],
+    passedQuizzes: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "SubSection",
+        }
+    ],
     quizResults: [
         {
             quiz: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "Quiz"
             },
+            subSection: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "SubSection"
+            },
             score: Number,
             totalMarks: Number,
+            percentage: Number,
+            passed: {
+                type: Boolean,
+                default: false
+            },
+            attempts: {
+                type: Number,
+                default: 1
+            },
             completedAt: {
                 type: Date,
                 default: Date.now

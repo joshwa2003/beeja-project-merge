@@ -273,7 +273,7 @@ exports.getProgressPercentage = async (req, res) => {
         // Count quiz if exists
         if (subsection.quiz) {
           totalItems += 1
-          if (courseProgress.completedQuizzes.includes(subsection._id)) {
+          if (courseProgress.passedQuizzes.includes(subsection._id)) {
             completedItems += 1
           }
         }

@@ -9,6 +9,7 @@ const {
   GET_ALL_QUIZZES_API,
   SUBMIT_QUIZ_API,
   GET_QUIZ_RESULTS_API,
+  GET_QUIZ_STATUS_API,
   VALIDATE_SECTION_ACCESS_API,
 } = quizEndpoints
 
@@ -131,6 +132,25 @@ export const getQuizResults = async (quizId, token) => {
     result = response?.data?.data
   } catch (error) {
     console.log("GET_QUIZ_RESULTS_API ERROR............", error)
+    toast.error(error.message)
+  }
+  return result
+}
+
+// ================ Get Quiz Status ================
+export const getQuizStatus = async (quizId, token) => {
+  let result = null
+  try {
+    const response = await apiConnector("GET", GET_QUIZ_STATUS_API.replace(":quizId", quizId), null, {
+      Authorization: `Bearer ${token}`,
+    })
+    
+    if (!response?.data?.success) {
+      throw new Error("Could Not Get Quiz Status")
+    }
+    result = response?.data?.data
+  } catch (error) {
+    console.log("GET_QUIZ_STATUS_API ERROR............", error)
     toast.error(error.message)
   }
   return result

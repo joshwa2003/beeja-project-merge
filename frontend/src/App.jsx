@@ -8,6 +8,7 @@ import Signup from "./pages/Signup"
 import ForgotPassword from "./pages/ForgotPassword";
 import UpdatePassword from "./pages/UpdatePassword";
 import VerifyEmail from "./pages/VerifyEmail";
+import VerifyCertificate from "./pages/VerifyCertificate";
 
 import AdminRoutes from "./routes/AdminRoutes";
 import AdminDashboard from "./pages/Admin/Dashboard";
@@ -39,6 +40,7 @@ import EnrolledCourses from "./components/core/Dashboard/EnrolledCourses";
 import AddCourse from "./components/core/Dashboard/AddCourse/AddCourse";
 import AccessRequests from "./components/core/Dashboard/AccessRequests";
 import PurchaseHistory from "./components/core/Dashboard/PurchaseHistory/PurchaseHistory";
+import Certificates from "./pages/Dashboard/Certificates";
 
 import ViewCourse from "./pages/ViewCourse";
 import VideoDetails from './components/core/ViewCourse/VideoDetails';
@@ -107,6 +109,7 @@ function App() {
         <Route path="catalog/:catalogName" element={<Catalog />} />
         <Route path="free-courses" element={<FreeCourses />} />
         <Route path="courses/:courseId" element={<CourseDetails />} />
+        <Route path="verify-certificate/:certificateId" element={<VerifyCertificate />} />
 
         {/* Open Route - for Only Non Logged in User */}
         <Route
@@ -171,6 +174,7 @@ function App() {
               <Route path="dashboard/enrolled-courses" element={<EnrolledCourses />} />
               <Route path="dashboard/purchase-history" element={<PurchaseHistory />} />
               <Route path="dashboard/access-requests" element={<AccessRequests />} />
+              <Route path="dashboard/certificates" element={<Certificates />} />
             </>
           )}
 

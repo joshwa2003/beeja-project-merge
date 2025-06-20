@@ -4,15 +4,22 @@ import { useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 
 import { getUserEnrolledCourses } from "../../../services/operations/profileAPI"
+import { generateCertificate } from "../../../services/operations/certificateAPI"
 import Img from './../../common/Img';
+import IconBtn from "../../common/IconBtn"
+import CertificateModal from "../Certificate/CertificateModal"
+
 
 
 
 export default function EnrolledCourses() {
   const { token } = useSelector((state) => state.auth)
+  const { user } = useSelector((state) => state.profile)
   const navigate = useNavigate()
 
   const [enrolledCourses, setEnrolledCourses] = useState(null)
+  const [showCertificate, setShowCertificate] = useState(false)
+  const [selectedCourse, setSelectedCourse] = useState(null)
 
   // fetch all users enrolled courses
   const getEnrolledCourses = async () => {
@@ -139,12 +146,50 @@ export default function EnrolledCourses() {
                     height="8px"
                     isLabelVisible={false}
                   />
+                  {course.progressPercentage === 100 && (
+                    <IconBtn
+                      text="View Certificate"
+                      onClick={async (e) => {
+                        e.stopPropagation()
+                        try {
+                          const certificateData = await generateCertificate(
+                            { courseId: course._id },
+                            token
+                          )
+                          if (certificateData) {
+                            setSelectedCourse({
+                              courseName: course.courseName,
+                              studentName: `${user?.firstName} ${user?.lastName}`,
+                              email: user?.email,
+                              completionDate: certificateData.completionDate || new Date().toISOString(),
+                              certificateId: certificateData.certificateId
+                            })
+                            setShowCertificate(true)
+                          }
+                        } catch (error) {
+                          console.error("Error generating certificate:", error)
+                        }
+                      }}
+                      customClasses="mt-2"
+                    />
+                  )}
                 </div>
               </div>
             ))
           }
         </div>
       }
+
+      {/* Certificate Modal */}
+      {showCertificate && (
+        <CertificateModal
+          onClose={() => {
+            setShowCertificate(false)
+            setSelectedCourse(null)
+          }}
+          certificateData={selectedCourse}
+        />
+      )}
     </>
   )
 }

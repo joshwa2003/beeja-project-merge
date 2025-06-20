@@ -121,5 +121,13 @@ export const quizEndpoints = {
   GET_ALL_QUIZZES_API: BASE_URL + "/api/v1/quiz/all",
   SUBMIT_QUIZ_API: BASE_URL + "/api/v1/quiz/submit",
   GET_QUIZ_RESULTS_API: BASE_URL + "/api/v1/quiz/results/:quizId",
+  GET_QUIZ_STATUS_API: BASE_URL + "/api/v1/quiz/status/:quizId",
   VALIDATE_SECTION_ACCESS_API: BASE_URL + "/api/v1/quiz/validate-access/:sectionId",
+}
+
+// CERTIFICATE ENDPOINTS
+export const certificateEndpoints = {
+  GENERATE_CERTIFICATE_API: BASE_URL + "/api/v1/certificate/generate",
+  VERIFY_CERTIFICATE_API: BASE_URL + "/api/v1/certificate/verify/:certificateId",
+  GET_USER_CERTIFICATES_API: BASE_URL + "/api/v1/certificate/user-certificates",
 }

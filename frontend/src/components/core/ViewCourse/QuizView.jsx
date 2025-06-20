@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate, useParams } from "react-router-dom"
-import { getQuizById, submitQuiz } from "../../../services/operations/quizAPI"
+import { getQuizById, submitQuiz, getQuizStatus } from "../../../services/operations/quizAPI"
 import IconBtn from "../../common/IconBtn"
 import { IoIosArrowBack } from "react-icons/io"
-import { FiClock, FiCheckCircle, FiAlertCircle } from "react-icons/fi"
+import { FiClock, FiCheckCircle, FiAlertCircle, FiAward } from "react-icons/fi"
 import { HiOutlineQuestionMarkCircle } from "react-icons/hi"
 import Xarrow from 'react-xarrows'
 
@@ -18,11 +18,12 @@ const QuizView = () => {
   const [quizAnswers, setQuizAnswers] = useState({})
   const [loading, setLoading] = useState(false)
   const [quizResult, setQuizResult] = useState(null)
+  const [quizStatus, setQuizStatus] = useState(null)
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [timeRemaining, setTimeRemaining] = useState(null)
   const [quizStarted, setQuizStarted] = useState(false)
 
-  // Load quiz data
+  // Load quiz data and status
   useEffect(() => {
     const loadQuiz = async () => {
       if (!courseSectionData.length) return
@@ -37,8 +38,12 @@ const QuizView = () => {
         
         try {
           setLoading(true)
-          const quiz = await getQuizById(quizId, token)
+          const [quiz, status] = await Promise.all([
+            getQuizById(quizId, token),
+            getQuizStatus(quizId, token)
+          ])
           setQuizData(quiz)
+          setQuizStatus(status)
           // Set timer if quiz has time limit (default 30 minutes)
           setTimeRemaining(quiz.timeLimit || 30 * 60)
         } catch (error) {
@@ -250,38 +255,89 @@ const QuizView = () => {
     )
   }
 
-  if (quizResult) {
+  // Show quiz result or status
+  if (quizResult || quizStatus?.lastAttempt) {
+    const resultData = quizResult || quizStatus.lastAttempt
+    const percentage = parseFloat(quizResult ? quizResult.percentage : resultData.percentage)
+    // Consider passed if percentage is >= 60
+    const isPassed = percentage >= 60
+    
+    // Update quizStatus to reflect the correct pass state
+    if (quizStatus) {
+      quizStatus.passed = isPassed
+    }
+    
     return (
       <div className="max-w-4xl mx-auto p-6">
-        <div className="bg-gradient-to-r from-green-800 to-green-600 rounded-xl p-8 text-center shadow-xl">
-          <FiCheckCircle className="mx-auto text-6xl text-white mb-4" />
-          <h1 className="text-3xl font-bold text-white mb-4">Quiz Completed!</h1>
+        <div className={`bg-gradient-to-r ${isPassed ? 'from-green-800 to-green-600' : 'from-red-800 to-red-600'} rounded-xl p-8 text-center shadow-xl`}>
+          {isPassed ? (
+            <FiAward className="mx-auto text-6xl text-white mb-4" />
+          ) : (
+            <FiAlertCircle className="mx-auto text-6xl text-white mb-4" />
+          )}
+          <h1 className="text-3xl font-bold text-white mb-4">
+            {isPassed ? "Quiz Passed!" : "Quiz Completed"}
+          </h1>
           
           <div className="bg-white/10 rounded-lg p-6 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-white">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-white">
               <div>
                 <p className="text-lg font-semibold">Your Score</p>
-                <p className="text-3xl font-bold">{quizResult.score}/{quizResult.totalMarks}</p>
+                <p className="text-3xl font-bold">{resultData.score}/{resultData.totalMarks}</p>
               </div>
               <div>
                 <p className="text-lg font-semibold">Percentage</p>
-                <p className="text-3xl font-bold">{((quizResult.score / quizResult.totalMarks) * 100).toFixed(1)}%</p>
+                <p className="text-3xl font-bold">{percentage}%</p>
               </div>
               <div>
                 <p className="text-lg font-semibold">Status</p>
                 <p className="text-xl font-bold">
-                  {((quizResult.score / quizResult.totalMarks) * 100) >= 60 ? "Passed" : "Failed"}
+                  {isPassed ? "Passed" : "Failed"}
                 </p>
+              </div>
+              <div>
+                <p className="text-lg font-semibold">Attempts</p>
+                <p className="text-3xl font-bold">{quizStatus?.attempts || 1}</p>
               </div>
             </div>
           </div>
+
+          {isPassed && (
+            <div className="bg-white/10 rounded-lg p-4 mb-6">
+              <p className="text-white text-sm">
+                🎉 Congratulations! You have successfully passed this quiz with {percentage}% (Required: 60%). 
+                Retakes are not allowed for passed quizzes.
+              </p>
+            </div>
+          )}
+
+          {!isPassed && (
+            <div className="bg-white/10 rounded-lg p-4 mb-6">
+              <p className="text-white text-sm">
+                You need at least 60% to pass this quiz. You can retake the quiz to improve your score.
+              </p>
+            </div>
+          )}
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <IconBtn
               onClick={() => navigate(`/view-course/${courseId}/section/${sectionId}/sub-section/${subSectionId}`)}
               text="Back to Lecture"
-              customClasses="px-6 py-3 bg-white text-green-800 hover:bg-gray-100"
+              customClasses="px-6 py-3 bg-white text-gray-800 hover:bg-gray-100"
             />
+            {!isPassed && (
+              <IconBtn
+                onClick={() => {
+                  setQuizResult(null)
+                  setQuizStarted(false)
+                  setCurrentQuestion(0)
+                  setQuizAnswers({})
+                  setTimeRemaining(quizData.timeLimit || 30 * 60)
+                }}
+                text="Retake Quiz"
+                customClasses="px-6 py-3 bg-yellow-50 text-richblack-900 hover:bg-yellow-100"
+              />
+            )}
             <IconBtn
               onClick={goToNextLecture}
               text="Next Lecture"
@@ -339,6 +395,31 @@ const QuizView = () => {
             </div>
           </div>
 
+          {/* Quiz Status Display */}
+          {quizStatus && quizStatus.attempts > 0 && (
+            <div className="bg-richblack-700 rounded-lg p-6 mb-6">
+              <h3 className="text-white font-semibold mb-4">Previous Attempts</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-richblack-200">
+                <div>
+                  <p className="text-sm">Attempts Made</p>
+                  <p className="text-xl font-bold text-white">{quizStatus.attempts}</p>
+                </div>
+                <div>
+                  <p className="text-sm">Best Score</p>
+                  <p className="text-xl font-bold text-white">
+                    {quizStatus.lastAttempt.percentage}%
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm">Status</p>
+                  <p className={`text-xl font-bold ${parseFloat(quizStatus.lastAttempt.percentage) >= 60 ? 'text-green-400' : 'text-red-400'}`}>
+                    {parseFloat(quizStatus.lastAttempt.percentage) >= 60 ? 'Passed' : 'Failed'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="bg-yellow-800/20 border border-yellow-600 rounded-lg p-4 mb-6">
             <h3 className="text-yellow-200 font-semibold mb-2">Important Instructions:</h3>
             <ul className="text-yellow-100 space-y-1 text-sm">
@@ -346,15 +427,36 @@ const QuizView = () => {
               <li>• You cannot go back once you start the quiz</li>
               <li>• The quiz will auto-submit when time runs out</li>
               <li>• Make sure you have a stable internet connection</li>
+              <li>• You need at least 60% to pass this quiz</li>
+              {quizStatus && quizStatus.passed && (
+                <li className="text-green-300">• You have already passed this quiz. Retakes are not allowed.</li>
+              )}
             </ul>
           </div>
 
           <div className="text-center">
-            <IconBtn
-              onClick={() => setQuizStarted(true)}
-              text="Start Quiz"
-              customClasses="px-8 py-3 text-lg"
-            />
+            {quizStatus && quizStatus.passed ? (
+              <div className="space-y-4">
+                <div className="bg-green-800/20 border border-green-600 rounded-lg p-4">
+                  <FiAward className="mx-auto text-4xl text-green-400 mb-2" />
+                  <p className="text-green-200 font-semibold">Quiz Already Passed!</p>
+                  <p className="text-green-300 text-sm">
+                    You scored {quizStatus.lastAttempt.percentage}% on {new Date(quizStatus.lastAttempt.completedAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <IconBtn
+                  onClick={() => navigate(`/view-course/${courseId}/section/${sectionId}/sub-section/${subSectionId}`)}
+                  text="Back to Lecture"
+                  customClasses="px-8 py-3 text-lg"
+                />
+              </div>
+            ) : (
+              <IconBtn
+                onClick={() => setQuizStarted(true)}
+                text={quizStatus && quizStatus.attempts > 0 ? "Retake Quiz" : "Start Quiz"}
+                customClasses="px-8 py-3 text-lg"
+              />
+            )}
           </div>
         </div>
       </div>

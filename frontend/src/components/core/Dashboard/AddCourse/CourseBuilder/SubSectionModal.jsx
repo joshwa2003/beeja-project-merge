@@ -8,7 +8,6 @@ import {
   createSubSection,
   updateSubSection,
 } from "../../../../../services/operations/courseDetailsAPI"
-import { getAllQuizzes } from "../../../../../services/operations/quizAPI"
 import { setCourse } from "../../../../../slices/courseSlice"
 import IconBtn from "../../../../common/IconBtn"
 import Upload from "../Upload"
@@ -24,7 +23,6 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
 
   const dispatch = useDispatch()
   const [loading, setLoading] = useState(false)
-  const [quizzes, setQuizzes] = useState([])
   const { token } = useSelector((state) => state.auth)
   const { course } = useSelector((state) => state.course)
 
@@ -33,25 +31,8 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
       setValue("lectureTitle", modalData.title)
       setValue("lectureDesc", modalData.description)
       setValue("lectureVideo", modalData.videoUrl)
-      setValue("quiz", modalData.quiz?._id || "")
     }
-    
-    // Load available quizzes
-    loadQuizzes()
   }, [])
-
-  const loadQuizzes = async () => {
-    try {
-      const response = await getAllQuizzes(token)
-      if (response) {
-        setQuizzes(response)
-      }
-    } catch (error) {
-      console.error("Error loading quizzes:", error)
-      // Set empty array if quiz loading fails
-      setQuizzes([])
-    }
-  }
 
   // detect whether form is updated or not
   const isFormUpdated = () => {
@@ -59,8 +40,7 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
     if (
       currentValues.lectureTitle !== modalData.title ||
       currentValues.lectureDesc !== modalData.description ||
-      currentValues.lectureVideo !== modalData.videoUrl ||
-      currentValues.quiz !== (modalData.quiz?._id || "")
+      currentValues.lectureVideo !== modalData.videoUrl
     ) {
       return true
     }
@@ -84,9 +64,6 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
       }
       if (currentValues.lectureVideo !== modalData.videoUrl) {
         formData.append("video", currentValues.lectureVideo)
-      }
-      if (currentValues.quiz !== (modalData.quiz?._id || "")) {
-        formData.append("quiz", currentValues.quiz)
       }
       
       const result = await updateSubSection(formData, token)
@@ -143,9 +120,6 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
       formData.append("title", data.lectureTitle)
       formData.append("description", data.lectureDesc)
       formData.append("video", data.lectureVideo)
-      if (data.quiz) {
-        formData.append("quiz", data.quiz)
-      }
 
       // Create subsection with timeout
       const timeoutDuration = 300000 // 5 minutes
@@ -251,26 +225,6 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
                 Lecture Description is required
               </span>
             )}
-          </div>
-
-          {/* Quiz Selection */}
-          <div className="flex flex-col space-y-2">
-            <label className="text-sm text-richblack-5" htmlFor="quiz">
-              Attach Quiz (Optional)
-            </label>
-            <select
-              disabled={view || loading}
-              id="quiz"
-              {...register("quiz")}
-              className="form-style w-full"
-            >
-              <option value="">No Quiz</option>
-              {quizzes.map((quiz) => (
-                <option key={quiz._id} value={quiz._id}>
-                  {quiz.title}
-                </option>
-              ))}
-            </select>
           </div>
 
           {!view && (

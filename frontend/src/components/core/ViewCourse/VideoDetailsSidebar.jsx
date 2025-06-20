@@ -172,7 +172,7 @@ export default function VideoDetailsSidebar({ setReviewModal }) {
                     }
                     
                     return (
-                      <div className="flex flex-col">
+                      <div className="flex flex-col" key={`topic-${topic._id}`}>
                         <div
                           className={`flex gap-3 px-5 py-2 ${
                             isLocked 
@@ -181,7 +181,6 @@ export default function VideoDetailsSidebar({ setReviewModal }) {
                                 ? "bg-yellow-200 font-semibold text-richblack-800"
                                 : "hover:bg-richblack-900 cursor-pointer"
                           }`}
-                          key={i}
                           onClick={() => {
                             if (isLocked) {
                               return // Don't navigate if locked
