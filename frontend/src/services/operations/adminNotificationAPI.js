@@ -63,6 +63,19 @@ export const deleteNotificationAdmin = async (notificationId, token) => {
         return response.data;
     } catch (error) {
         console.log("DELETE_NOTIFICATION_API ERROR............", error);
-        return { success: false, error: error.message };
+        
+        // Handle 404 errors more gracefully
+        if (error.response?.status === 404) {
+            return { 
+                success: false, 
+                error: error.response?.data?.message || 'Notification not found or already deleted',
+                notFound: true 
+            };
+        }
+        
+        return { 
+            success: false, 
+            error: error.response?.data?.message || error.message 
+        };
     }
 };

@@ -659,20 +659,17 @@ exports.getAllInstructors = async (req, res) => {
     }
 };
 
-// ================ NOTIFICATION MANAGEMENT ================
-
-// Send notification to users
 exports.sendNotification = async (req, res) => {
     try {
         const { title, message, recipients, selectedUsers, relatedCourse } = req.body;
 
-        console.log('Send notification request:', {
-            title,
-            message,
-            recipients,
-            selectedUsers: selectedUsers?.length || 0,
-            relatedCourse
-        });
+        // Validate admin user
+        if (!req.user?.id) {
+            return res.status(401).json({ 
+                success: false, 
+                message: 'Unauthorized: Admin ID missing' 
+            });
+        }
 
         // Validate required fields
         if (!title || !message || !recipients) {
@@ -682,27 +679,37 @@ exports.sendNotification = async (req, res) => {
             });
         }
 
-        let targetUsers = [];
-
-        // Determine target users based on recipients type
+        // Get recipient IDs based on the selection
+        let recipientIds = [];
         switch (recipients) {
             case 'all':
-                targetUsers = await User.find({}).select('_id');
+                recipientIds = await User.find({}).distinct('_id');
                 break;
             case 'students':
-                targetUsers = await User.find({ accountType: 'Student' }).select('_id');
+                recipientIds = await User.find({ accountType: 'Student' }).distinct('_id');
                 break;
             case 'instructors':
-                targetUsers = await User.find({ accountType: 'Instructor' }).select('_id');
+                recipientIds = await User.find({ accountType: 'Instructor' }).distinct('_id');
                 break;
             case 'specific':
-                if (!selectedUsers || selectedUsers.length === 0) {
+                if (!selectedUsers || !Array.isArray(selectedUsers) || selectedUsers.length === 0) {
                     return res.status(400).json({
                         success: false,
                         message: 'Selected users are required for specific recipients'
                     });
                 }
-                targetUsers = selectedUsers.map(id => ({ _id: id }));
+                // Validate each selected user ID
+                const validUsers = await User.find({
+                    _id: { $in: selectedUsers }
+                }).distinct('_id');
+                
+                if (validUsers.length !== selectedUsers.length) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'One or more selected users are invalid'
+                    });
+                }
+                recipientIds = selectedUsers;
                 break;
             default:
                 return res.status(400).json({
@@ -711,33 +718,38 @@ exports.sendNotification = async (req, res) => {
                 });
         }
 
-        // Create notifications for each target user
+        // Create a single bulkId for all notifications in this batch
+        const bulkId = new mongoose.Types.ObjectId();
+        
+        // Create individual notifications for each recipient
         const notifications = [];
-        for (const user of targetUsers) {
+        for (const recipientId of recipientIds) {
             const notification = await Notification.create({
+                recipient: recipientId,  // Single recipient per notification
                 title,
                 message,
-                recipient: user._id,
                 sender: req.user.id,
                 type: 'ADMIN_ANNOUNCEMENT',
-                relatedCourse: relatedCourse || undefined,
+                relatedCourse: relatedCourse || null,
                 metadata: {
+                    isBulk: true,
                     recipientType: recipients,
-                    sentByAdmin: true
+                    sentByAdmin: true,
+                    bulkId: bulkId // Same bulkId for all notifications in this batch
                 }
             });
             notifications.push(notification);
         }
 
-        console.log(`Created ${notifications.length} notifications`);
+        console.log(`Created ${notifications.length} notifications for ${recipientIds.length} recipients`);
 
         return res.status(201).json({
             success: true,
-            message: `Notification sent to ${notifications.length} users successfully`,
+            message: `Notification sent to ${recipientIds.length} users successfully`,
             data: {
                 notificationCount: notifications.length,
-                recipients: recipients,
-                title: title
+                title,
+                recipientCount: recipientIds.length
             }
         });
 
@@ -754,64 +766,83 @@ exports.sendNotification = async (req, res) => {
 // Get all notifications sent by admin
 exports.getAllNotifications = async (req, res) => {
     try {
-        // Get notifications sent by admin (where sender is admin)
-        const notifications = await Notification.aggregate([
-            {
-                $match: {
-                    'metadata.sentByAdmin': true
-                }
-            },
-            {
-                $group: {
-                    _id: {
-                        title: '$title',
-                        message: '$message',
-                        sender: '$sender',
-                        createdAt: '$createdAt',
-                        type: '$type',
-                        relatedCourse: '$relatedCourse'
-                    },
-                    recipients: { $push: '$recipient' },
-                    recipientCount: { $sum: 1 },
-                    readCount: {
-                        $sum: {
-                            $cond: [{ $eq: ['$read', true] }, 1, 0]
-                        }
-                    },
-                    firstNotificationId: { $first: '$_id' }
-                }
-            },
-            {
-                $project: {
-                    _id: '$firstNotificationId',
-                    title: '$_id.title',
-                    message: '$_id.message',
-                    sender: '$_id.sender',
-                    createdAt: '$_id.createdAt',
-                    type: '$_id.type',
-                    relatedCourse: '$_id.relatedCourse',
-                    recipients: '$recipients',
-                    recipientCount: '$recipientCount',
-                    readCount: '$readCount'
-                }
-            },
-            {
-                $sort: { createdAt: -1 }
-            },
-            {
-                $limit: 50
-            }
-        ]);
-
-        // Populate sender information
-        await Notification.populate(notifications, {
-            path: 'sender',
-            select: 'firstName lastName email'
+        // First, get distinct bulkIds
+        const distinctBulkIds = await Notification.distinct('metadata.bulkId', {
+            $or: [
+                { 'metadata.sentByAdmin': true },
+                { type: 'ADMIN_ANNOUNCEMENT' }
+            ],
+            'metadata.bulkId': { $exists: true }
         });
+
+        // Get all admin notifications
+        const allNotifications = await Notification.find({
+            $or: [
+                { 'metadata.sentByAdmin': true },
+                { type: 'ADMIN_ANNOUNCEMENT' }
+            ]
+        })
+        .sort({ createdAt: -1 })
+        .populate('sender', 'firstName lastName email');
+
+        // Group notifications
+        const groupedNotifications = new Map();
+        
+        // First, handle notifications with bulkIds
+        for (const bulkId of distinctBulkIds) {
+            const bulkNotifications = allNotifications.filter(
+                n => n.metadata?.bulkId?.toString() === bulkId.toString()
+            );
+            
+            if (bulkNotifications.length > 0) {
+                const firstNotification = bulkNotifications[0];
+                groupedNotifications.set(bulkId.toString(), {
+                    _id: firstNotification._id,
+                    title: firstNotification.title,
+                    message: firstNotification.message,
+                    sender: firstNotification.sender,
+                    recipients: firstNotification.metadata?.recipientType || 'unknown',
+                    relatedCourse: firstNotification.relatedCourse,
+                    createdAt: firstNotification.createdAt,
+                    recipientCount: bulkNotifications.length,
+                    readCount: bulkNotifications.filter(n => n.read).length,
+                    type: firstNotification.type,
+                    bulkId: bulkId,
+                    priority: firstNotification.priority || 'normal'
+                });
+            }
+        }
+
+        // Then handle individual notifications (without bulkId)
+        allNotifications
+            .filter(notification => !notification.metadata?.bulkId)
+            .forEach(notification => {
+                groupedNotifications.set(notification._id.toString(), {
+                    _id: notification._id,
+                    title: notification.title,
+                    message: notification.message,
+                    sender: notification.sender,
+                    recipients: notification.metadata?.recipientType || 'unknown',
+                    relatedCourse: notification.relatedCourse,
+                    createdAt: notification.createdAt,
+                    recipientCount: 1,
+                    readCount: notification.read ? 1 : 0,
+                    type: notification.type,
+                    bulkId: null,
+                    priority: notification.priority || 'normal'
+                });
+            });
+
+        // Convert map to array and sort by creation date
+        const formattedNotifications = Array.from(groupedNotifications.values())
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .slice(0, 50); // Limit to 50 most recent
+
+        console.log('Found grouped notifications:', formattedNotifications.length);
 
         return res.status(200).json({
             success: true,
-            data: notifications,
+            data: formattedNotifications,
             message: 'Notifications fetched successfully'
         });
 
@@ -825,7 +856,6 @@ exports.getAllNotifications = async (req, res) => {
     }
 };
 
-// Delete notification (admin only)
 exports.deleteNotification = async (req, res) => {
     try {
         const { notificationId } = req.params;
@@ -839,33 +869,38 @@ exports.deleteNotification = async (req, res) => {
             });
         }
 
-        // Find one notification to get the details for bulk deletion
-        const sampleNotification = await Notification.findById(notificationId);
-        if (!sampleNotification) {
+        // First try to find the notification
+        const notification = await Notification.findById(notificationId);
+        
+        if (!notification) {
             return res.status(404).json({
                 success: false,
                 message: 'Notification not found'
             });
         }
 
-        // Delete all notifications with the same title, message, and sender (bulk delete)
+        // Delete all notifications with the same title and message
         const deleteResult = await Notification.deleteMany({
-            title: sampleNotification.title,
-            message: sampleNotification.message,
-            sender: sampleNotification.sender,
-            'metadata.sentByAdmin': true
+            title: notification.title,
+            message: notification.message,
+            type: notification.type
         });
 
-        console.log(`Deleted ${deleteResult.deletedCount} notifications`);
+        const deletedCount = deleteResult.deletedCount;
+        console.log(`Deleted ${deletedCount} notifications with the same content`);
 
         return res.status(200).json({
             success: true,
-            message: `Notification deleted successfully (${deleteResult.deletedCount} instances)`,
-            deletedCount: deleteResult.deletedCount
+            message: `Notification${deletedCount > 1 ? 's' : ''} deleted successfully`,
+            deletedCount
         });
 
     } catch (error) {
-        console.error('Error deleting notification:', error);
+        console.error('Error deleting notification:', error, {
+            stack: error.stack,
+            name: error.name,
+            fullError: error
+        });
         return res.status(500).json({
             success: false,
             message: 'Error deleting notification',
@@ -873,7 +908,6 @@ exports.deleteNotification = async (req, res) => {
         });
     }
 };
-
 // ================ CREATE COURSE AS ADMIN ================
 exports.createCourseAsAdmin = async (req, res) => {
     try {
