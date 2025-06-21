@@ -212,11 +212,11 @@ exports.createCourse = async (req, res) => {
 // ================ show all courses ================
 exports.getAllCourses = async (req, res) => {
     try {
-        const allCourses = await Course.find({},
+const allCourses = await Course.find({},
             {
                 courseName: true, courseDescription: true, price: true, thumbnail: true, instructor: true,
                 ratingAndReviews: true, studentsEnrolled: true, courseType: true, originalPrice: true,
-                adminSetFree: true
+                adminSetFree: true, status: true, createdAt: true
             })
             .populate({
                 path: 'instructor',

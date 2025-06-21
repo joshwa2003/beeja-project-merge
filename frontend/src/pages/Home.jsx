@@ -51,7 +51,14 @@ const Home = () => {
       try {
         const courses = await getAllCourses();
         console.log("Courses from API:", courses);
-        setCatalogPageData({ allCourses: courses });
+        if (courses && Array.isArray(courses)) {
+          console.log("Sample course data:", courses[0]);
+          console.log("Course statuses:", courses.map(c => c.status).join(', '));
+          setCatalogPageData({ allCourses: courses });
+        } else {
+          console.error("Invalid courses data received:", courses);
+          setError("Invalid course data received");
+        }
       } catch (err) {
         console.error("Error fetching courses:", err);
         setError("Failed to fetch courses");
@@ -69,14 +76,25 @@ const Home = () => {
     }
 
     console.log("Total courses before filtering:", CatalogPageData.allCourses.length);
+    console.log("Sample course data:", CatalogPageData.allCourses[0]);
     
-    // Filter for published courses
-    const allCourses = CatalogPageData.allCourses.filter(course => course.status === 'Published');
+    // Filter for published courses, with fallback to show all courses if no published courses found
+    let allCourses = CatalogPageData.allCourses.filter(course => course.status === 'Published');
     console.log("Published courses after filtering:", allCourses.length);
+    
+    // Fallback: if no published courses, show all courses (for development/testing)
+    if (allCourses.length === 0) {
+      console.log("No published courses found, showing all courses as fallback");
+      allCourses = CatalogPageData.allCourses;
+    }
 
     // Popular Picks: Courses with more reviews (limited to 4)
     const popularPicks = [...allCourses]
-      .sort((a, b) => (b.ratingAndReviews?.length || 0) - (a.ratingAndReviews?.length || 0))
+      .sort((a, b) => {
+        const aReviews = a.ratingAndReviews?.length || a.totalRatings || 0;
+        const bReviews = b.ratingAndReviews?.length || b.totalRatings || 0;
+        return bReviews - aReviews;
+      })
       .slice(0, 4);
     
     // Top Enrollments: Most enrolled courses (limited to 4)
@@ -90,6 +108,8 @@ const Home = () => {
 
     console.log("Popular picks count:", popularPicks.length);
     console.log("Top enrollments count:", topEnrollments.length);
+    console.log("Popular picks data:", popularPicks);
+    console.log("Top enrollments data:", topEnrollments);
 
     return { popularPicks, topEnrollments, additionalCourses };
   };
