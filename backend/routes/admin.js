@@ -15,7 +15,10 @@ const {
     toggleUserStatus,
     toggleCourseVisibility,
     setCourseType,
-    getAllInstructors
+    getAllInstructors,
+    sendNotification,
+    getAllNotifications,
+    deleteNotification
 } = require('../controllers/admin');
 
 // Import middleware
@@ -42,5 +45,10 @@ router.get('/instructors', auth, isAdmin, getAllInstructors);
 
 // ================ ANALYTICS ROUTES ================
 router.get('/analytics', auth, isAdmin, getAnalytics);
+
+// ================ NOTIFICATION MANAGEMENT ROUTES ================
+router.post('/notifications/send', auth, isAdmin, sendNotification);
+router.get('/notifications', auth, isAdmin, getAllNotifications);
+router.delete('/notifications/:notificationId', auth, isAdmin, deleteNotification);
 
 module.exports = router;

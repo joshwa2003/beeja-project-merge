@@ -11,6 +11,7 @@ import Settings from './components/Settings';
 import CourseTypeManager from '../../components/core/Dashboard/Admin/CourseTypeManager';
 import CourseAccessRequests from '../../components/core/Dashboard/Admin/CourseAccessRequests';
 import QuizManagement from './components/QuizManagement';
+import NotificationManagement from './components/NotificationManagement';
 
 const AdminDashboard = () => {
   const { user } = useSelector((state) => state.profile);
@@ -25,6 +26,7 @@ const AdminDashboard = () => {
     { id: 'courseTypes', label: 'Course Types' },
     { id: 'quizzes', label: 'Quiz Management' },
     { id: 'accessRequests', label: 'Access Requests' },
+    { id: 'notifications', label: 'Notification Management' },
     { id: 'analytics', label: 'Analytics Dashboard' },
     { id: 'settings', label: 'Settings' },
   ];
@@ -85,6 +87,7 @@ const AdminDashboard = () => {
                   {activeTab === 'analytics' && <EnhancedAnalytics />}
                   {activeTab === 'settings' && <Settings />}
                   {activeTab === 'quizzes' && <QuizManagement />}
+                  {activeTab === 'notifications' && <NotificationManagement />}
                 </>
               )}
             </motion.div>

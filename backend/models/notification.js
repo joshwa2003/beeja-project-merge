@@ -27,6 +27,7 @@ const notificationSchema = new mongoose.Schema({
             'COURSE_MODIFICATION',
             'NEW_USER_REGISTRATION',
             'NEW_RATING_REVIEW',
+            'ADMIN_ANNOUNCEMENT',
             
             // Legacy types (for backward compatibility)
             'COURSE_ENROLLMENT',
@@ -72,6 +73,10 @@ const notificationSchema = new mongoose.Schema({
     relatedRating: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'RatingAndReview'
+    },
+    sender: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     },
     priority: {
         type: String,

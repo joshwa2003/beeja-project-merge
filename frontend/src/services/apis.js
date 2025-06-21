@@ -94,6 +94,11 @@ export const adminEndpoints = {
 
   // Analytics
   GET_ANALYTICS_API: BASE_URL + "/api/v1/admin/analytics",
+
+  // Notification Management
+  SEND_NOTIFICATION_API: BASE_URL + "/api/v1/admin/notifications/send",
+  GET_ALL_NOTIFICATIONS_API: BASE_URL + "/api/v1/admin/notifications",
+  DELETE_NOTIFICATION_API: BASE_URL + "/api/v1/admin/notifications",
 }
 
 // COURSE ACCESS ENDPOINTS

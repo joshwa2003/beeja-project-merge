@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import { FaUsers, FaBookOpen, FaChartBar, FaGraduationCap, FaQuestionCircle } from 'react-icons/fa';
 import { MdSettings, MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md';
+import { FiBell } from 'react-icons/fi';
 import { VscSignOut } from "react-icons/vsc";
 import { HiMenuAlt1 } from 'react-icons/hi';
 import { IoMdClose } from 'react-icons/io';
@@ -25,6 +26,7 @@ const AdminSidebar = ({ activeTab, onTabChange }) => {
     { id: 'courseTypes', label: 'Course Types', icon: <FaGraduationCap size={16} /> },
     { id: 'quizzes', label: 'Quiz Management', icon: <FaQuestionCircle size={16} /> },
     { id: 'accessRequests', label: 'Access Requests', icon: <FaUsers size={16} /> },
+    { id: 'notifications', label: 'Notifications', icon: <FiBell size={16} /> },
     { id: 'analytics', label: 'Analytics', icon: <FaChartBar size={16} /> },
     { id: 'settings', label: 'Settings', icon: <MdSettings size={16} /> },
   ];

@@ -4,6 +4,7 @@ const Profile = require('../models/profile');
 const bcrypt = require('bcrypt');
 
 const mongoose = require('mongoose');
+const Notification = require('../models/notification');
 const { 
     createInstructorApprovalNotification,
     createNewCourseCreationNotification,
@@ -653,6 +654,221 @@ exports.getAllInstructors = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Internal server error',
+            error: error.message
+        });
+    }
+};
+
+// ================ NOTIFICATION MANAGEMENT ================
+
+// Send notification to users
+exports.sendNotification = async (req, res) => {
+    try {
+        const { title, message, recipients, selectedUsers, relatedCourse } = req.body;
+
+        console.log('Send notification request:', {
+            title,
+            message,
+            recipients,
+            selectedUsers: selectedUsers?.length || 0,
+            relatedCourse
+        });
+
+        // Validate required fields
+        if (!title || !message || !recipients) {
+            return res.status(400).json({
+                success: false,
+                message: 'Title, message, and recipients are required'
+            });
+        }
+
+        let targetUsers = [];
+
+        // Determine target users based on recipients type
+        switch (recipients) {
+            case 'all':
+                targetUsers = await User.find({}).select('_id');
+                break;
+            case 'students':
+                targetUsers = await User.find({ accountType: 'Student' }).select('_id');
+                break;
+            case 'instructors':
+                targetUsers = await User.find({ accountType: 'Instructor' }).select('_id');
+                break;
+            case 'specific':
+                if (!selectedUsers || selectedUsers.length === 0) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Selected users are required for specific recipients'
+                    });
+                }
+                targetUsers = selectedUsers.map(id => ({ _id: id }));
+                break;
+            default:
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid recipients type'
+                });
+        }
+
+        // Create notifications for each target user
+        const notifications = [];
+        for (const user of targetUsers) {
+            const notification = await Notification.create({
+                title,
+                message,
+                recipient: user._id,
+                sender: req.user.id,
+                type: 'ADMIN_ANNOUNCEMENT',
+                relatedCourse: relatedCourse || undefined,
+                metadata: {
+                    recipientType: recipients,
+                    sentByAdmin: true
+                }
+            });
+            notifications.push(notification);
+        }
+
+        console.log(`Created ${notifications.length} notifications`);
+
+        return res.status(201).json({
+            success: true,
+            message: `Notification sent to ${notifications.length} users successfully`,
+            data: {
+                notificationCount: notifications.length,
+                recipients: recipients,
+                title: title
+            }
+        });
+
+    } catch (error) {
+        console.error('Error sending notification:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error sending notification',
+            error: error.message
+        });
+    }
+};
+
+// Get all notifications sent by admin
+exports.getAllNotifications = async (req, res) => {
+    try {
+        // Get notifications sent by admin (where sender is admin)
+        const notifications = await Notification.aggregate([
+            {
+                $match: {
+                    'metadata.sentByAdmin': true
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        title: '$title',
+                        message: '$message',
+                        sender: '$sender',
+                        createdAt: '$createdAt',
+                        type: '$type',
+                        relatedCourse: '$relatedCourse'
+                    },
+                    recipients: { $push: '$recipient' },
+                    recipientCount: { $sum: 1 },
+                    readCount: {
+                        $sum: {
+                            $cond: [{ $eq: ['$read', true] }, 1, 0]
+                        }
+                    },
+                    firstNotificationId: { $first: '$_id' }
+                }
+            },
+            {
+                $project: {
+                    _id: '$firstNotificationId',
+                    title: '$_id.title',
+                    message: '$_id.message',
+                    sender: '$_id.sender',
+                    createdAt: '$_id.createdAt',
+                    type: '$_id.type',
+                    relatedCourse: '$_id.relatedCourse',
+                    recipients: '$recipients',
+                    recipientCount: '$recipientCount',
+                    readCount: '$readCount'
+                }
+            },
+            {
+                $sort: { createdAt: -1 }
+            },
+            {
+                $limit: 50
+            }
+        ]);
+
+        // Populate sender information
+        await Notification.populate(notifications, {
+            path: 'sender',
+            select: 'firstName lastName email'
+        });
+
+        return res.status(200).json({
+            success: true,
+            data: notifications,
+            message: 'Notifications fetched successfully'
+        });
+
+    } catch (error) {
+        console.error('Error fetching notifications:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error fetching notifications',
+            error: error.message
+        });
+    }
+};
+
+// Delete notification (admin only)
+exports.deleteNotification = async (req, res) => {
+    try {
+        const { notificationId } = req.params;
+
+        console.log('Delete notification request:', { notificationId });
+
+        if (!mongoose.Types.ObjectId.isValid(notificationId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid notification ID'
+            });
+        }
+
+        // Find one notification to get the details for bulk deletion
+        const sampleNotification = await Notification.findById(notificationId);
+        if (!sampleNotification) {
+            return res.status(404).json({
+                success: false,
+                message: 'Notification not found'
+            });
+        }
+
+        // Delete all notifications with the same title, message, and sender (bulk delete)
+        const deleteResult = await Notification.deleteMany({
+            title: sampleNotification.title,
+            message: sampleNotification.message,
+            sender: sampleNotification.sender,
+            'metadata.sentByAdmin': true
+        });
+
+        console.log(`Deleted ${deleteResult.deletedCount} notifications`);
+
+        return res.status(200).json({
+            success: true,
+            message: `Notification deleted successfully (${deleteResult.deletedCount} instances)`,
+            deletedCount: deleteResult.deletedCount
+        });
+
+    } catch (error) {
+        console.error('Error deleting notification:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error deleting notification',
             error: error.message
         });
     }
