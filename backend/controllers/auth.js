@@ -10,6 +10,7 @@ const cookie = require('cookie');
 const mailSender = require('../utils/mailSender');
 const otpTemplate = require('../mail/templates/emailVerificationTemplate');
 const { passwordUpdated } = require("../mail/templates/passwordUpdate");
+const { createNewUserRegistrationNotification } = require('./notification');
 
 // ================ SEND-OTP For Email Verification ================
 exports.sendOTP = async (req, res) => {
@@ -157,6 +158,9 @@ exports.signup = async (req, res) => {
             approved: approved,
             image: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName} ${lastName}`
         });
+
+        // Create notification for admin about new user registration
+        await createNewUserRegistrationNotification(userData._id);
 
         // return success message
         res.status(200).json({

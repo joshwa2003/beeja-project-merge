@@ -10,6 +10,14 @@ const { uploadImageToCloudinary, deleteResourceFromCloudinary } = require('../ut
 const { convertSecondsToDuration } = require("../utils/secToDuration")
 const mongoose = require('mongoose');
 
+// Import notification helpers
+const {
+    createNewCourseCreationNotification,
+    createCourseModificationNotification,
+    createCourseStatusChangeNotification,
+    createNewCourseAnnouncementToAll
+} = require('./notification');
+
 // Helper function to calculate average rating
 const calculateAverageRating = async (courseId) => {
     try {
@@ -187,6 +195,17 @@ exports.createCourse = async (req, res) => {
             },
             { new: true }
         );
+
+        // Always create notification for admins about new course creation
+        await createNewCourseCreationNotification(newCourse._id, instructorId);
+
+        // Create notification for all students and instructors only if course is published
+        if (status === "Published") {
+            await createNewCourseAnnouncementToAll(newCourse._id, instructorId);
+            console.log("Public notifications sent for new published course:", newCourse.courseName);
+        } else {
+            console.log("Course created in draft state - only admin notified");
+        }
 
         // return response
         res.status(200).json({
@@ -487,6 +506,31 @@ exports.editCourse = async (req, res) => {
                 },
             })
             .exec()
+
+        // Create notification for course modification
+        const modificationType = updates.status ? 'status' : 'content';
+        if (updates.status && updates.status !== course.status) {
+            // If status changed, notify instructor
+            await createCourseStatusChangeNotification(
+                course.instructor,
+                courseId,
+                course.status,
+                updates.status
+            );
+            
+            // If course is being published for the first time, notify all users
+            if (updates.status === "Published" && course.status === "Draft") {
+                await createNewCourseAnnouncementToAll(courseId, course.instructor);
+                console.log("Course published - notifications sent to all users");
+            }
+        }
+        
+        // Notify admins about course modification
+        await createCourseModificationNotification(
+            courseId,
+            req.user.id,
+            modificationType
+        );
 
         // success response
         res.status(200).json({

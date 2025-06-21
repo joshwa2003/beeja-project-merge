@@ -1,7 +1,9 @@
 const Section = require('../models/section');
 const SubSection = require('../models/subSection');
+const Course = require('../models/course');
 const Quiz = require('../models/quiz');
 const { uploadImageToCloudinary } = require('../utils/imageUploader');
+const { createNewContentNotification } = require('./notification');
 
 // ================ Update SubSection ================
 exports.updateSubSection = async (req, res) => {
@@ -137,6 +139,20 @@ exports.createSubSection = async (req, res) => {
             { $push: { subSection: SubSectionDetails._id } },
             { new: true }
         ).populate("subSection");
+
+        // Find the course that contains this section to notify students
+        const course = await Course.findOne({
+            courseContent: sectionId
+        });
+
+        if (course) {
+            // Notify enrolled students about new content
+            await createNewContentNotification(
+                course._id,
+                sectionId,
+                SubSectionDetails._id
+            );
+        }
 
         // return response
         res.status(200).json({

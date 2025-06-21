@@ -19,6 +19,7 @@ const courseRoutes = require('./routes/course');
 const adminRoutes = require('./routes/admin');
 const courseAccessRoutes = require('./routes/courseAccess');
 const quizRoutes = require('./routes/quiz');
+const notificationRoutes = require('./routes/notification');
 
 // middleware 
 app.use(cookieParser());
@@ -56,6 +57,7 @@ app.use('/api/v1/course', courseRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/course-access', courseAccessRoutes);
 app.use('/api/v1/quiz', quizRoutes);
+app.use('/api/v1/notification', notificationRoutes);
 
 // Default Route
 app.get('/', (req, res) => {

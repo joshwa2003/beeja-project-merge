@@ -4,6 +4,11 @@ const Profile = require('../models/profile');
 const bcrypt = require('bcrypt');
 
 const mongoose = require('mongoose');
+const { 
+    createInstructorApprovalNotification,
+    createNewCourseCreationNotification,
+    createNewCourseAnnouncementToAll
+} = require('./notification');
 
 // ================ TOGGLE USER STATUS ================
 exports.toggleUserStatus = async (req, res) => {
@@ -25,6 +30,11 @@ exports.toggleUserStatus = async (req, res) => {
         await user.save();
 
         const updatedUser = await User.findById(userId).populate('additionalDetails').select('-password');
+
+        // If activating an instructor, send approval notification
+        if (user.active && user.accountType === 'Instructor') {
+            await createInstructorApprovalNotification(user._id);
+        }
 
         return res.status(200).json({
             success: true,
@@ -234,10 +244,22 @@ exports.toggleCourseVisibility = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Course not found' });
         }
 
+        const wasPublished = course.status === 'Published';
         course.isVisible = !course.isVisible;
         course.status = course.isVisible ? 'Published' : 'Draft';
 
         await course.save();
+
+        // Send notifications when course is made visible/published for the first time
+        if (course.isVisible && !wasPublished) {
+            try {
+                await createNewCourseAnnouncementToAll(courseId, course.instructor._id);
+                console.log("Public notifications sent for newly visible course:", course.courseName);
+            } catch (notificationError) {
+                console.error("Error sending course visibility notifications:", notificationError);
+                // Don't fail the visibility toggle if notifications fail
+            }
+        }
 
         const updatedCourse = await Course.findById(courseId)
             .populate('instructor', 'firstName lastName email')
@@ -342,6 +364,15 @@ exports.approveCourse = async (req, res) => {
         ).populate('instructor', 'firstName lastName email');
 
         if (!course) return res.status(404).json({ success: false, message: 'Course not found' });
+
+        // Send notifications when course is approved and published
+        try {
+            await createNewCourseAnnouncementToAll(courseId, course.instructor._id);
+            console.log("Public notifications sent for newly published course:", course.courseName);
+        } catch (notificationError) {
+            console.error("Error sending course approval notifications:", notificationError);
+            // Don't fail the approval if notifications fail
+        }
 
         return res.status(200).json({
             success: true,
@@ -766,6 +797,24 @@ exports.createCourseAsAdmin = async (req, res) => {
         const populatedCourse = await Course.findById(newCourse._id)
             .populate('instructor', 'firstName lastName email')
             .populate('category', 'name description');
+
+        // Send notifications
+        try {
+            // Always create notification for admins about new course creation
+            await createNewCourseCreationNotification(newCourse._id, instructorId);
+            console.log("Admin notification sent for new course creation");
+
+            // Create notification for all students and instructors if course is published
+            if (status === "Published") {
+                await createNewCourseAnnouncementToAll(newCourse._id, instructorId);
+                console.log("Public notifications sent for new published course:", newCourse.courseName);
+            } else {
+                console.log("Course created in draft state - only admin notified");
+            }
+        } catch (notificationError) {
+            console.error("Error sending notifications:", notificationError);
+            // Don't fail the course creation if notifications fail
+        }
 
         res.status(201).json({
             success: true,
