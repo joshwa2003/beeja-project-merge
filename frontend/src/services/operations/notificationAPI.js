@@ -8,9 +8,10 @@ const {
     DELETE_NOTIFICATION_API,
 } = notificationEndpoints;
 
-export const getNotifications = async () => {
+export const getNotifications = async (token) => {
     try {
-        const response = await apiConnector("GET", GET_NOTIFICATIONS_API);
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const response = await apiConnector("GET", GET_NOTIFICATIONS_API, undefined, headers);
         if (!response?.data?.success) {
             throw new Error(response?.data?.message);
         }
@@ -21,11 +22,12 @@ export const getNotifications = async () => {
     }
 };
 
-export const markNotificationAsRead = async (notificationId) => {
+export const markNotificationAsRead = async (notificationId, token) => {
     try {
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const response = await apiConnector("POST", MARK_AS_READ_API, {
             notificationId,
-        });
+        }, headers);
         if (!response?.data?.success) {
             throw new Error(response?.data?.message);
         }
@@ -36,9 +38,10 @@ export const markNotificationAsRead = async (notificationId) => {
     }
 };
 
-export const markAllNotificationsAsRead = async () => {
+export const markAllNotificationsAsRead = async (token) => {
     try {
-        const response = await apiConnector("POST", MARK_ALL_READ_API);
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const response = await apiConnector("POST", MARK_ALL_READ_API, undefined, headers);
         if (!response?.data?.success) {
             throw new Error(response?.data?.message);
         }
@@ -49,11 +52,12 @@ export const markAllNotificationsAsRead = async () => {
     }
 };
 
-export const deleteNotification = async (notificationId) => {
+export const deleteNotification = async (notificationId, token) => {
     try {
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const response = await apiConnector("DELETE", DELETE_NOTIFICATION_API, {
             notificationId,
-        });
+        }, headers);
         if (!response?.data?.success) {
             throw new Error(response?.data?.message);
         }

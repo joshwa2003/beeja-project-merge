@@ -6,7 +6,7 @@ const User = require('./models/user');
 
 async function testNotifications() {
     try {
-        await mongoose.connect("mongodb://127.0.0.1:27017/learnhub");
+        await mongoose.connect(process.env.MONGODB_URL);
         console.log('Connected to MongoDB');
         
         // Check latest course
