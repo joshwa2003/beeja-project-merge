@@ -181,7 +181,7 @@ export default function FreeCourses() {
                         </div>
                       ) : (
                         <div className="w-full bg-richblack-700 text-richblack-200 px-4 py-2 rounded-md text-center">
-                          <p className="text-xs">Contact admin for access</p>
+                          <p className="text-xs">Request for access</p>
                         </div>
                       )}
                     </div>

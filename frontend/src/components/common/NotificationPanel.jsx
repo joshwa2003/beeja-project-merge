@@ -25,9 +25,11 @@ export default function NotificationPanel() {
       const response = await getNotifications(token);
       if (response.success) {
         const notificationsList = response.data?.notifications || [];
-        setNotifications(notificationsList);
+        // Only show unread notifications
+        const unreadNotifications = notificationsList.filter((n) => !n.read);
+        setNotifications(unreadNotifications);
         setUnreadCount(
-          response.data?.unreadCount || notificationsList.filter((n) => !n.read).length
+          response.data?.unreadCount || unreadNotifications.length
         );
       }
     } catch (error) {
@@ -41,12 +43,9 @@ export default function NotificationPanel() {
     try {
       const response = await markNotificationAsRead(notificationId, token);
       if (response.success) {
+        // Remove the notification from the list after marking as read
         setNotifications(
-          notifications.map((notification) =>
-            notification._id === notificationId
-              ? { ...notification, read: true }
-              : notification
-          )
+          notifications.filter((notification) => notification._id !== notificationId)
         );
         setUnreadCount((prev) => Math.max(0, prev - 1));
       }
@@ -59,12 +58,8 @@ export default function NotificationPanel() {
     try {
       const response = await markAllNotificationsAsRead(token);
       if (response.success) {
-        setNotifications(
-          notifications.map((notification) => ({
-            ...notification,
-            read: true,
-          }))
-        );
+        // Clear all notifications from the list
+        setNotifications([]);
         setUnreadCount(0);
       }
     } catch (error) {
@@ -154,11 +149,7 @@ export default function NotificationPanel() {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 10 }}
                       transition={{ duration: 0.2 }}
-                      className={`group relative ${
-                        !notification.read 
-                          ? 'bg-indigo-500/10' 
-                          : 'hover:bg-gray-800/50'
-                      } transition-all duration-300`}
+                      className="group relative bg-indigo-500/10 hover:bg-indigo-500/20 transition-all duration-300"
                     >
                       <div 
                         className="p-4 cursor-pointer transition-all duration-200"
@@ -177,9 +168,7 @@ export default function NotificationPanel() {
                                 <FiBell className="w-5 h-5 text-indigo-400" />
                               </div>
                             )}
-                            {!notification.read && (
-                              <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-indigo-500 rounded-full border-2 border-[#1a1a2e] animate-pulse"></div>
-                            )}
+                            <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-indigo-500 rounded-full border-2 border-[#1a1a2e] animate-pulse"></div>
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex justify-between items-start">
@@ -206,20 +195,18 @@ export default function NotificationPanel() {
                           </div>
                         </div>
                       </div>
-                      {!notification.read && (
-                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200">
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleMarkAsRead(notification._id);
-                            }}
-                            className="p-2 text-gray-400 hover:text-indigo-400 rounded-lg hover:bg-indigo-500/10 transition-all duration-200"
-                            title="Mark as read"
-                          >
-                            <BsCheckAll className="w-5 h-5" />
-                          </button>
-                        </div>
-                      )}
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMarkAsRead(notification._id);
+                          }}
+                          className="p-2 text-gray-400 hover:text-indigo-400 rounded-lg hover:bg-indigo-500/10 transition-all duration-200"
+                          title="Mark as read"
+                        >
+                          <BsCheckAll className="w-5 h-5" />
+                        </button>
+                      </div>
                     </motion.li>
                   ))}
                 </ul>
