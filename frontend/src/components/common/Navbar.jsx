@@ -10,6 +10,7 @@ import { fetchCourseCategories } from "./../../services/operations/courseDetails
 
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { MdKeyboardArrowDown } from "react-icons/md";
+import NotificationPanel from "./NotificationPanel";
 
 const ModernNavbar = () => {
   const navigate = useNavigate();
@@ -126,11 +127,12 @@ const ModernNavbar = () => {
           {/* Mobile Profile Picture */}
           {token && user && (
             <motion.div 
-              className="relative flex items-center group"
+              className="relative flex items-center gap-2"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, delay: 0.2 }}
             >
+              <NotificationPanel />
               <motion.img
                 src={user.image}
                 alt={`${user.firstName} ${user.lastName}`}
@@ -357,49 +359,52 @@ const ModernNavbar = () => {
           {/* User Profile Picture with Dropdown */}
           {token && user && (
             <motion.li 
-              className="relative ml-3 flex items-center justify-center group"
+              className="relative ml-3 flex items-center justify-center gap-2"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, delay: 0.6 }}
             >
-              <motion.img
-                src={user.image}
-                alt={`${user.firstName} ${user.lastName}`}
-                className="h-8 w-8 rounded-full object-cover cursor-pointer border-2 border-transparent hover:border-emerald-400 transition-all duration-300"
-                title={`${user.firstName} ${user.lastName}`}
-                whileHover={{ scale: 1.1, borderColor: "#34d399" }}
-              />
-              {/* Dropdown Menu */}
-              <motion.div 
-                className="invisible absolute right-0 top-[120%] z-[91] flex w-[180px] flex-col rounded-lg bg-white/95 backdrop-blur-xl p-3 text-richblack-900 opacity-0 transition-all duration-300 group-hover:visible group-hover:opacity-100 shadow-[0_8px_32px_rgba(0,0,0,0.2)]"
-                initial={{ scale: 0.8, opacity: 0 }}
-                whileInView={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="absolute right-4 top-0 h-3 w-3 rotate-45 translate-y-[-50%] select-none rounded bg-white/95"></div>
-                <motion.div whileHover={{ x: 5, backgroundColor: "rgba(0,0,0,0.05)" }}>
-                  <Link to="/dashboard/my-profile" className="rounded-lg py-2 px-3 hover:bg-richblack-50 block text-sm font-medium transition-all duration-200">
-                    Dashboard
-                  </Link>
-                </motion.div>
-                {user.accountType === "Admin" && (
+              <NotificationPanel />
+              <div className="group">
+                <motion.img
+                  src={user.image}
+                  alt={`${user.firstName} ${user.lastName}`}
+                  className="h-8 w-8 rounded-full object-cover cursor-pointer border-2 border-transparent hover:border-emerald-400 transition-all duration-300"
+                  title={`${user.firstName} ${user.lastName}`}
+                  whileHover={{ scale: 1.1, borderColor: "#34d399" }}
+                />
+                {/* Dropdown Menu */}
+                <motion.div 
+                  className="invisible absolute right-0 top-[120%] z-[91] flex w-[180px] flex-col rounded-lg bg-white/95 backdrop-blur-xl p-3 text-richblack-900 opacity-0 transition-all duration-300 group-hover:visible group-hover:opacity-100 shadow-[0_8px_32px_rgba(0,0,0,0.2)]"
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  whileInView={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="absolute right-4 top-0 h-3 w-3 rotate-45 translate-y-[-50%] select-none rounded bg-white/95"></div>
                   <motion.div whileHover={{ x: 5, backgroundColor: "rgba(0,0,0,0.05)" }}>
-                    <Link to="/admin" className="rounded-lg py-2 px-3 hover:bg-richblack-50 block text-sm font-medium transition-all duration-200">
-                      Admin Dashboard
+                    <Link to="/dashboard/my-profile" className="rounded-lg py-2 px-3 hover:bg-richblack-50 block text-sm font-medium transition-all duration-200">
+                      Dashboard
                     </Link>
                   </motion.div>
-                )}
-                <motion.button 
-                  onClick={() => {
-                    dispatch(logout(navigate));
-                    setMobileMenuOpen(false);
-                  }} 
-                  className="rounded-lg py-2 px-3 hover:bg-richblack-50 text-left text-sm font-medium transition-all duration-200"
-                  whileHover={{ x: 5, backgroundColor: "rgba(0,0,0,0.05)" }}
-                >
-                  Logout
-                </motion.button>
-              </motion.div>
+                  {user.accountType === "Admin" && (
+                    <motion.div whileHover={{ x: 5, backgroundColor: "rgba(0,0,0,0.05)" }}>
+                      <Link to="/admin" className="rounded-lg py-2 px-3 hover:bg-richblack-50 block text-sm font-medium transition-all duration-200">
+                        Admin Dashboard
+                      </Link>
+                    </motion.div>
+                  )}
+                  <motion.button 
+                    onClick={() => {
+                      dispatch(logout(navigate));
+                      setMobileMenuOpen(false);
+                    }} 
+                    className="rounded-lg py-2 px-3 hover:bg-richblack-50 text-left text-sm font-medium transition-all duration-200"
+                    whileHover={{ x: 5, backgroundColor: "rgba(0,0,0,0.05)" }}
+                  >
+                    Logout
+                  </motion.button>
+                </motion.div>
+              </div>
             </motion.li>
           )}
         </motion.ul>

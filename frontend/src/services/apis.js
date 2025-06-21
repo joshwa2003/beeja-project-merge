@@ -120,3 +120,11 @@ export const quizEndpoints = {
   GET_QUIZ_RESULTS_API: BASE_URL + "/api/v1/quiz/results/:quizId",
   VALIDATE_SECTION_ACCESS_API: BASE_URL + "/api/v1/quiz/validate-access/:sectionId",
 }
+
+// NOTIFICATION ENDPOINTS
+export const notificationEndpoints = {
+  GET_NOTIFICATIONS_API: BASE_URL + "/api/v1/notification/get-notifications",
+  MARK_AS_READ_API: BASE_URL + "/api/v1/notification/mark-as-read",
+  MARK_ALL_READ_API: BASE_URL + "/api/v1/notification/mark-all-as-read",
+  DELETE_NOTIFICATION_API: BASE_URL + "/api/v1/notification/delete",
+}
