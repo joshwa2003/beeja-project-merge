@@ -1,4 +1,4 @@
-import { ACCOUNT_TYPE } from './../src/utils/constants';
+import { ACCOUNT_TYPE } from '../src/utils/constants';
 
 export const sidebarLinks = [
   {
@@ -55,5 +55,12 @@ export const sidebarLinks = [
     path: "/dashboard/certificates",
     type: ACCOUNT_TYPE.STUDENT,
     icon: "VscMortarBoard",
+  },
+  {
+    id: 9,
+    name: "Bundle Access Requests",
+    path: "/dashboard/admin/bundle-requests",
+    type: ACCOUNT_TYPE.ADMIN,
+    icon: "VscGitPullRequestCreate",
   },
 ];

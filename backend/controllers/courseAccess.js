@@ -1,4 +1,5 @@
 const CourseAccessRequest = require('../models/courseAccessRequest');
+const BundleAccessRequest = require('../models/bundleAccessRequest');
 const Course = require('../models/course');
 const User = require('../models/user');
 
@@ -267,6 +268,199 @@ exports.getFreeCourses = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: 'Error fetching free courses',
+            error: error.message
+        });
+    }
+};
+
+// ================ REQUEST BUNDLE ACCESS ================
+exports.requestBundleAccess = async (req, res) => {
+    try {
+        const { courseIds } = req.body;
+        const userId = req.user.id;
+
+        // Check if all courses exist and are free
+        const courses = await Course.find({ _id: { $in: courseIds } });
+        
+        if (courses.length !== courseIds.length) {
+            return res.status(404).json({
+                success: false,
+                message: 'One or more courses not found'
+            });
+        }
+
+        // Verify all courses are free
+        const nonFreeCourses = courses.filter(course => course.courseType !== 'Free');
+        if (nonFreeCourses.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Bundle contains non-free courses'
+            });
+        }
+
+        // Check for existing pending bundle request
+        const existingRequest = await BundleAccessRequest.findOne({
+            user: userId,
+            status: 'pending',
+            courses: { $all: courseIds }
+        });
+
+        if (existingRequest) {
+            return res.status(400).json({
+                success: false,
+                message: 'You already have a pending request for this bundle'
+            });
+        }
+
+        // Create new bundle access request
+        const bundleRequest = await BundleAccessRequest.create({
+            user: userId,
+            courses: courseIds,
+            status: 'pending'
+        });
+
+        const populatedRequest = await BundleAccessRequest.findById(bundleRequest._id)
+            .populate('user', 'firstName lastName email')
+            .populate('courses', 'courseName thumbnail');
+
+        return res.status(201).json({
+            success: true,
+            message: 'Bundle access request submitted successfully',
+            data: populatedRequest
+        });
+
+    } catch (error) {
+        console.error('Error requesting bundle access:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error submitting bundle access request',
+            error: error.message
+        });
+    }
+};
+
+// ================ GET ALL BUNDLE REQUESTS (ADMIN) ================
+exports.getBundleRequests = async (req, res) => {
+    try {
+        const { status, page = 1, limit = 10 } = req.query;
+        
+        const filter = {};
+        if (status) {
+            filter.status = status;
+        }
+
+        const skip = (page - 1) * limit;
+
+        const requests = await BundleAccessRequest.find(filter)
+            .populate('user', 'firstName lastName email image')
+            .populate('courses', 'courseName thumbnail instructor')
+            .populate('processedBy', 'firstName lastName')
+            .sort({ requestedAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        const totalRequests = await BundleAccessRequest.countDocuments(filter);
+
+        return res.status(200).json({
+            success: true,
+            data: requests,
+            pagination: {
+                currentPage: parseInt(page),
+                totalPages: Math.ceil(totalRequests / limit),
+                totalRequests,
+                hasNext: page * limit < totalRequests,
+                hasPrev: page > 1
+            },
+            message: 'Bundle requests fetched successfully'
+        });
+
+    } catch (error) {
+        console.error('Error fetching bundle requests:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error fetching bundle requests',
+            error: error.message
+        });
+    }
+};
+
+// ================ UPDATE BUNDLE REQUEST STATUS (ADMIN) ================
+exports.updateBundleRequestStatus = async (req, res) => {
+    try {
+        const { bundleId } = req.params;
+        const { status, notes } = req.body;
+        const adminId = req.user.id;
+
+        if (!['approved', 'rejected'].includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid status. Use "approved" or "rejected"'
+            });
+        }
+
+        const bundleRequest = await BundleAccessRequest.findById(bundleId)
+            .populate('user')
+            .populate('courses');
+
+        if (!bundleRequest) {
+            return res.status(404).json({
+                success: false,
+                message: 'Bundle request not found'
+            });
+        }
+
+        if (bundleRequest.status !== 'pending') {
+            return res.status(400).json({
+                success: false,
+                message: 'This bundle request has already been processed'
+            });
+        }
+
+        // Update request status
+        bundleRequest.status = status;
+        bundleRequest.notes = notes || '';
+        bundleRequest.processedBy = adminId;
+        bundleRequest.processedAt = new Date();
+
+        await bundleRequest.save();
+
+        // If approved, enroll user in all courses
+        if (status === 'approved') {
+            const courseUpdates = bundleRequest.courses.map(async (course) => {
+                if (!course.studentsEnrolled.includes(bundleRequest.user._id)) {
+                    course.studentsEnrolled.push(bundleRequest.user._id);
+                    await course.save();
+                }
+            });
+
+            await Promise.all(courseUpdates);
+
+            // Add courses to user's enrolled courses
+            const user = await User.findById(bundleRequest.user._id);
+            bundleRequest.courses.forEach(course => {
+                if (!user.courses.includes(course._id)) {
+                    user.courses.push(course._id);
+                }
+            });
+            await user.save();
+        }
+
+        const updatedRequest = await BundleAccessRequest.findById(bundleId)
+            .populate('user', 'firstName lastName email')
+            .populate('courses', 'courseName thumbnail')
+            .populate('processedBy', 'firstName lastName');
+
+        return res.status(200).json({
+            success: true,
+            message: `Bundle request ${status} successfully`,
+            data: updatedRequest
+        });
+
+    } catch (error) {
+        console.error('Error updating bundle request:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error processing bundle request',
             error: error.message
         });
     }

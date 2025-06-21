@@ -6,6 +6,7 @@ import { useParams } from "react-router-dom"
 import ImprovedFooter from "../components/common/ImprovedFooter"
 import Course_Card from '../components/core/Catalog/Course_Card'
 import Course_Slider from "../components/core/Catalog/Course_Slider"
+import BundleCourseSection from "../components/core/Catalog/BundleCourseSection"
 import Loading from './../components/common/Loading';
 
 import { getCatalogPageData } from '../services/operations/pageAndComponentData'
@@ -138,17 +139,20 @@ function Catalog() {
             <div className=" mx-auto box-content w-full max-w-maxContentTab px-4 py-12 lg:max-w-maxContent">
                 <div className="section_heading">Frequently Bought</div>
                 <div className="py-8">
-                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                        {catalogPageData?.mostSellingCourses
-                            ?.slice(0, 4)   
-                            .map((course, i) => (
-                                <Course_Card course={course} key={i} Height={"h-[300px]"} />
-                            ))}
-                    </div>
-                </div>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                {catalogPageData?.mostSellingCourses
+                    ?.slice(0, 4)   
+                    .map((course, i) => (
+                        <Course_Card course={course} key={i} Height={"h-[300px]"} />
+                    ))}
             </div>
+        </div>
+    </div>
 
-            <ImprovedFooter />
+    {/* Bundle Course Section */}
+    <BundleCourseSection courses={catalogPageData?.selectedCategory?.courses} />
+
+    <ImprovedFooter />
         </>
     )
 }

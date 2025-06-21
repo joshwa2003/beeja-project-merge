@@ -6,7 +6,10 @@ const {
     getUserAccessRequests,
     getAllAccessRequests,
     handleAccessRequest,
-    getFreeCourses
+    getFreeCourses,
+    requestBundleAccess,
+    getBundleRequests,
+    updateBundleRequestStatus
 } = require('../controllers/courseAccess');
 
 const { auth, isAdmin } = require('../middleware/auth');
@@ -21,5 +24,10 @@ router.get('/my-requests', auth, getUserAccessRequests);
 // Admin routes
 router.get('/requests', auth, isAdmin, getAllAccessRequests);
 router.put('/requests/:requestId', auth, isAdmin, handleAccessRequest);
+
+// Bundle access routes
+router.post('/bundle-request', auth, requestBundleAccess);
+router.get('/bundle-requests', auth, isAdmin, getBundleRequests);
+router.post('/bundle-update-status/:bundleId', auth, isAdmin, updateBundleRequestStatus);
 
 module.exports = router;

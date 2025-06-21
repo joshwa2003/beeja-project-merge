@@ -107,10 +107,13 @@ export const courseAccessEndpoints = {
   // Student
   REQUEST_COURSE_ACCESS_API: BASE_URL + "/api/v1/course-access/request-access",
   GET_USER_ACCESS_REQUESTS_API: BASE_URL + "/api/v1/course-access/my-requests",
+  REQUEST_BUNDLE_ACCESS_API: BASE_URL + "/api/v1/course-access/bundle-request",
   
   // Admin
   GET_ALL_ACCESS_REQUESTS_API: BASE_URL + "/api/v1/course-access/requests",
   HANDLE_ACCESS_REQUEST_API: BASE_URL + "/api/v1/course-access/requests/:requestId",
+  GET_BUNDLE_REQUESTS_API: BASE_URL + "/api/v1/course-access/bundle-requests",
+  UPDATE_BUNDLE_REQUEST_STATUS_API: BASE_URL + "/api/v1/course-access/bundle-update-status/:bundleId",
 }
 
 // QUIZ ENDPOINTS

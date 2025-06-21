@@ -43,6 +43,7 @@ import PurchaseHistory from "./components/core/Dashboard/PurchaseHistory/Purchas
 import Certificates from "./pages/Dashboard/Certificates";
 
 import ViewCourse from "./pages/ViewCourse";
+import BundleCheckout from "./pages/BundleCheckout";
 import VideoDetails from './components/core/ViewCourse/VideoDetails';
 import QuizView from './components/core/ViewCourse/QuizView';
 
@@ -110,6 +111,7 @@ function App() {
         <Route path="free-courses" element={<FreeCourses />} />
         <Route path="courses/:courseId" element={<CourseDetails />} />
         <Route path="verify-certificate/:certificateId" element={<VerifyCertificate />} />
+        <Route path="bundle-checkout" element={<BundleCheckout />} />
 
         {/* Open Route - for Only Non Logged in User */}
         <Route
