@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { FaUsers, FaBookOpen, FaChartBar, FaGraduationCap, FaQuestionCircle } from 'react-icons/fa';
+import { FaUsers, FaBookOpen, FaChartBar, FaGraduationCap, FaQuestionCircle, FaChartLine } from 'react-icons/fa';
 import { MdSettings } from 'react-icons/md';
+
+import StudentProgress from './components/StudentProgress/StudentProgress';
 
 import UserManagement from './components/UserManagement';
 import CourseManagement from './components/CourseManagement';
@@ -28,6 +30,7 @@ const AdminDashboard = () => {
     { id: 'courses', label: 'Courses', icon: <FaBookOpen className="w-5 h-5" /> },
     { id: 'courseTypes', label: 'Course Types', icon: <FaGraduationCap className="w-5 h-5" /> },
     { id: 'quizzes', label: 'Quiz Management', icon: <FaQuestionCircle className="w-5 h-5" /> },
+    { id: 'studentProgress', label: 'Student Progress', icon: <FaChartLine className="w-5 h-5" /> },
     { id: 'accessRequests', label: 'Access Requests', icon: <FaUsers className="w-5 h-5" /> },
     { id: 'bundleRequests', label: 'Bundle Requests', icon: <FaUsers className="w-5 h-5" /> },
     { id: 'analytics', label: 'Analytics', icon: <FaChartBar className="w-5 h-5" /> },
@@ -93,6 +96,7 @@ const AdminDashboard = () => {
                 {activeTab === 'settings' && <Settings />}
                 {activeTab === 'quizzes' && <QuizManagement />}
                 {activeTab === 'bundleRequests' && <BundleAccessRequests />}
+                {activeTab === 'studentProgress' && <StudentProgress />}
               </>
             )}
           </div>

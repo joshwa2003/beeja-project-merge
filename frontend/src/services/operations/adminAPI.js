@@ -16,6 +16,8 @@ const {
   TOGGLE_COURSE_VISIBILITY_API,
   SET_COURSE_TYPE_API,
   GET_ANALYTICS_API,
+  GET_STUDENTS_BY_COURSE_API,
+  GET_STUDENT_PROGRESS_API,
 } = adminEndpoints
 
 // ================ Set Course Type ================
@@ -374,6 +376,59 @@ export const getAnalytics = async (token) => {
     result = response?.data?.analytics
   } catch (error) {
     console.log("GET_ANALYTICS_API ERROR............", error)
+    toast.error(error.message)
+  }
+  
+  toast.dismiss(toastId)
+  return result
+}
+
+// ================ Get Students By Course ================
+export const getStudentsByCourse = async (courseId, token) => {
+  let result = []
+  const toastId = toast.loading("Loading students...")
+
+  try {
+    const url = GET_STUDENTS_BY_COURSE_API.replace(':courseId', courseId)
+    const response = await apiConnector("GET", url, null, {
+      Authorization: `Bearer ${token}`,
+    })
+    
+    if (!response?.data?.success) {
+      throw new Error("Could Not Fetch Students")
+    }
+    
+    result = response?.data?.students
+  } catch (error) {
+    console.log("GET_STUDENTS_BY_COURSE_API ERROR............", error)
+    toast.error(error.message)
+  }
+  
+  toast.dismiss(toastId)
+  return result
+}
+
+// ================ Get Student Progress ================
+export const getStudentProgress = async (courseId, studentId, token) => {
+  let result = null
+  const toastId = toast.loading("Loading progress...")
+
+  try {
+    const url = GET_STUDENT_PROGRESS_API
+      .replace(':courseId', courseId)
+      .replace(':studentId', studentId)
+    
+    const response = await apiConnector("GET", url, null, {
+      Authorization: `Bearer ${token}`,
+    })
+    
+    if (!response?.data?.success) {
+      throw new Error("Could Not Fetch Student Progress")
+    }
+    
+    result = response?.data?.progress
+  } catch (error) {
+    console.log("GET_STUDENT_PROGRESS_API ERROR............", error)
     toast.error(error.message)
   }
   

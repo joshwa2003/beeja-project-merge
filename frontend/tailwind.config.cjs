@@ -135,6 +135,16 @@ module.exports = {
           mediumSlateBlue: "#7561FA",// Medium slate blue
           robinEggBlue: "#59D3D9",   // Robin egg blue
           shadeofblue: "#254FA3"
+        },
+        green: {
+          400: "#4ADE80",  // Bright green for success states
+          500: "#22C55E",
+          600: "#16A34A"
+        },
+        red: {
+          400: "#F87171",  // Bright red for error states
+          500: "#EF4444",
+          600: "#DC2626"
         }
       },
       maxWidth: {

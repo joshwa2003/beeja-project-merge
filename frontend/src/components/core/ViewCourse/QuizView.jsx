@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { useNavigate, useParams } from "react-router-dom"
+import { useNavigate, useParams, useLocation } from "react-router-dom"
 import { getQuizById, submitQuiz, getQuizStatus } from "../../../services/operations/quizAPI"
 import IconBtn from "../../common/IconBtn"
 import { IoIosArrowBack } from "react-icons/io"
@@ -11,6 +11,7 @@ import Xarrow from 'react-xarrows'
 const QuizView = () => {
   const { courseId, sectionId, subSectionId } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { token } = useSelector((state) => state.auth)
   const { courseSectionData, courseEntireData, completedLectures } = useSelector((state) => state.viewCourse)
 
@@ -22,6 +23,9 @@ const QuizView = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [timeRemaining, setTimeRemaining] = useState(null)
   const [quizStarted, setQuizStarted] = useState(false)
+  const [retakeKey, setRetakeKey] = useState(0)
+  const [selectedQuestion, setSelectedQuestion] = useState(null)
+  const [shuffledAnswers, setShuffledAnswers] = useState({})
 
   // Load quiz data and status
   useEffect(() => {
@@ -44,7 +48,6 @@ const QuizView = () => {
           ])
           setQuizData(quiz)
           setQuizStatus(status)
-          // Set timer if quiz has time limit (default 30 minutes)
           setTimeRemaining(quiz.timeLimit || 30 * 60)
         } catch (error) {
           console.error("Error loading quiz:", error)
@@ -74,18 +77,6 @@ const QuizView = () => {
     }
   }, [quizStarted, timeRemaining])
 
-  // Format time display
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-  }
-
-
-  // Handle question click for manual connection
-  const [selectedQuestion, setSelectedQuestion] = useState(null)
-  const [shuffledAnswers, setShuffledAnswers] = useState({})
-  
   // Initialize shuffled answers for match the following questions
   useEffect(() => {
     if (quizData && quizData.questions) {
@@ -103,8 +94,78 @@ const QuizView = () => {
     }
   }, [quizData])
 
+  // Function to handle quiz retake
+  const handleQuizRetake = async () => {
+    try {
+      setLoading(true)
+      console.log("Retake Quiz button clicked")
+      
+      // Check if quiz is already passed
+      if (quizStatus && quizStatus.passed) {
+        alert("Quiz already passed. Retakes are not allowed for passed quizzes.")
+        setLoading(false)
+        return
+      }
+
+      // Force reload quiz data to get fresh state
+      const [quiz, status] = await Promise.all([
+        getQuizById(quizData._id, token),
+        getQuizStatus(quizData._id, token)
+      ])
+
+      if (!quiz) {
+        throw new Error("Could not load quiz data")
+      }
+      
+      // Reset all state to initial values
+      setQuizData(quiz)
+      setQuizStatus(status)
+      setQuizResult(null)
+      setCurrentQuestion(0)
+      setQuizAnswers({})
+      setSelectedQuestion(null)
+      setShuffledAnswers({})
+      setRetakeKey(prev => prev + 1)
+      
+      // Reset timer
+      setTimeRemaining(quiz.timeLimit || 30 * 60)
+      
+      // Re-shuffle answers for match the following questions
+      if (quiz.questions) {
+        const newShuffledAnswers = {}
+        quiz.questions.forEach(question => {
+          if (question.questionType === 'matchTheFollowing') {
+            const answersToShow = question.answers || question.options
+            const shuffled = [...answersToShow]
+              .map((answer, index) => ({ answer, originalIndex: index, letter: String.fromCharCode(65 + index) }))
+              .sort(() => Math.random() - 0.5)
+            newShuffledAnswers[question._id] = shuffled
+          }
+        })
+        setShuffledAnswers(newShuffledAnswers)
+      }
+      
+      // Start the quiz immediately after reset
+      setQuizStarted(true)
+      
+      setLoading(false)
+      console.log("Quiz state reset and started for retake")
+    } catch (error) {
+      console.error("Error retaking quiz:", error)
+      alert("Error retaking quiz. Please try again.")
+      setLoading(false)
+    }
+  }
+
+  // Format time display
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
+
+  // Handle question click for manual connection
   const handleQuestionClick = (questionIndex) => {
-    // If clicking the same question, deselect it
     if (selectedQuestion === questionIndex) {
       setSelectedQuestion(null)
       return
@@ -114,6 +175,7 @@ const QuizView = () => {
 
   const handleAnswerClick = (answerIndex) => {
     if (selectedQuestion !== null) {
+      const currentQuestionData = quizData.questions[currentQuestion]
       // Check if this connection already exists
       const existingConnection = Object.entries(quizAnswers)
         .find(([key, value]) => 
@@ -168,6 +230,7 @@ const QuizView = () => {
     }
   }
 
+
   // Submit quiz
   const handleQuizSubmit = async () => {
     if (!quizData) return
@@ -219,9 +282,17 @@ const QuizView = () => {
       const result = await submitQuiz(quizSubmissionData, token)
       if (result) {
         setQuizResult(result)
+        setQuizStarted(false) // Stop the quiz after submission
+        try {
+          const updatedStatus = await getQuizStatus(quizData._id, token)
+          setQuizStatus(updatedStatus)
+        } catch (error) {
+          console.error("Error updating quiz status:", error)
+        }
       }
     } catch (error) {
       console.error("Error submitting quiz:", error)
+      alert("Error submitting quiz. Please try again.")
     }
     setLoading(false)
   }
@@ -244,6 +315,17 @@ const QuizView = () => {
     }
   }
 
+  // Compute result data
+  const resultData = quizResult || (quizStatus?.lastAttempt && !quizStarted ? quizStatus.lastAttempt : null)
+  const percentage = resultData ? parseFloat(resultData.percentage || 0) : 0
+  const isPassed = percentage >= 60
+
+  // Update quizStatus to reflect the correct pass state only if we have a result
+  if (quizStatus && resultData) {
+    quizStatus.passed = isPassed
+  }
+
+  // Loading state
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -255,20 +337,27 @@ const QuizView = () => {
     )
   }
 
-  // Show quiz result or status
-  if (quizResult || quizStatus?.lastAttempt) {
-    const resultData = quizResult || quizStatus.lastAttempt
-    const percentage = parseFloat(quizResult ? quizResult.percentage : resultData.percentage)
-    // Consider passed if percentage is >= 60
-    const isPassed = percentage >= 60
-    
-    // Update quizStatus to reflect the correct pass state
-    if (quizStatus) {
-      quizStatus.passed = isPassed
-    }
-    
+  // Quiz not found state
+  if (!quizData) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <FiAlertCircle className="mx-auto text-6xl text-richblack-400 mb-4" />
+          <p className="text-richblack-200">Quiz not found</p>
+          <IconBtn
+            onClick={() => navigate(`/view-course/${courseId}/section/${sectionId}/sub-section/${subSectionId}`)}
+            text="Back to Lecture"
+            customClasses="mt-4"
+          />
+        </div>
+      </div>
+    )
+  }
+
+  // Quiz result view - show if we have a result and quiz is not started, or if quiz was just submitted
+  if ((resultData && !quizStarted) || quizResult) {
+    return (
+      <div key={retakeKey} className="max-w-4xl mx-auto p-6">
         <div className={`bg-gradient-to-r ${isPassed ? 'from-green-800 to-green-600' : 'from-red-800 to-red-600'} rounded-xl p-8 text-center shadow-xl`}>
           {isPassed ? (
             <FiAward className="mx-auto text-6xl text-white mb-4" />
@@ -327,13 +416,7 @@ const QuizView = () => {
             />
             {!isPassed && (
               <IconBtn
-                onClick={() => {
-                  setQuizResult(null)
-                  setQuizStarted(false)
-                  setCurrentQuestion(0)
-                  setQuizAnswers({})
-                  setTimeRemaining(quizData.timeLimit || 30 * 60)
-                }}
+                onClick={handleQuizRetake}
                 text="Retake Quiz"
                 customClasses="px-6 py-3 bg-yellow-50 text-richblack-900 hover:bg-yellow-100"
               />
@@ -349,25 +432,10 @@ const QuizView = () => {
     )
   }
 
-  if (!quizData) {
+  // Quiz start screen - show if quiz is not started and no result is being displayed
+  if (!quizStarted && !quizResult) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <FiAlertCircle className="mx-auto text-6xl text-richblack-400 mb-4" />
-          <p className="text-richblack-200">Quiz not found</p>
-          <IconBtn
-            onClick={() => navigate(`/view-course/${courseId}/section/${sectionId}/sub-section/${subSectionId}`)}
-            text="Back to Lecture"
-            customClasses="mt-4"
-          />
-        </div>
-      </div>
-    )
-  }
-
-  if (!quizStarted) {
-    return (
-      <div className="max-w-4xl mx-auto p-6">
+      <div key={retakeKey} className="max-w-4xl mx-auto p-6">
         <div className="bg-richblack-800 rounded-xl p-8 shadow-xl">
           <div className="flex items-center gap-4 mb-6">
             <button
@@ -452,7 +520,9 @@ const QuizView = () => {
               </div>
             ) : (
               <IconBtn
-                onClick={() => setQuizStarted(true)}
+                onClick={() => {
+                  setQuizStarted(true)
+                }}
                 text={quizStatus && quizStatus.attempts > 0 ? "Retake Quiz" : "Start Quiz"}
                 customClasses="px-8 py-3 text-lg"
               />
@@ -463,6 +533,7 @@ const QuizView = () => {
     )
   }
 
+  // Quiz taking interface
   const currentQuestionData = quizData.questions[currentQuestion]
 
   return (
@@ -609,14 +680,14 @@ const QuizView = () => {
                       <div 
                         key={`a-${displayIndex}`}
                         id={`answer-${item.originalIndex}`}
-                      className={`p-4 bg-richblack-700 rounded-lg border-2 ${
-                        Object.values(quizAnswers).includes(item.originalIndex)
-                          ? 'border-green-500'
-                          : 'border-richblack-600'
-                      } hover:border-yellow-50 transition-colors cursor-pointer relative z-10`}
-                      onClick={() => handleAnswerClick(item.originalIndex)}
+                        className={`p-4 bg-richblack-700 rounded-lg border-2 ${
+                          Object.values(quizAnswers).includes(item.originalIndex)
+                            ? 'border-green-500'
+                            : 'border-richblack-600'
+                        } hover:border-yellow-50 transition-colors cursor-pointer relative z-10`}
+                        onClick={() => handleAnswerClick(item.originalIndex)}
                       >
-                      <div className="flex items-center">
+                        <div className="flex items-center">
                           <span className="text-richblack-25 flex-1">{item.answer}</span>
                         </div>
                       </div>
@@ -629,7 +700,6 @@ const QuizView = () => {
                   .filter(([key]) => key.startsWith(currentQuestionData._id))
                   .map(([key, value]) => {
                     const questionIndex = parseInt(key.split('_')[1])
-                    // Define different colors for each question index
                     const colors = [
                       "#22C55E", // Green for question 1
                       "#3B82F6", // Blue for question 2
@@ -658,7 +728,6 @@ const QuizView = () => {
                     )
                   })
                 }
-
               </div>
             </div>
 
@@ -691,7 +760,6 @@ const QuizView = () => {
                 onClick={() => {
                   setQuizAnswers(prevAnswers => {
                     const newAnswers = { ...prevAnswers }
-                    // Remove all answers for current question
                     Object.keys(newAnswers).forEach(key => {
                       if (key.startsWith(currentQuestionData._id)) {
                         delete newAnswers[key]
@@ -712,7 +780,7 @@ const QuizView = () => {
             {/* Instructions */}
             <div className="mt-4 p-4 bg-yellow-800/20 border border-yellow-600 rounded-lg">
               <p className="text-yellow-200 text-sm">
-                <strong>Instructions:</strong> Click on a question and then click on its matching answer to create a connection. Click the same combination again to remove the connection, or use the Reset button to clear all matches and start over. Questions and answers with active connections will be highlighted in their respective colors.
+                <strong>Instructions:</strong> Click on a question and then click on its matching answer to create a connection. Click the same combination again to remove the connection, or use the Reset button to clear all matches and start over.
               </p>
             </div>
           </div>
@@ -720,48 +788,88 @@ const QuizView = () => {
       </div>
 
       {/* Navigation */}
-      <div className="flex justify-between items-center">
-        <button
-          onClick={() => setCurrentQuestion(prev => Math.max(0, prev - 1))}
+      <div className="flex justify-between items-center mt-6">
+        <IconBtn
           disabled={currentQuestion === 0}
-          className="px-6 py-3 bg-richblack-700 text-white rounded-lg hover:bg-richblack-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          Previous
-        </button>
-
-        <div className="flex gap-2">
-          {quizData.questions.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentQuestion(index)}
-              className={`w-8 h-8 rounded-full text-sm font-medium transition-colors ${
-                index === currentQuestion
-                  ? 'bg-yellow-50 text-richblack-900'
-                  : quizAnswers[quizData.questions[index]._id] !== undefined
-                  ? 'bg-green-600 text-white'
-                  : 'bg-richblack-700 text-richblack-300 hover:bg-richblack-600'
-              }`}
-            >
-              {index + 1}
-            </button>
-          ))}
+          onClick={() => setCurrentQuestion(prev => prev - 1)}
+          text="Previous"
+          customClasses={`px-6 py-3 ${currentQuestion === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+        />
+        
+        <div className="flex gap-4">
+          {currentQuestion < quizData.questions.length - 1 ? (
+            <IconBtn
+              onClick={() => setCurrentQuestion(prev => prev + 1)}
+              text="Next"
+              customClasses="px-6 py-3"
+            />
+          ) : (
+            <IconBtn
+              onClick={handleQuizSubmit}
+              text="Submit Quiz"
+              customClasses="px-6 py-3 bg-green-600 hover:bg-green-700"
+            />
+          )}
         </div>
+      </div>
 
-        {currentQuestion === quizData.questions.length - 1 ? (
-          <IconBtn
-            onClick={handleQuizSubmit}
-            text={loading ? "Submitting..." : "Submit Quiz"}
-            disabled={loading}
-            customClasses="px-6 py-3"
-          />
-        ) : (
-          <button
-            onClick={() => setCurrentQuestion(prev => Math.min(quizData.questions.length - 1, prev + 1))}
-            className="px-6 py-3 bg-yellow-50 text-richblack-900 rounded-lg hover:bg-yellow-100 transition-colors"
-          >
-            Next
-          </button>
-        )}
+      {/* Question Navigation */}
+      <div className="mt-6 bg-richblack-800 rounded-xl p-6">
+        <h3 className="text-white font-semibold mb-4">Question Navigation</h3>
+        <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
+          {quizData.questions.map((_, index) => {
+            const isAnswered = (() => {
+              const question = quizData.questions[index]
+              const answer = quizAnswers[question._id]
+              
+              if (question.questionType === 'matchTheFollowing') {
+                return question.options.every((_, optionIndex) => {
+                  const matchAnswer = quizAnswers[`${question._id}_${optionIndex}`]
+                  return matchAnswer !== undefined && matchAnswer !== null && matchAnswer !== ''
+                })
+              } else if (question.questionType === 'multipleChoice') {
+                const selectedOptions = quizAnswers[question._id] || []
+                return Array.isArray(selectedOptions) && selectedOptions.length > 0
+              } else if (question.questionType === 'singleAnswer') {
+                const answerNum = Number(answer)
+                return !isNaN(answerNum) || answer === 0
+              } else {
+                return answer && (typeof answer !== 'string' || answer.trim() !== '')
+              }
+            })()
+
+            return (
+              <button
+                key={index}
+                onClick={() => setCurrentQuestion(index)}
+                className={`w-10 h-10 rounded-lg font-semibold transition-colors ${
+                  currentQuestion === index
+                    ? 'bg-yellow-50 text-richblack-900'
+                    : isAnswered
+                    ? 'bg-green-600 text-white hover:bg-green-700'
+                    : 'bg-richblack-700 text-richblack-300 hover:bg-richblack-600'
+                }`}
+              >
+                {index + 1}
+              </button>
+            )
+          })}
+        </div>
+        
+        <div className="flex items-center gap-6 mt-4 text-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-yellow-50 rounded"></div>
+            <span className="text-richblack-300">Current</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-green-600 rounded"></div>
+            <span className="text-richblack-300">Answered</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-richblack-700 rounded"></div>
+            <span className="text-richblack-300">Not Answered</span>
+          </div>
+        </div>
       </div>
     </div>
   )

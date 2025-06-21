@@ -95,6 +95,10 @@ export const adminEndpoints = {
   TOGGLE_COURSE_VISIBILITY_API: BASE_URL + "/api/v1/admin/courses/:courseId/toggle-visibility",
   SET_COURSE_TYPE_API: BASE_URL + "/api/v1/admin/courses/:courseId/set-type",
 
+  // Student Progress Tracking
+  GET_STUDENTS_BY_COURSE_API: BASE_URL + "/api/v1/admin/courses/:courseId/students",
+  GET_STUDENT_PROGRESS_API: BASE_URL + "/api/v1/admin/courses/:courseId/students/:studentId/progress",
+
   // Analytics
   GET_ANALYTICS_API: BASE_URL + "/api/v1/admin/analytics",
 }
