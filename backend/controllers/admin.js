@@ -664,6 +664,13 @@ exports.sendNotification = async (req, res) => {
     try {
         const { title, message, recipients, selectedUsers, relatedCourse, priority = 'medium' } = req.body;
 
+        console.log('=== SEND NOTIFICATION DEBUG ===');
+        console.log('Request body:', JSON.stringify(req.body, null, 2));
+        console.log('Recipients:', recipients);
+        console.log('Selected Users:', selectedUsers);
+        console.log('Selected Users type:', typeof selectedUsers);
+        console.log('Selected Users length:', selectedUsers?.length);
+
         // Validate admin user
         if (!req.user?.id) {
             return res.status(401).json({ 
@@ -680,22 +687,35 @@ exports.sendNotification = async (req, res) => {
             });
         }
 
-        // Map recipients to recipientType
-        let recipientType;
-        let recipientUsers = [];
+        // Get target users based on recipient type
+        let targetUsers = [];
+        let recipientType = '';
 
         switch (recipients) {
             case 'all':
                 recipientType = 'All';
+                targetUsers = await User.find({ active: true }).select('_id accountType firstName lastName');
                 break;
             case 'students':
                 recipientType = 'Student';
+                targetUsers = await User.find({ 
+                    accountType: 'Student', 
+                    active: true 
+                }).select('_id accountType firstName lastName');
                 break;
             case 'instructors':
                 recipientType = 'Instructor';
+                targetUsers = await User.find({ 
+                    accountType: 'Instructor', 
+                    active: true 
+                }).select('_id accountType firstName lastName');
                 break;
             case 'admins':
                 recipientType = 'Admin';
+                targetUsers = await User.find({ 
+                    accountType: 'Admin', 
+                    active: true 
+                }).select('_id accountType firstName lastName');
                 break;
             case 'specific':
                 recipientType = 'Specific';
@@ -705,19 +725,39 @@ exports.sendNotification = async (req, res) => {
                         message: 'Selected users are required for specific recipients'
                     });
                 }
-                // Validate each selected user ID
-                const validUsers = await User.find({
-                    _id: { $in: selectedUsers },
-                    active: true
-                }).distinct('_id');
                 
-                if (validUsers.length !== selectedUsers.length) {
+                console.log('Processing specific users:', selectedUsers);
+                
+                // Validate each selected user ID format first
+                const invalidIds = selectedUsers.filter(id => !mongoose.Types.ObjectId.isValid(id));
+                if (invalidIds.length > 0) {
                     return res.status(400).json({
                         success: false,
-                        message: 'One or more selected users are invalid or inactive'
+                        message: `Invalid user IDs: ${invalidIds.join(', ')}`
                     });
                 }
-                recipientUsers = selectedUsers;
+                
+                // Find valid users
+                targetUsers = await User.find({
+                    _id: { $in: selectedUsers },
+                    active: true
+                }).select('_id accountType firstName lastName');
+                
+                console.log(`Found ${targetUsers.length} valid users out of ${selectedUsers.length} selected`);
+                
+                if (targetUsers.length === 0) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'No valid active users found from the selected users'
+                    });
+                }
+                
+                // Log which users were not found (for debugging)
+                const foundUserIds = targetUsers.map(user => user._id.toString());
+                const notFoundUsers = selectedUsers.filter(id => !foundUserIds.includes(id));
+                if (notFoundUsers.length > 0) {
+                    console.log('Users not found or inactive:', notFoundUsers);
+                }
                 break;
             default:
                 return res.status(400).json({
@@ -726,56 +766,58 @@ exports.sendNotification = async (req, res) => {
                 });
         }
 
-        // Use the new enhanced notification system
-        const { createEnhancedNotification } = require('./notification');
-        
-        const notification = await createEnhancedNotification({
+        if (targetUsers.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No valid users found for the selected recipient type'
+            });
+        }
+
+        // Generate a unique bulk ID for grouping these notifications
+        const mongoose = require('mongoose');
+        const bulkId = new mongoose.Types.ObjectId();
+
+        // Create individual notification records for each target user
+        const notifications = targetUsers.map(user => ({
+            recipient: user._id,
+            recipientType: recipientType,
+            recipients: recipients === 'specific' ? selectedUsers : undefined,
+            type: 'ADMIN_ANNOUNCEMENT',
             title,
             message,
-            recipientType,
-            recipients: recipientUsers,
-            type: 'ADMIN_ANNOUNCEMENT',
             sender: req.user.id,
             priority,
             relatedCourse: relatedCourse || null,
+            bulkId: bulkId,
+            isRead: false,
+            read: false,
             metadata: {
                 sentByAdmin: true,
                 adminId: req.user.id,
-                sentAt: new Date()
-            }
-        });
+                sentAt: new Date(),
+                recipientType: recipientType,
+                recipients: recipients === 'specific' ? selectedUsers : undefined,
+                targetUsers: recipients === 'specific' ? selectedUsers : undefined,
+                bulkId: bulkId
+            },
+            createdAt: new Date()
+        }));
 
-        // Count target users for response
-        let targetUserCount = 0;
-        switch (recipientType) {
-            case 'All':
-                targetUserCount = await User.countDocuments({ active: true });
-                break;
-            case 'Student':
-                targetUserCount = await User.countDocuments({ accountType: 'Student', active: true });
-                break;
-            case 'Instructor':
-                targetUserCount = await User.countDocuments({ accountType: 'Instructor', active: true });
-                break;
-            case 'Admin':
-                targetUserCount = await User.countDocuments({ accountType: 'Admin', active: true });
-                break;
-            case 'Specific':
-                targetUserCount = recipientUsers.length;
-                break;
-        }
+        // Insert all notifications in bulk
+        const insertedNotifications = await Notification.insertMany(notifications);
 
-        console.log(`Created enhanced notification: ${notification._id} for ${recipientType} (${targetUserCount} users)`);
+        console.log(`Created ${insertedNotifications.length} individual notifications for ${recipientType} users with bulkId: ${bulkId}`);
 
         return res.status(201).json({
             success: true,
-            message: `Notification sent to ${targetUserCount} users successfully`,
+            message: `Notification sent to ${targetUsers.length} users successfully`,
             data: {
-                notificationId: notification._id,
+                notificationId: bulkId,
                 title,
                 recipientType,
-                recipientCount: targetUserCount,
-                priority
+                recipientCount: targetUsers.length,
+                priority,
+                bulkId: bulkId
             }
         });
 
@@ -840,7 +882,7 @@ exports.getAllNotifications = async (req, res) => {
                     title: firstNotification.title,
                     message: firstNotification.message,
                     sender: firstNotification.sender,
-                    recipients: firstNotification.metadata?.recipientType || 'unknown',
+                    recipients: firstNotification.metadata?.recipients || firstNotification.recipientType || firstNotification.metadata?.recipientType || 'unknown',
                     relatedCourse: firstNotification.relatedCourse,
                     createdAt: firstNotification.createdAt,
                     recipientCount: bulkNotifications.length,
@@ -861,7 +903,7 @@ exports.getAllNotifications = async (req, res) => {
                     title: notification.title,
                     message: notification.message,
                     sender: notification.sender,
-                    recipients: notification.metadata?.recipientType || 'unknown',
+                    recipients: notification.metadata?.recipients || notification.recipientType || 'unknown',
                     relatedCourse: notification.relatedCourse,
                     createdAt: notification.createdAt,
                     recipientCount: 1,
@@ -927,36 +969,60 @@ exports.deleteNotification = async (req, res) => {
             });
         }
 
-        // Find the notification
-        const notification = await Notification.findById(notificationId);
-        if (!notification) {
-            console.log('Notification not found in database');
-            return res.status(404).json({
-                success: false,
-                message: 'Notification not found'
+        // Check if this is a bulk notification (using bulkId) or individual notification
+        let deletedCount = 0;
+        
+        // First, try to find notifications with this bulkId
+        const bulkNotifications = await Notification.find({ bulkId: notificationId });
+        
+        if (bulkNotifications.length > 0) {
+            // This is a bulk notification - delete all notifications with this bulkId
+            console.log(`Found ${bulkNotifications.length} notifications with bulkId: ${notificationId}`);
+            
+            // Delete related user notification statuses for all bulk notifications
+            const bulkNotificationIds = bulkNotifications.map(n => n._id);
+            const statusDeleteResult = await UserNotificationStatus.deleteMany({
+                notification: { $in: bulkNotificationIds }
             });
+            console.log(`Deleted ${statusDeleteResult.deletedCount} user notification statuses for bulk notifications`);
+
+            // Delete all notifications with this bulkId
+            const deleteResult = await Notification.deleteMany({ bulkId: notificationId });
+            deletedCount = deleteResult.deletedCount;
+            console.log(`Successfully deleted ${deletedCount} bulk notifications`);
+        } else {
+            // Try to find individual notification by ID
+            const notification = await Notification.findById(notificationId);
+            if (!notification) {
+                console.log('Notification not found in database');
+                return res.status(404).json({
+                    success: false,
+                    message: 'Notification not found'
+                });
+            }
+
+            console.log('Found individual notification to delete:', {
+                id: notification._id,
+                title: notification.title,
+                type: notification.type
+            });
+
+            // Delete related user notification statuses
+            const statusDeleteResult = await UserNotificationStatus.deleteMany({
+                notification: notificationId
+            });
+            console.log(`Deleted ${statusDeleteResult.deletedCount} user notification statuses`);
+
+            // Delete the individual notification
+            await Notification.findByIdAndDelete(notificationId);
+            deletedCount = 1;
+            console.log('Successfully deleted individual notification');
         }
-
-        console.log('Found notification to delete:', {
-            id: notification._id,
-            title: notification.title,
-            type: notification.type
-        });
-
-        // Delete related user notification statuses first
-        const statusDeleteResult = await UserNotificationStatus.deleteMany({
-            notification: notificationId
-        });
-        console.log(`Deleted ${statusDeleteResult.deletedCount} user notification statuses`);
-
-        // Delete the notification
-        await Notification.findByIdAndDelete(notificationId);
-        console.log('Successfully deleted notification');
 
         return res.status(200).json({
             success: true,
-            message: '1 notification deleted successfully',
-            deletedCount: 1
+            message: `${deletedCount} notification${deletedCount > 1 ? 's' : ''} deleted successfully`,
+            deletedCount: deletedCount
         });
 
     } catch (error) {

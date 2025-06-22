@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { FaRegEnvelope, FaRegEnvelopeOpen } from 'react-icons/fa'
+import { FaRegEnvelope, FaRegEnvelopeOpen, FaSync } from 'react-icons/fa'
 import { MdDelete } from 'react-icons/md'
 import { useSelector } from 'react-redux'
 import { toast } from 'react-hot-toast'
@@ -86,7 +86,6 @@ export default function ContactMessages() {
     } catch (error) {
       console.error('Error marking message as read:', error)
       if (error.response?.data?.message) {
-        // Use the specific error message from the server
         toast.error(error.response.data.message)
       } else if (error.response?.status === 404) {
         toast.error('Message not found')
@@ -133,7 +132,6 @@ export default function ContactMessages() {
     } catch (error) {
       console.error('Error deleting message:', error)
       if (error.response?.data?.message) {
-        // Use the specific error message from the server
         toast.error(error.response.data.message)
       } else if (error.response?.status === 404) {
         toast.error('Message not found')
@@ -149,6 +147,11 @@ export default function ContactMessages() {
     }
   }
 
+  const handleRefresh = () => {
+    fetchMessages()
+    fetchStats()
+  }
+
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -159,32 +162,60 @@ export default function ContactMessages() {
 
   return (
     <div className="text-white">
-      {/* Stats Section */}
-      {stats && (
-        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-md bg-richblack-700 p-4">
-            <h3 className="text-lg font-semibold">Total Messages</h3>
-            <p className="mt-2 text-2xl">{stats.total}</p>
-          </div>
-          <div className="rounded-md bg-richblack-700 p-4">
-            <h3 className="text-lg font-semibold">Unread Messages</h3>
-            <p className="mt-2 text-2xl">{stats.unread}</p>
-          </div>
-          <div className="rounded-md bg-richblack-700 p-4">
-            <h3 className="text-lg font-semibold">Read Messages</h3>
-            <p className="mt-2 text-2xl">{stats.read}</p>
-          </div>
-          <div className="rounded-md bg-richblack-700 p-4">
-            <h3 className="text-lg font-semibold">Last 30 Days</h3>
-            <p className="mt-2 text-2xl">{stats.recent}</p>
-          </div>
+      {/* Stats Section with Refresh Button */}
+      <div className="mb-8">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Message Statistics</h2>
+          <button
+            onClick={handleRefresh}
+            className="flex items-center gap-2 rounded-md bg-richblack-700 px-4 py-2 hover:bg-richblack-600"
+          >
+            <FaSync className={loading ? 'animate-spin' : ''} />
+            Refresh
+          </button>
         </div>
-      )}
+        {stats && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-md bg-richblack-700 p-4">
+              <h3 className="text-lg font-semibold">Total Messages</h3>
+              <p className="mt-2 text-2xl">{stats.total}</p>
+            </div>
+            <div className="rounded-md bg-richblack-700 p-4">
+              <h3 className="text-lg font-semibold">Unread Messages</h3>
+              <p className="mt-2 text-2xl">{stats.unread}</p>
+            </div>
+            <div className="rounded-md bg-richblack-700 p-4">
+              <h3 className="text-lg font-semibold">Read Messages</h3>
+              <p className="mt-2 text-2xl">{stats.read}</p>
+            </div>
+            <div className="rounded-md bg-richblack-700 p-4">
+              <h3 className="text-lg font-semibold">Last 30 Days</h3>
+              <p className="mt-2 text-2xl">{stats.recent}</p>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Messages List */}
       <div className="rounded-md border border-richblack-700">
+        <div className="border-b border-richblack-700 bg-richblack-800 p-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">
+              Messages ({messages.length})
+            </h3>
+            {loading && (
+              <div className="flex items-center gap-2 text-sm text-richblack-300">
+                <FaSync className="animate-spin" />
+                Loading...
+              </div>
+            )}
+          </div>
+        </div>
+        
         {messages.length === 0 ? (
-          <p className="p-6 text-center">No messages found</p>
+          <div className="p-8 text-center">
+            <p className="text-richblack-300">No messages found</p>
+          </div>
         ) : (
           <div className="divide-y divide-richblack-700">
             {messages.map((message) => (
@@ -192,32 +223,42 @@ export default function ContactMessages() {
                 key={message._id}
                 className={`p-6 transition-all duration-200 ${
                   message.status === 'unread'
-                    ? 'bg-richblack-800'
+                    ? 'bg-richblack-800 border-l-4 border-l-yellow-500'
                     : 'bg-richblack-900'
                 }`}
               >
                 <div className="flex items-start justify-between">
-                  <div>
-                    <h4 className="text-lg font-semibold">
-                      {message.firstname} {message.lastname}
-                    </h4>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-lg font-semibold">
+                        {message.firstname} {message.lastname}
+                      </h4>
+                      <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                        message.status === 'unread' 
+                          ? 'bg-yellow-100 text-yellow-800' 
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {message.status}
+                      </span>
+                    </div>
                     <p className="mt-1 text-sm text-richblack-300">
                       {message.email} • {message.phoneNo}
                     </p>
-                    <p className="mt-4">{message.message}</p>
-                    <p className="mt-2 text-sm text-richblack-300">
+                    <p className="mt-4 text-richblack-100">{message.message}</p>
+                    <p className="mt-2 text-sm text-richblack-400">
                       {formatDate(message.createdAt)}
                     </p>
                   </div>
-                  <div className="flex space-x-3">
+                  <div className="flex space-x-3 ml-4">
                     <button
                       onClick={() => handleMarkAsRead(message._id)}
                       className={`rounded-full p-2 text-lg transition-all duration-200 ${
                         message.status === 'unread'
-                          ? 'bg-richblack-700 hover:bg-richblack-600'
-                          : 'text-richblack-300'
+                          ? 'bg-richblack-700 hover:bg-richblack-600 text-yellow-400'
+                          : 'text-richblack-500 cursor-not-allowed'
                       }`}
                       disabled={message.status === 'read'}
+                      title={message.status === 'unread' ? 'Mark as read' : 'Already read'}
                     >
                       {message.status === 'unread' ? (
                         <FaRegEnvelope />
@@ -227,7 +268,8 @@ export default function ContactMessages() {
                     </button>
                     <button
                       onClick={() => handleDelete(message._id)}
-                      className="rounded-full p-2 text-lg text-pink-500 hover:bg-pink-100 hover:text-pink-600"
+                      className="rounded-full p-2 text-lg text-pink-500 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200"
+                      title="Delete message"
                     >
                       <MdDelete />
                     </button>

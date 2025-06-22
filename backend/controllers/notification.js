@@ -169,35 +169,14 @@ exports.getUserNotifications = async (req, res) => {
 
         // Build query for both legacy and new notifications
         const query = {
-            $or: [
-                // Legacy notifications
-                { recipient: userId },
-                // New notification system
-                {
-                    $and: [
-                        { recipientType: { $in: ['All', user.accountType] } },
-                        {
-                            $or: [
-                                { recipients: { $exists: false } },
-                                { recipients: [] },
-                                { recipients: userId }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        };
-
-        // Apply additional filters
-        if (filter === 'unread') {
-            query.$or = query.$or.map(condition => ({
-                ...condition,
+            recipient: userId,
+            ...(filter === 'unread' && {
                 $or: [
                     { read: false },
                     { isRead: false }
                 ]
-            }));
-        }
+            })
+        };
 
         // Get user's notification statuses
         const userStatuses = await UserNotificationStatus.find({
@@ -329,16 +308,21 @@ exports.markAllNotificationsAsRead = async (req, res) => {
             });
         }
 
-        // Get all relevant notifications for the user
+// Get all relevant notifications for the user
         const notifications = await Notification.find({
             $or: [
+                // Legacy notifications (individual recipient)
                 { recipient: userId },
+                // New notification system - individual notifications for this user
+                { 
+                    recipient: userId,
+                    type: { $exists: true }
+                },
+                // Bulk notifications where user matches the criteria
                 {
-                    recipientType: { $in: ['All', user.accountType] },
-                    $or: [
-                        { recipients: { $exists: false } },
-                        { recipients: [] },
-                        { recipients: userId }
+                    $and: [
+                        { recipient: userId },
+                        { bulkId: { $exists: true } }
                     ]
                 }
             ]

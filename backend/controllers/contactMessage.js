@@ -63,7 +63,41 @@ exports.submitContactForm = async (req, res) => {
 // Get all contact messages (Admin only)
 exports.getAllContactMessages = async (req, res) => {
   try {
-    const messages = await ContactMessage.find()
+    const { status, search, startDate, endDate } = req.query;
+
+    // Build filter object
+    let filter = {};
+
+    if (status) {
+      filter.status = status;
+    }
+
+    if (search) {
+      const searchRegex = new RegExp(search, 'i'); // case-insensitive
+      filter.$or = [
+        { firstname: searchRegex },
+        { lastname: searchRegex },
+        { email: searchRegex }
+      ];
+    }
+
+    if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) {
+        // Set to start of day
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        filter.createdAt.$gte = start;
+      }
+      if (endDate) {
+        // Set to end of day
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        filter.createdAt.$lte = end;
+      }
+    }
+
+    const messages = await ContactMessage.find(filter)
       .sort({ createdAt: -1 });
 
     return res.status(200).json({
