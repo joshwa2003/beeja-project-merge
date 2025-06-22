@@ -10,6 +10,8 @@ import {
   setCourseSectionData,
   setEntireCourseData,
   setTotalNoOfLectures,
+  setCompletedQuizzes,
+  setPassedQuizzes,
 } from "../slices/viewCourseSlice"
 
 import { setCourseViewSidebar } from "../slices/sidebarSlice"
@@ -31,6 +33,8 @@ export default function ViewCourse() {
       dispatch(setCourseSectionData(courseData.courseDetails.courseContent))
       dispatch(setEntireCourseData(courseData.courseDetails))
       dispatch(setCompletedLectures(courseData.completedVideos))
+      dispatch(setCompletedQuizzes(courseData.completedQuizzes))
+      dispatch(setPassedQuizzes(courseData.passedQuizzes))
       let lectures = 0
       courseData?.courseDetails?.courseContent?.forEach((sec) => {
         lectures += sec.subSection.length

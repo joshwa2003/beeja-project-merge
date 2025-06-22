@@ -5,7 +5,7 @@ const SubSection = require('../models/subSection');
 // Create a new quiz
 exports.createQuiz = async (req, res) => {
     try {
-        const { subSectionId, questions } = req.body;
+        const { subSectionId, questions, timeLimit } = req.body;
 
         if (!subSectionId || !questions) {
             return res.status(400).json({
@@ -22,6 +22,16 @@ exports.createQuiz = async (req, res) => {
             });
         }
 
+        // Validate timeLimit if provided
+        if (timeLimit !== undefined) {
+            if (typeof timeLimit !== 'number' || timeLimit < 1 * 60 || timeLimit > 180 * 60) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Time limit must be between 1 minute (60 seconds) and 3 hours (10800 seconds)'
+                });
+            }
+        }
+
         // Check if quiz already exists for this subsection
         const existingQuiz = await Quiz.findOne({ subSection: subSectionId });
         if (existingQuiz) {
@@ -31,11 +41,19 @@ exports.createQuiz = async (req, res) => {
             });
         }
 
-        // Create quiz
-        const quiz = await Quiz.create({
+        // Create quiz data
+        const quizData = {
             subSection: subSectionId,
             questions
-        });
+        };
+
+        // Add timeLimit if provided, otherwise use default
+        if (timeLimit !== undefined) {
+            quizData.timeLimit = timeLimit;
+        }
+
+        // Create quiz
+        const quiz = await Quiz.create(quizData);
 
         // Update subsection with quiz reference
         await SubSection.findByIdAndUpdate(subSectionId, { quiz: quiz._id });
@@ -59,7 +77,7 @@ exports.createQuiz = async (req, res) => {
 exports.updateQuiz = async (req, res) => {
     try {
         const { quizId } = req.params;
-        const { questions } = req.body;
+        const { questions, timeLimit } = req.body;
 
         if (!questions) {
             return res.status(400).json({
@@ -76,9 +94,25 @@ exports.updateQuiz = async (req, res) => {
             });
         }
 
+        // Validate timeLimit if provided
+        if (timeLimit !== undefined) {
+            if (typeof timeLimit !== 'number' || timeLimit < 1 * 60 || timeLimit > 180 * 60) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Time limit must be between 1 minute (60 seconds) and 3 hours (10800 seconds)'
+                });
+            }
+        }
+
+        // Create update data
+        const updateData = { questions };
+        if (timeLimit !== undefined) {
+            updateData.timeLimit = timeLimit;
+        }
+
         const quiz = await Quiz.findByIdAndUpdate(
             quizId,
-            { questions },
+            updateData,
             { new: true }
         );
 
@@ -318,13 +352,29 @@ exports.getQuizStatus = async (req, res) => {
 
 exports.submitQuiz = async (req, res) => {
     try {
-        const { quizId, courseId, subsectionId, answers } = req.body;
+        const { quizId, courseID, subsectionId, answers, timerExpired } = req.body;
         const userId = req.user.id;
 
-        if (!quizId || !answers) {
+        console.log('Quiz submission data:', { quizId, courseID, subsectionId, userId, timerExpired });
+
+        if (!quizId) {
             return res.status(400).json({
                 success: false,
-                message: 'quizId and answers are required'
+                message: 'quizId is required'
+            });
+        }
+
+        if (!courseID) {
+            return res.status(400).json({
+                success: false,
+                message: 'courseID is required'
+            });
+        }
+
+        if (!subsectionId) {
+            return res.status(400).json({
+                success: false,
+                message: 'subsectionId is required'
             });
         }
 
@@ -338,12 +388,15 @@ exports.submitQuiz = async (req, res) => {
         }
 
         // Find existing course progress
-        let courseProgress = await CourseProgress.findOne({ userId, courseID: courseId });
+        console.log('Finding course progress for:', { userId, courseID });
+        let courseProgress = await CourseProgress.findOne({ userId, courseID });
+        console.log('Found course progress:', courseProgress ? 'Yes' : 'No');
         
         // Check if quiz is already passed
         const existingResult = courseProgress?.quizResults?.find(
             result => result.quiz.toString() === quiz._id.toString() && result.passed
         );
+        console.log('Existing quiz result:', existingResult ? 'Yes (Passed)' : 'No');
         
         if (existingResult) {
             return res.status(400).json({
@@ -440,8 +493,8 @@ exports.submitQuiz = async (req, res) => {
             }
         }
 
-        // Check if there are unanswered required questions
-        if (unansweredQuestions.length > 0) {
+        // Only validate required questions if timer hasn't expired
+        if (!timerExpired && unansweredQuestions.length > 0) {
             return res.status(400).json({
                 success: false,
                 message: `Please answer all questions before submitting. Unanswered questions: ${unansweredQuestions.join(', ')}`
@@ -452,11 +505,12 @@ exports.submitQuiz = async (req, res) => {
         const percentage = (score / totalMarks) * 100;
         const passed = percentage >= 60;
 
-        // Update course progress
+        // Update course progress with retry mechanism
         if (!courseProgress) {
-            courseProgress = await CourseProgress.create({
+            console.log('Creating new course progress');
+            const newCourseProgress = {
                 userId,
-                courseID: courseId,
+                courseID,
                 completedVideos: [],
                 completedQuizzes: passed ? [subsectionId] : [],
                 passedQuizzes: passed ? [subsectionId] : [],
@@ -470,41 +524,65 @@ exports.submitQuiz = async (req, res) => {
                     attempts: 1,
                     completedAt: new Date()
                 }]
-            });
+            };
+            console.log('New course progress data:', newCourseProgress);
+            courseProgress = await CourseProgress.create(newCourseProgress);
+            console.log('Course progress created successfully');
         } else {
-            // Get existing quiz result to update attempts
+            // Use atomic operation to update quiz results
             const existingQuizResult = courseProgress.quizResults.find(
                 result => result.quiz.toString() === quiz._id.toString()
             );
             const attempts = existingQuizResult ? existingQuizResult.attempts + 1 : 1;
 
-            // Update completedQuizzes and passedQuizzes arrays
+            // Update operations using $set to replace the quiz result
+            const updateOperations = {
+                $set: {
+                    [`quizResults.$[elem]`]: {
+                        quiz: quiz._id,
+                        subSection: subsectionId,
+                        score,
+                        totalMarks,
+                        percentage,
+                        passed,
+                        attempts,
+                        completedAt: new Date()
+                    }
+                }
+            };
+
             if (passed) {
-                if (!courseProgress.completedQuizzes.includes(subsectionId)) {
-                    courseProgress.completedQuizzes.push(subsectionId);
-                }
-                if (!courseProgress.passedQuizzes.includes(subsectionId)) {
-                    courseProgress.passedQuizzes.push(subsectionId);
-                }
+                updateOperations.$addToSet = {
+                    completedQuizzes: subsectionId,
+                    passedQuizzes: subsectionId
+                };
             }
-            
-            // Remove any existing result for this quiz and add new one
-            courseProgress.quizResults = courseProgress.quizResults.filter(
-                result => result.quiz.toString() !== quiz._id.toString()
+
+            // If quiz result doesn't exist, push it
+            if (!existingQuizResult) {
+                updateOperations.$push = {
+                    quizResults: {
+                        quiz: quiz._id,
+                        subSection: subsectionId,
+                        score,
+                        totalMarks,
+                        percentage,
+                        passed,
+                        attempts,
+                        completedAt: new Date()
+                    }
+                };
+                delete updateOperations.$set;
+            }
+
+            courseProgress = await CourseProgress.findOneAndUpdate(
+                { userId, courseID },
+                updateOperations,
+                { 
+                    new: true,
+                    arrayFilters: [{ "elem.quiz": quiz._id }]
+                }
             );
-            
-            courseProgress.quizResults.push({
-                quiz: quiz._id,
-                subSection: subsectionId,
-                score,
-                totalMarks,
-                percentage,
-                passed,
-                attempts,
-                completedAt: new Date()
-            });
-            
-            await courseProgress.save();
         }
 
         return res.status(200).json({
@@ -519,7 +597,35 @@ exports.submitQuiz = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error submitting quiz:', error);
+        console.error('Error submitting quiz:', {
+            error: error.message,
+            stack: error.stack,
+            data: {
+                quizId: req.body.quizId,
+                courseID: req.body.courseID,
+                subsectionId: req.body.subsectionId,
+                userId: req.user.id,
+                timerExpired: req.body.timerExpired
+            }
+        });
+
+        // Check for specific error types
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({
+                success: false,
+                message: 'Validation error while submitting quiz',
+                error: error.message
+            });
+        }
+
+        if (error.name === 'CastError') {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid ID format',
+                error: error.message
+            });
+        }
+
         return res.status(500).json({
             success: false,
             message: 'Error submitting quiz',

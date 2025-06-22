@@ -154,7 +154,24 @@ exports.getStudentProgress = async (req, res) => {
       totalQuizzes,
       completedVideos: progress?.completedVideos || [],
       passedQuizzes: progress?.passedQuizzes || [],
-      quizResults: progress?.quizResults || [],
+      quizResults: progress?.quizResults ? 
+        // Remove duplicates by keeping only the latest result for each quiz
+        progress.quizResults.reduce((acc, current) => {
+          const existingIndex = acc.findIndex(item => 
+            item.quiz._id.toString() === current.quiz._id.toString()
+          );
+          
+          if (existingIndex >= 0) {
+            // Keep the one with the latest completedAt date
+            if (new Date(current.completedAt) > new Date(acc[existingIndex].completedAt)) {
+              acc[existingIndex] = current;
+            }
+          } else {
+            acc.push(current);
+          }
+          
+          return acc;
+        }, []) : [],
       certificateStatus: certificate ? {
         issuedAt: certificate.issuedAt,
         certificateId: certificate._id

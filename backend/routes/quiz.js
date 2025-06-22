@@ -16,12 +16,32 @@ const {
 
 // Routes
 router.get('/all', auth, getAllQuizzes);
-router.post('/create', auth, isAdmin, createQuiz);
+router.post('/create', auth, (req, res, next) => {
+  // Allow both admin and instructor to create quizzes
+  if (req.user.accountType === 'Admin' || req.user.accountType === 'Instructor') {
+    next();
+  } else {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied. Only admins and instructors can create quizzes.'
+    });
+  }
+}, createQuiz);
 router.get('/status/:quizId', auth, getQuizStatus);
 router.get('/results/:quizId', auth, getQuizResults);
 router.get('/validate-access/:sectionId', auth, validateSectionAccess);
 router.get('/:quizId', auth, getQuizById);
-router.put('/update/:quizId', auth, isAdmin, updateQuiz);
+router.put('/update/:quizId', auth, (req, res, next) => {
+  // Allow both admin and instructor to update quizzes
+  if (req.user.accountType === 'Admin' || req.user.accountType === 'Instructor') {
+    next();
+  } else {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied. Only admins and instructors can update quizzes.'
+    });
+  }
+}, updateQuiz);
 router.post('/submit', auth, isStudent, submitQuiz);
 
 module.exports = router;

@@ -4,6 +4,8 @@ const initialState = {
   courseSectionData: [],
   courseEntireData: [],
   completedLectures: [],
+  completedQuizzes: [],
+  passedQuizzes: [],
   totalNoOfLectures: 0,
 }
 
@@ -26,6 +28,18 @@ const viewCourseSlice = createSlice({
     updateCompletedLectures: (state, action) => {
       state.completedLectures = [...state.completedLectures, action.payload]
     },
+    setCompletedQuizzes: (state, action) => {
+      state.completedQuizzes = action.payload
+    },
+    updateCompletedQuizzes: (state, action) => {
+      state.completedQuizzes = [...state.completedQuizzes, action.payload]
+    },
+    setPassedQuizzes: (state, action) => {
+      state.passedQuizzes = action.payload
+    },
+    updatePassedQuizzes: (state, action) => {
+      state.passedQuizzes = [...state.passedQuizzes, action.payload]
+    },
   },
 })
 
@@ -35,6 +49,10 @@ export const {
   setTotalNoOfLectures,
   setCompletedLectures,
   updateCompletedLectures,
+  setCompletedQuizzes,
+  updateCompletedQuizzes,
+  setPassedQuizzes,
+  updatePassedQuizzes,
 } = viewCourseSlice.actions
 
 export default viewCourseSlice.reducer

@@ -8,6 +8,7 @@ import { createQuiz, updateQuiz } from "../../../services/operations/quizAPI"
 export default function QuizCreator({ subSectionId, existingQuiz, onClose, onSuccess }) {
   const { token } = useSelector((state) => state.auth)
   const [loading, setLoading] = useState(false)
+  const [timeLimit, setTimeLimit] = useState(10) // Default 10 minutes
   const [questions, setQuestions] = useState([
     {
       questionText: "",
@@ -23,17 +24,22 @@ export default function QuizCreator({ subSectionId, existingQuiz, onClose, onSuc
 
   // Initialize with existing quiz data if editing
   useEffect(() => {
-    if (existingQuiz && existingQuiz.questions) {
-      setQuestions(existingQuiz.questions.map(q => ({
-        questionText: q.questionText || "",
-        questionType: q.questionType || "multipleChoice",
-        options: q.options || ["", "", "", ""],
-        answers: q.answers || ["", "", "", ""], // For match the following
-        correctAnswers: q.correctAnswers || [],
-        correctAnswer: q.correctAnswer !== undefined ? q.correctAnswer : null,
-        marks: q.marks || 5,
-        required: q.required !== undefined ? q.required : true
-      })))
+    if (existingQuiz) {
+      if (existingQuiz.questions) {
+        setQuestions(existingQuiz.questions.map(q => ({
+          questionText: q.questionText || "",
+          questionType: q.questionType || "multipleChoice",
+          options: q.options || ["", "", "", ""],
+          answers: q.answers || ["", "", "", ""], // For match the following
+          correctAnswers: q.correctAnswers || [],
+          correctAnswer: q.correctAnswer !== undefined ? q.correctAnswer : null,
+          marks: q.marks || 5,
+          required: q.required !== undefined ? q.required : true
+        })))
+      }
+      if (existingQuiz.timeLimit) {
+        setTimeLimit(Math.floor(existingQuiz.timeLimit / 60)); // Convert seconds to minutes
+      }
     }
   }, [existingQuiz])
 
@@ -154,7 +160,8 @@ export default function QuizCreator({ subSectionId, existingQuiz, onClose, onSuc
 
       const quizData = {
         subSectionId,
-        questions: cleanedQuestions
+        questions: cleanedQuestions,
+        timeLimit: timeLimit * 60 // Convert minutes to seconds
       }
       
       console.log("Submitting quiz data:", quizData)
@@ -183,6 +190,38 @@ export default function QuizCreator({ subSectionId, existingQuiz, onClose, onSuc
 
   return (
     <div className="space-y-6">
+      {/* Timer Settings */}
+      <div className="bg-richblack-700 rounded-lg p-4">
+        <h3 className="text-lg font-semibold text-richblack-5 mb-4">Quiz Timer Settings</h3>
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <label className="text-sm text-richblack-300 mb-2 block">Time Limit (minutes)</label>
+            <div className="relative">
+              <input
+                type="number"
+                value={timeLimit}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    if (value >= 1 && value <= 180) {
+                      setTimeLimit(value);
+                    }
+                  }}
+                  min="1"
+                max="180"
+                className="w-full bg-richblack-800 text-richblack-5 rounded-lg p-3 border border-richblack-600 focus:border-yellow-50 focus:outline-none transition-colors"
+              />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-50" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                </svg>
+              </div>
+            </div>
+              <p className="text-xs text-richblack-300 mt-1">Set between 1-180 minutes (default: 10 minutes)</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Questions Header */}
       <div className="flex items-center justify-between">
         <p className="text-lg font-semibold text-richblack-5">
           Quiz Questions ({questions.length}/25)

@@ -33,6 +33,8 @@ export default function VideoDetailsSidebar({ setReviewModal }) {
     courseEntireData,
     totalNoOfLectures,
     completedLectures,
+    completedQuizzes,
+    passedQuizzes,
   } = useSelector((state) => state.viewCourse)
 
 
@@ -142,7 +144,19 @@ export default function VideoDetailsSidebar({ setReviewModal }) {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-[12px] font-medium">
-                    {section.subSection.filter(subSec => completedLectures.includes(subSec._id)).length}/{section?.subSection.length} Completed
+                    {section.subSection.filter(subSec => {
+                      // Count video completion
+                      if (subSec.videoUrl) {
+                        return completedLectures.includes(subSec._id)
+                      }
+                      // Count quiz completion - give full credit for passed quizzes, half for attempted
+                      if (subSec.quiz) {
+                        if (passedQuizzes.includes(subSec._id)) return true
+                        if (completedQuizzes.includes(subSec._id)) return 0.5
+                        return false
+                      }
+                      return false
+                    }).length}/{section?.subSection.length} Completed
                   </span>
                   <span
                     className={`${activeStatus === section?._id
@@ -220,14 +234,27 @@ export default function VideoDetailsSidebar({ setReviewModal }) {
                           </span>
                         </div>
                         
-                        {/* Quiz Button - Show only if lecture is completed and has quiz */}
-                        {completedLectures.includes(topic?._id) && topic.quiz && (
+                        {/* Quiz Button - Show based on quiz status */}
+                        {topic.quiz && (
                           <button
                             onClick={() => navigate(`/view-course/${courseEntireData?._id}/section/${section?._id}/sub-section/${topic?._id}/quiz`)}
-                            className="ml-11 mr-5 mt-1 flex items-center gap-2 rounded-md bg-richblack-700 px-3 py-2 text-sm font-medium text-yellow-50 hover:bg-richblack-600 transition-colors"
+                            className={`ml-11 mr-5 mt-1 flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                              passedQuizzes.includes(topic._id)
+                                ? 'bg-green-700 text-white hover:bg-green-600'
+                                : completedQuizzes.includes(topic._id)
+                                ? 'bg-yellow-700 text-white hover:bg-yellow-600'
+                                : completedLectures.includes(topic._id)
+                                ? 'bg-richblack-700 text-yellow-50 hover:bg-richblack-600'
+                                : 'bg-richblack-700 text-richblack-300 cursor-not-allowed opacity-50'
+                            }`}
+                            disabled={!completedLectures.includes(topic._id)}
                           >
                             <HiOutlineClipboardCheck size={16} />
-                            Take Quiz
+                            {passedQuizzes.includes(topic._id)
+                              ? 'Quiz Passed'
+                              : completedQuizzes.includes(topic._id)
+                              ? 'Retake Quiz'
+                              : 'Take Quiz'}
                           </button>
                         )}
                       </div>

@@ -409,6 +409,8 @@ exports.getFullCourseDetails = async (req, res) => {
                 courseDetails,
                 totalDuration,
                 completedVideos: courseProgressCount?.completedVideos ? courseProgressCount?.completedVideos : [],
+                completedQuizzes: courseProgressCount?.completedQuizzes ? courseProgressCount?.completedQuizzes : [],
+                passedQuizzes: courseProgressCount?.passedQuizzes ? courseProgressCount?.passedQuizzes : [],
                 averageRating: ratingData.averageRating,
                 totalRatings: ratingData.totalRatings
             },

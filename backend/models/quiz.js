@@ -51,6 +51,12 @@ const quizSchema = new mongoose.Schema({
             message: '{PATH} must have between 15 and 25 questions'
         },
         required: true
+    },
+    timeLimit: {
+        type: Number,
+        default: 10 * 60, // Default 10 minutes in seconds
+        min: 1 * 60, // Minimum 1 minute
+        max: 180 * 60 // Maximum 3 hours
     }
 });
 

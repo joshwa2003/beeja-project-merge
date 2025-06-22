@@ -48,7 +48,7 @@ const QuizView = () => {
           ])
           setQuizData(quiz)
           setQuizStatus(status)
-          setTimeRemaining(quiz.timeLimit || 30 * 60)
+          setTimeRemaining(quiz.timeLimit || 10 * 60) // Fallback to 10 minutes if timeLimit is not set
         } catch (error) {
           console.error("Error loading quiz:", error)
         } finally {
@@ -66,7 +66,7 @@ const QuizView = () => {
       const timer = setInterval(() => {
         setTimeRemaining(prev => {
           if (prev <= 1) {
-            handleQuizSubmit()
+            handleTimerExpiry()
             return 0
           }
           return prev - 1
@@ -127,8 +127,8 @@ const QuizView = () => {
       setShuffledAnswers({})
       setRetakeKey(prev => prev + 1)
       
-      // Reset timer
-      setTimeRemaining(quiz.timeLimit || 30 * 60)
+      // Reset timer with fallback
+      setTimeRemaining(quiz.timeLimit || 10 * 60) // Fallback to 10 minutes if timeLimit is not set
       
       // Re-shuffle answers for match the following questions
       if (quiz.questions) {
@@ -231,7 +231,39 @@ const QuizView = () => {
   }
 
 
-  // Submit quiz
+  // Handle timer expiry - auto submit without validation
+  const handleTimerExpiry = async () => {
+    if (!quizData) return
+
+    setLoading(true)
+    try {
+      const quizSubmissionData = {
+        quizId: quizData._id,
+        courseID: courseId,
+        subsectionId: subSectionId,
+        answers: quizAnswers || {}, // Use empty object if no answers
+        timerExpired: true // Add timerExpired flag
+      }
+
+      const result = await submitQuiz(quizSubmissionData, token) // timerExpired is already in the data
+      if (result) {
+        setQuizResult(result)
+        setQuizStarted(false) // Stop the quiz after submission
+        try {
+          const updatedStatus = await getQuizStatus(quizData._id, token)
+          setQuizStatus(updatedStatus)
+        } catch (error) {
+          console.error("Error updating quiz status:", error)
+        }
+      }
+    } catch (error) {
+      console.error("Error submitting quiz:", error)
+      alert("Error submitting quiz due to timer expiry.")
+    }
+    setLoading(false)
+  }
+
+  // Submit quiz manually - with validation
   const handleQuizSubmit = async () => {
     if (!quizData) return
 
@@ -274,12 +306,13 @@ const QuizView = () => {
     try {
       const quizSubmissionData = {
         quizId: quizData._id,
-        courseId: courseId,
+        courseID: courseId,
         subsectionId: subSectionId,
-        answers: quizAnswers
+        answers: quizAnswers,
+        timerExpired: false // Add timerExpired flag for manual submission
       }
 
-      const result = await submitQuiz(quizSubmissionData, token)
+      const result = await submitQuiz(quizSubmissionData, token) // timerExpired is already in the data
       if (result) {
         setQuizResult(result)
         setQuizStarted(false) // Stop the quiz after submission

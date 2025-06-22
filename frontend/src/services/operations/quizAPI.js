@@ -99,7 +99,7 @@ export const updateQuiz = async (quizId, data, token) => {
 // ================ Submit Quiz ================
 export const submitQuiz = async (data, token) => {
   let result = null
-  const toastId = toast.loading("Submitting Quiz...")
+  const toastId = toast.loading(data.timerExpired ? "Time's up! Submitting Quiz..." : "Submitting Quiz...")
   try {
     const response = await apiConnector("POST", SUBMIT_QUIZ_API, data, {
       Authorization: `Bearer ${token}`,
@@ -109,7 +109,12 @@ export const submitQuiz = async (data, token) => {
       throw new Error("Could Not Submit Quiz")
     }
     result = response?.data?.data
-    toast.success("Quiz Submitted Successfully")
+    
+    if (data.timerExpired) {
+      toast.success("Quiz auto-submitted due to time expiry")
+    } else {
+      toast.success("Quiz Submitted Successfully")
+    }
   } catch (error) {
     console.log("SUBMIT_QUIZ_API ERROR............", error)
     toast.error(error.message)
@@ -151,7 +156,8 @@ export const getQuizStatus = async (quizId, token) => {
     result = response?.data?.data
   } catch (error) {
     console.log("GET_QUIZ_STATUS_API ERROR............", error)
-    toast.error(error.message)
+    // Don't show toast for quiz status errors to avoid render warnings
+    // toast.error(error.message)
   }
   return result
 }

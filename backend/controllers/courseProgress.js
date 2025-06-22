@@ -92,6 +92,10 @@ exports.updateQuizProgress = async (req, res) => {
       userId: userId,
     })
 
+    // Calculate percentage for pass/fail
+    const percentage = (score / totalMarks) * 100;
+    const passed = percentage >= 60;
+
     if (!courseProgress) {
       // If course progress doesn't exist, create a new one
       courseProgress = await CourseProgress.create({
@@ -99,16 +103,25 @@ exports.updateQuizProgress = async (req, res) => {
         userId: userId,
         completedVideos: [],
         completedQuizzes: [subsectionId],
+        passedQuizzes: passed ? [subsectionId] : [],
         quizResults: [{
           quiz: quizId,
           score: score,
-          totalMarks: totalMarks
+          totalMarks: totalMarks,
+          percentage: percentage,
+          passed: passed,
+          completedAt: new Date()
         }]
       })
     } else {
-      // Check if quiz is already completed
+      // Add to completedQuizzes if not already there
       if (!courseProgress.completedQuizzes.includes(subsectionId)) {
         courseProgress.completedQuizzes.push(subsectionId)
+      }
+
+      // Add to passedQuizzes if passed and not already there
+      if (passed && !courseProgress.passedQuizzes.includes(subsectionId)) {
+        courseProgress.passedQuizzes.push(subsectionId)
       }
       
       // Update or add quiz result
@@ -121,13 +134,18 @@ exports.updateQuizProgress = async (req, res) => {
           quiz: quizId,
           score: score,
           totalMarks: totalMarks,
+          percentage: percentage,
+          passed: passed,
           completedAt: new Date()
         }
       } else {
         courseProgress.quizResults.push({
           quiz: quizId,
           score: score,
-          totalMarks: totalMarks
+          totalMarks: totalMarks,
+          percentage: percentage,
+          passed: passed,
+          completedAt: new Date()
         })
       }
     }
@@ -265,19 +283,36 @@ exports.getProgressPercentage = async (req, res) => {
     courseProgress.courseID.courseContent?.forEach((section) => {
       section.subSection?.forEach((subsection) => {
         // Count video
-        totalItems += 1
-        if (courseProgress.completedVideos.includes(subsection._id)) {
-          completedItems += 1
+        if (subsection.videoUrl) {
+          totalItems += 1
+          if (courseProgress.completedVideos.includes(subsection._id)) {
+            completedItems += 1
+          }
         }
 
         // Count quiz if exists
         if (subsection.quiz) {
           totalItems += 1
-          if (courseProgress.passedQuizzes.includes(subsection._id)) {
-            completedItems += 1
+          // Consider quiz as completed if it's either completed or passed
+          if (courseProgress.completedQuizzes.includes(subsection._id)) {
+            // If quiz is completed but not passed, give half credit
+            if (!courseProgress.passedQuizzes.includes(subsection._id)) {
+              completedItems += 0.5
+            } else {
+              // If quiz is passed, give full credit
+              completedItems += 1
+            }
           }
         }
       })
+    })
+
+    console.log('Progress calculation:', {
+      totalItems,
+      completedItems,
+      completedVideos: courseProgress.completedVideos.length,
+      completedQuizzes: courseProgress.completedQuizzes.length,
+      passedQuizzes: courseProgress.passedQuizzes.length
     })
 
     let progressPercentage = totalItems > 0 ? (completedItems / totalItems) * 100 : 0

@@ -253,6 +253,9 @@ const QuizManagement = () => {
                             <p className="text-sm text-richblack-300">
                               Total Marks: {subsection.quiz.questions?.reduce((sum, q) => sum + (q.marks || 0), 0) || 0}
                             </p>
+                            <p className="text-sm text-richblack-300">
+                              Time Limit: {Math.floor((subsection.quiz.timeLimit || 1800) / 60)} minutes
+                            </p>
                           </div>
                         )}
                       </div>
