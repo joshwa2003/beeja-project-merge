@@ -6,7 +6,8 @@ const {
     SEND_NOTIFICATION_API,
     GET_ALL_NOTIFICATIONS_API,
     DELETE_NOTIFICATION_API,
-    GET_ALL_INSTRUCTORS_API
+    GET_ALL_INSTRUCTORS_API,
+    GET_ALL_USERS_API
 } = adminEndpoints;
 
 // Send notification to users with enhanced features
@@ -240,7 +241,7 @@ export const getAllUsers = async (token) => {
         
         const response = await apiConnector(
             "GET",
-            "/api/v1/admin/users", // Using the existing admin users endpoint
+            GET_ALL_USERS_API,
             null,
             {
                 Authorization: `Bearer ${token}`,

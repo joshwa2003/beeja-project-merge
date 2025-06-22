@@ -36,6 +36,7 @@ const NotificationManagement = () => {
   const [loading, setLoading] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [userSearchTerm, setUserSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [currentPage, setCurrentPage] = useState(1);
@@ -516,8 +517,8 @@ const NotificationManagement = () => {
                             <input
                               type="text"
                               placeholder="Search users by email..."
-                              value={searchTerm}
-                              onChange={(e) => setSearchTerm(e.target.value)}
+                              value={userSearchTerm}
+                              onChange={(e) => setUserSearchTerm(e.target.value)}
                               className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                             />
                             <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -525,10 +526,14 @@ const NotificationManagement = () => {
                         </div>
                       </div>
                       {users
-                        .filter(user => 
-                          searchTerm === '' || 
-                          user.email.toLowerCase().includes(searchTerm.toLowerCase())
-                        )
+                        .filter(user => {
+                          if (userSearchTerm === '') return true;
+                          const searchLower = userSearchTerm.toLowerCase();
+                          const emailMatch = user.email.toLowerCase().includes(searchLower);
+                          const nameMatch = `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchLower);
+                          console.log('Filtering user:', user.email, 'Search:', searchLower, 'Match:', emailMatch || nameMatch);
+                          return emailMatch || nameMatch;
+                        })
                         .map((user) => (
                         <motion.label
                           key={user._id}
