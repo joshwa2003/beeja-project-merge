@@ -33,7 +33,7 @@ export default function EnrolledCourses() {
 
   useEffect(() => {
     getEnrolledCourses();
-  }, [])
+  }, [token])
 
   // Loading Skeleton
   const sklItem = () => {

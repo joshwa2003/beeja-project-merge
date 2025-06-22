@@ -44,6 +44,7 @@ import Certificates from "./pages/Dashboard/Certificates";
 
 import ViewCourse from "./pages/ViewCourse";
 import BundleCheckout from "./pages/BundleCheckout";
+import CourseCheckout from "./pages/CourseCheckout";
 import VideoDetails from './components/core/ViewCourse/VideoDetails';
 import QuizView from './components/core/ViewCourse/QuizView';
 
@@ -112,6 +113,7 @@ function App() {
         <Route path="courses/:courseId" element={<CourseDetails />} />
         <Route path="verify-certificate/:certificateId" element={<VerifyCertificate />} />
         <Route path="bundle-checkout" element={<BundleCheckout />} />
+        <Route path="course-checkout" element={<CourseCheckout />} />
 
         {/* Open Route - for Only Non Logged in User */}
         <Route

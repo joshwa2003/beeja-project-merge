@@ -36,12 +36,17 @@ export function getUserDetails(token, navigate) {
 
 // ================ get User Enrolled Courses  ================
 export async function getUserEnrolledCourses(token) {
-  // const toastId = toast.loading("Loading...")
+  const toastId = toast.loading("Loading your courses...")
   let result = []
   try {
-    const response = await apiConnector("GET", GET_USER_ENROLLED_COURSES_API, {token}, { Authorization: `Bearer ${token}`, })
-
-    console.log("GET_USER_ENROLLED_COURSES_API API RESPONSE............", response)
+    const response = await apiConnector(
+      "GET", 
+      GET_USER_ENROLLED_COURSES_API, 
+      null,  // Remove token from body
+      { 
+        Authorization: `Bearer ${token}`,
+      }
+    )
 
     if (!response.data.success) {
       throw new Error(response.data.message)
@@ -50,8 +55,10 @@ export async function getUserEnrolledCourses(token) {
   } catch (error) {
     console.log("GET_USER_ENROLLED_COURSES_API API ERROR............", error)
     toast.error("Could Not Get Enrolled Courses")
+    result = [] // Ensure empty array is returned on error
+  } finally {
+    toast.dismiss(toastId)
   }
-  // toast.dismiss(toastId)
   return result
 }
 

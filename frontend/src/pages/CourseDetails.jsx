@@ -139,8 +139,7 @@ function CourseDetails() {
   // Buy Course handler
   const handleBuyCourse = () => {
     if (token) {
-      const coursesId = [courseId]
-      buyCourse(token, coursesId, user, navigate, dispatch)
+      navigate("/course-checkout", { state: { course: response?.data?.courseDetails } })
       return
     }
     setConfirmationModal({

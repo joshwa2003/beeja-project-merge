@@ -87,6 +87,14 @@ export const adminEndpoints = {
   TOGGLE_USER_STATUS_API: BASE_URL + "/api/v1/admin/users/:userId/toggle-status",
   GET_ALL_INSTRUCTORS_API: BASE_URL + "/api/v1/admin/instructors",
 
+  // Coupon Management
+  GET_ALL_COUPONS_API: BASE_URL + "/api/v1/admin/coupons",
+  GET_FRONTEND_COUPONS_API: BASE_URL + "/api/v1/admin/coupons/frontend",
+  CREATE_COUPON_API: BASE_URL + "/api/v1/admin/coupons/create",
+  VALIDATE_COUPON_API: BASE_URL + "/api/v1/admin/coupons/validate",
+  APPLY_COUPON_API: BASE_URL + "/api/v1/admin/coupons/apply",
+  TOGGLE_COUPON_STATUS_API: BASE_URL + "/api/v1/admin/coupons/:couponId/toggle",
+
   // Course Management
   GET_ALL_COURSES_API: BASE_URL + "/api/v1/admin/courses",
   CREATE_COURSE_AS_ADMIN_API: BASE_URL + "/api/v1/admin/courses/create",

@@ -124,7 +124,7 @@ function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse }) {
                   onClick={
                     user && course?.studentsEnrolled.includes(user?._id)
                       ? () => navigate("/dashboard/enrolled-courses")
-                      : handleBuyCourse
+                      : () => navigate("/course-checkout", { state: { course } })
                   }
                 >
                   {user && course?.studentsEnrolled.includes(user?._id)

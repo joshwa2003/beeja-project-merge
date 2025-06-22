@@ -1,8 +1,9 @@
-import React from "react"
+import React, { useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { useSelector } from "react-redux"
 import { motion } from "framer-motion"
 import { buyCourse } from "../services/operations/studentFeaturesAPI"
+import CouponInput from "../components/core/Dashboard/Cart/CouponInput"
 import { useDispatch } from "react-redux"
 import { FiArrowLeft, FiShoppingCart, FiCheck, FiStar, FiClock, FiUsers } from "react-icons/fi"
 import RatingStars from "../components/common/RatingStars"
@@ -16,6 +17,12 @@ function BundleCheckout() {
   const dispatch = useDispatch()
   const { token } = useSelector((state) => state.auth)
   const { user } = useSelector((state) => state.profile)
+  const [couponDiscount, setCouponDiscount] = useState(0)
+
+  const handleCouponApply = (discountDetails) => {
+    const discountAmount = discountDetails.discountAmount;
+    setCouponDiscount(discountAmount);
+  }
 
   const selectedCourses = state?.selectedCourses || []
 
@@ -64,15 +71,18 @@ function BundleCheckout() {
   const paidCourses = selectedCourses.filter(course => course.courseType !== 'Free')
 
   const handleBuyBundle = async () => {
+    const finalPrice = Math.max(0, getFinalPrice() - couponDiscount)
     const courseIds = selectedCourses.map(course => course._id)
+    const paidCourseIds = paidCourses.map(course => course._id)
+    const freeCourseIds = freeCourses.map(course => course._id)
     
     if (isAllFree) {
-      // If all courses are free, send access request
+      // Scenario 1: All courses are free - request access from admin
       try {
         const response = await apiConnector("POST", 
           courseAccessEndpoints.REQUEST_BUNDLE_ACCESS_API,
           { 
-            courseIds
+            courseIds: freeCourseIds
           },
           { Authorization: `Bearer ${token}` }
         )
@@ -84,9 +94,47 @@ function BundleCheckout() {
         console.error("Error requesting bundle access:", error)
         toast.error("Failed to send bundle access request")
       }
-    } else {
-      // If there are paid courses, process payment first
-      buyCourse(token, courseIds, user, navigate, dispatch)
+    } else if (paidCourses.length > 0 && freeCourses.length === 0) {
+      // Scenario 2: All courses are paid - check payment requirement
+      if (finalPrice !== 0) {
+        toast.error("First pay the course amount.")
+        return
+      }
+      // Proceed with payment for all paid courses
+      buyCourse(token, paidCourseIds, user, navigate, dispatch)
+    } else if (paidCourses.length > 0 && freeCourses.length > 0) {
+      // Scenario 3: Mixed bundle (paid + free courses)
+      if (finalPrice !== 0) {
+        toast.error("First pay the course amount.")
+        return
+      }
+      
+      // First, process payment for paid courses
+      try {
+        const paymentResult = await buyCourse(token, paidCourseIds, user, navigate, dispatch)
+        
+        // After successful payment, request access for free courses
+        if (paymentResult !== false) { // Assuming buyCourse returns false on failure
+          try {
+            const response = await apiConnector("POST", 
+              courseAccessEndpoints.REQUEST_BUNDLE_ACCESS_API,
+              { 
+                courseIds: freeCourseIds
+              },
+              { Authorization: `Bearer ${token}` }
+            )
+            if (response.data.success) {
+              toast.success("Payment completed! Free course access request sent to admin.")
+            }
+          } catch (error) {
+            console.error("Error requesting free course access:", error)
+            toast.error("Payment successful, but failed to request free course access")
+          }
+        }
+      } catch (error) {
+        console.error("Error processing payment:", error)
+        toast.error("Failed to process payment")
+      }
     }
   }
 
@@ -197,6 +245,13 @@ function BundleCheckout() {
               <h2 className="text-2xl font-bold text-richblack-5 mb-6">Order Summary</h2>
               
               <div className="space-y-4 mb-6">
+                {/* Coupon Input */}
+                <CouponInput 
+                  totalAmount={getOriginalPrice()} 
+                  onCouponApply={handleCouponApply}
+                  checkoutType="bundle"
+                />
+
                 <div className="flex justify-between text-richblack-300">
                   <span>Total Courses:</span>
                   <span className="font-semibold">{selectedCourses.length}</span>
@@ -225,9 +280,16 @@ function BundleCheckout() {
                 
                 <hr className="border-richblack-600" />
                 
+                {couponDiscount > 0 && (
+                  <div className="flex justify-between text-green-300">
+                    <span>Coupon Discount:</span>
+                    <span className="font-bold">-₹{couponDiscount}</span>
+                  </div>
+                )}
+
                 <div className="flex justify-between text-xl font-bold text-richblack-5">
                   <span>Total Amount:</span>
-                  <span className="text-yellow-50">₹{getFinalPrice()}</span>
+                  <span className="text-yellow-50">₹{Math.max(0, getFinalPrice() - couponDiscount)}</span>
                 </div>
               </div>
 

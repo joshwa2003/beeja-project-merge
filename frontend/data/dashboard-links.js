@@ -63,4 +63,11 @@ export const sidebarLinks = [
     type: ACCOUNT_TYPE.ADMIN,
     icon: "VscGitPullRequestCreate",
   },
+  {
+    id: 10,
+    name: "Coupons",
+    path: "/dashboard/admin/coupons",
+    type: ACCOUNT_TYPE.ADMIN,
+    icon: "VscTag",
+  },
 ];
