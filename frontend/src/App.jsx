@@ -15,6 +15,17 @@ import AdminDashboard from "./pages/Admin/Dashboard";
 import EnhancedAnalytics from "./pages/Admin/components/EnhancedAnalytics";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Terms from "./pages/Terms";
+import Faqs from "./pages/Faqs";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Support from "./pages/Support";
+import Courses from "./pages/Courses";
+import Careers from "./pages/Careers";
+import Resources from "./pages/Resources";
+import Testimonials from "./pages/Testimonials";
+import Partnership from "./pages/Partnership";
+import Business from "./pages/Business";
+import PressHours from "./pages/PressHours";
 import PageNotFound from "./pages/PageNotFound";
 import TestAnalytics from "./pages/TestAnalytics";
 import CourseDetails from './pages/CourseDetails';
@@ -103,8 +114,20 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<About />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/faqs" element={<Faqs />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/support" element={<Support />} />
+        <Route path="/courses" element={<Courses />} />
+        <Route path="/careers" element={<Careers />} />
+        <Route path="/resources" element={<Resources />} />
+        <Route path="/testimonials" element={<Testimonials />} />
+        <Route path="/partnership" element={<Partnership />} />
+        <Route path="/business" element={<Business />} />
+        <Route path="/press-hours" element={<PressHours />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/community-courses" element={<Courses />} />
         <Route path="/services/institute" element={<InstituteService />} />
-        <Route path="/services/student" element={<StudentService />} />
         <Route path="catalog/:catalogName" element={<Catalog />} />
         <Route path="free-courses" element={<FreeCourses />} />
         <Route path="courses/:courseId" element={<CourseDetails />} />

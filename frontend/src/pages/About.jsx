@@ -16,7 +16,7 @@ import Img from "../components/common/Img"
 import ReviewSlider from './../components/common/ReviewSlider';
 import { fadeIn } from "../components/common/motionFrameVarients"
 import TeamCard from "./Card/components/TeamCard"
-import FAQSection from "../components/core/AboutPage/FAQSection"
+import FAQSection from "../components/core/AboutPage/Faqs"
 // import BenefitsForEmployers from "../components/core/AboutPage/BenefitsForEmployers"
 
 const About = () => {

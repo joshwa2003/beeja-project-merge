@@ -77,14 +77,13 @@ export const FooterLink2 = [
     ],
   },
   {
-    title: "Privacy Policy",
+    title: "Legal",
     links: [
+      { title: "Privacy Policy", link: "/privacy-policy" },
       { title: "Terms of Service", link: "/terms" },
       { title: "FAQS", link: "/faqs" },
       { title: "Support", link: "/support" },
       { title: "Contact Us", link: "/contact" },
-      { title: "Business", link: "/privacy-business" },
-      { title: "Careers", link: "/privacy-careers" },
     ],
   },
 ];
