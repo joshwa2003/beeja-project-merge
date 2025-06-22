@@ -34,6 +34,14 @@ const questionSchema = new mongoose.Schema({
 });
 
 const quizSchema = new mongoose.Schema({
+    title: {
+        type: String,
+        default: 'Quiz'
+    },
+    description: {
+        type: String,
+        default: 'Complete this quiz to test your knowledge'
+    },
     subSection: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'SubSection',

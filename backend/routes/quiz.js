@@ -42,6 +42,6 @@ router.put('/update/:quizId', auth, (req, res, next) => {
     });
   }
 }, updateQuiz);
-router.post('/submit', auth, isStudent, submitQuiz);
+router.post('/submit', auth, submitQuiz);
 
 module.exports = router;

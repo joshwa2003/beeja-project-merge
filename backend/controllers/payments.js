@@ -1,34 +1,140 @@
 const User = require("../models/user");
 const Course = require("../models/course");
+const mongoose = require("mongoose");
+const mailSender = require("../utils/mailSender");
+const { courseEnrollmentEmail } = require("../mail/templates/courseEnrollmentEmail");
 
 exports.capturePayment = async (req, res) => {
     try {
-        // Existing capturePayment implementation
-        res.json({
+        const { coursesId, couponCode, discountAmount } = req.body;
+        const userId = req.user.id;
+
+        // Validate coursesId
+        if (!coursesId || !Array.isArray(coursesId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide valid course IDs"
+            });
+        }
+
+        // Check if user already enrolled in any of these courses
+        const user = await User.findById(userId);
+        const alreadyEnrolledCourses = coursesId.filter(courseId => 
+            user.courses.includes(courseId)
+        );
+
+        if (alreadyEnrolledCourses.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: "You are already enrolled in one or more of these courses"
+            });
+        }
+
+        // Get course details
+        const courses = await Course.find({ _id: { $in: coursesId } });
+        
+        if (!courses || courses.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Courses not found"
+            });
+        }
+
+        // Log coupon usage if provided
+        if (couponCode) {
+            console.log(`Coupon ${couponCode} applied for user ${userId}, discount: ${discountAmount}`);
+        }
+
+        // For test development, proceed directly to enrollment
+        return res.status(200).json({
             success: true,
-            message: "Payment captured successfully"
+            message: "Proceed with enrollment",
+            couponApplied: !!couponCode
         });
+
     } catch (error) {
         console.error("Error in capturePayment:", error);
         res.status(500).json({
             success: false,
-            message: "Failed to capture payment"
+            message: "Could not process enrollment"
         });
     }
 };
 
 exports.verifyPayment = async (req, res) => {
     try {
-        // Existing verifyPayment implementation
-        res.json({
+        const { coursesId, couponCode, discountAmount } = req.body;
+        const userId = req.user.id;
+
+        if (!coursesId || !Array.isArray(coursesId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid course IDs provided"
+            });
+        }
+
+        // Find user and validate
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        // Validate courses exist
+        const courses = await Course.find({ _id: { $in: coursesId } });
+        if (courses.length !== coursesId.length) {
+            throw new Error("One or more courses not found");
+        }
+
+        // Add courses to user's enrolled courses using $addToSet to avoid duplicates
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            {
+                $addToSet: { courses: { $each: coursesId } }
+            },
+            { new: true }
+        );
+
+        // Update course student counts
+        await Course.updateMany(
+            { _id: { $in: coursesId } },
+            { $addToSet: { studentsEnrolled: userId } }
+        );
+
+        // If a coupon was used, log the usage
+        if (couponCode) {
+            console.log(`Verifying enrollment with coupon ${couponCode} for user ${userId}`);
+            console.log(`Applied discount amount: ${discountAmount}`);
+        }
+
+        // Send confirmation emails
+        for (const course of courses) {
+            try {
+                const emailSubject = couponCode 
+                    ? `Successfully enrolled in ${course.courseName} with coupon ${couponCode}`
+                    : `Successfully enrolled in ${course.courseName}`;
+
+                await mailSender(
+                    updatedUser.email,
+                    emailSubject,
+                    courseEnrollmentEmail(course.courseName, updatedUser.firstName)
+                );
+            } catch (emailError) {
+                console.error("Error sending enrollment email:", emailError);
+                // Don't fail the enrollment if email fails
+            }
+        }
+
+        return res.status(200).json({
             success: true,
-            message: "Payment verified successfully"
+            message: "Courses enrolled successfully",
+            couponApplied: !!couponCode
         });
+
     } catch (error) {
         console.error("Error in verifyPayment:", error);
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
-            message: "Failed to verify payment"
+            message: error.message || "Could not complete enrollment"
         });
     }
 };

@@ -351,13 +351,27 @@ exports.getQuizStatus = async (req, res) => {
 };
 
 exports.submitQuiz = async (req, res) => {
+    console.log('=== QUIZ SUBMISSION START ===');
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    console.log('User:', req.user);
+    
     try {
         const { quizId, courseID, subsectionId, answers, timerExpired } = req.body;
-        const userId = req.user.id;
+        const userId = req.user?.id;
 
-        console.log('Quiz submission data:', { quizId, courseID, subsectionId, userId, timerExpired });
+        console.log('Extracted data:', { quizId, courseID, subsectionId, userId, timerExpired });
+
+        // Validate user
+        if (!userId) {
+            console.log('ERROR: User not authenticated');
+            return res.status(401).json({
+                success: false,
+                message: 'User not authenticated'
+            });
+        }
 
         if (!quizId) {
+            console.log('ERROR: quizId missing');
             return res.status(400).json({
                 success: false,
                 message: 'quizId is required'
@@ -365,6 +379,7 @@ exports.submitQuiz = async (req, res) => {
         }
 
         if (!courseID) {
+            console.log('ERROR: courseID missing');
             return res.status(400).json({
                 success: false,
                 message: 'courseID is required'
@@ -372,20 +387,35 @@ exports.submitQuiz = async (req, res) => {
         }
 
         if (!subsectionId) {
+            console.log('ERROR: subsectionId missing');
             return res.status(400).json({
                 success: false,
                 message: 'subsectionId is required'
             });
         }
 
+        // Validate answers object
+        if (!answers || typeof answers !== 'object') {
+            console.log('ERROR: answers object invalid');
+            return res.status(400).json({
+                success: false,
+                message: 'answers object is required'
+            });
+        }
+
+        console.log('All validations passed, finding quiz...');
+
         // Find quiz
         const quiz = await Quiz.findById(quizId);
         if (!quiz) {
+            console.log('ERROR: Quiz not found for ID:', quizId);
             return res.status(404).json({
                 success: false,
                 message: 'Quiz not found'
             });
         }
+
+        console.log('Quiz found:', quiz.title || 'Untitled Quiz');
 
         // Find existing course progress
         console.log('Finding course progress for:', { userId, courseID });
@@ -399,6 +429,7 @@ exports.submitQuiz = async (req, res) => {
         console.log('Existing quiz result:', existingResult ? 'Yes (Passed)' : 'No');
         
         if (existingResult) {
+            console.log('Quiz already passed, returning existing result');
             return res.status(400).json({
                 success: false,
                 message: 'Quiz already passed. Retakes not allowed for passed quizzes.',
@@ -410,6 +441,8 @@ exports.submitQuiz = async (req, res) => {
                 }
             });
         }
+
+        console.log('Starting score calculation...');
 
         // Validate required questions and calculate score
         let score = 0;
@@ -493,8 +526,11 @@ exports.submitQuiz = async (req, res) => {
             }
         }
 
+        console.log('Score calculation complete:', { score, totalMarks });
+
         // Only validate required questions if timer hasn't expired
         if (!timerExpired && unansweredQuestions.length > 0) {
+            console.log('Unanswered questions found:', unansweredQuestions);
             return res.status(400).json({
                 success: false,
                 message: `Please answer all questions before submitting. Unanswered questions: ${unansweredQuestions.join(', ')}`
@@ -505,85 +541,81 @@ exports.submitQuiz = async (req, res) => {
         const percentage = (score / totalMarks) * 100;
         const passed = percentage >= 60;
 
-        // Update course progress with retry mechanism
+        console.log('Starting course progress update...');
+
+        // Simplified course progress update
         if (!courseProgress) {
             console.log('Creating new course progress');
-            const newCourseProgress = {
-                userId,
-                courseID,
-                completedVideos: [],
-                completedQuizzes: passed ? [subsectionId] : [],
-                passedQuizzes: passed ? [subsectionId] : [],
-                quizResults: [{
+            try {
+                courseProgress = new CourseProgress({
+                    userId,
+                    courseID,
+                    completedVideos: [],
+                    completedQuizzes: passed ? [subsectionId] : [],
+                    passedQuizzes: passed ? [subsectionId] : [],
+                    quizResults: [{
+                        quiz: quiz._id,
+                        subSection: subsectionId,
+                        score,
+                        totalMarks,
+                        percentage,
+                        passed,
+                        attempts: 1,
+                        completedAt: new Date()
+                    }]
+                });
+                await courseProgress.save();
+                console.log('Course progress created successfully');
+            } catch (saveError) {
+                console.error('Error creating course progress:', saveError);
+                throw saveError;
+            }
+        } else {
+            console.log('Updating existing course progress');
+            try {
+                // Find existing quiz result
+                const existingQuizResultIndex = courseProgress.quizResults.findIndex(
+                    result => result.quiz.toString() === quiz._id.toString()
+                );
+
+                const newQuizResult = {
                     quiz: quiz._id,
                     subSection: subsectionId,
                     score,
                     totalMarks,
                     percentage,
                     passed,
-                    attempts: 1,
+                    attempts: existingQuizResultIndex >= 0 ? courseProgress.quizResults[existingQuizResultIndex].attempts + 1 : 1,
                     completedAt: new Date()
-                }]
-            };
-            console.log('New course progress data:', newCourseProgress);
-            courseProgress = await CourseProgress.create(newCourseProgress);
-            console.log('Course progress created successfully');
-        } else {
-            // Use atomic operation to update quiz results
-            const existingQuizResult = courseProgress.quizResults.find(
-                result => result.quiz.toString() === quiz._id.toString()
-            );
-            const attempts = existingQuizResult ? existingQuizResult.attempts + 1 : 1;
+                };
 
-            // Update operations using $set to replace the quiz result
-            const updateOperations = {
-                $set: {
-                    [`quizResults.$[elem]`]: {
-                        quiz: quiz._id,
-                        subSection: subsectionId,
-                        score,
-                        totalMarks,
-                        percentage,
-                        passed,
-                        attempts,
-                        completedAt: new Date()
+                if (existingQuizResultIndex >= 0) {
+                    // Update existing result
+                    courseProgress.quizResults[existingQuizResultIndex] = newQuizResult;
+                } else {
+                    // Add new result
+                    courseProgress.quizResults.push(newQuizResult);
+                }
+
+                // Update completed and passed quizzes if passed
+                if (passed) {
+                    if (!courseProgress.completedQuizzes.includes(subsectionId)) {
+                        courseProgress.completedQuizzes.push(subsectionId);
+                    }
+                    if (!courseProgress.passedQuizzes.includes(subsectionId)) {
+                        courseProgress.passedQuizzes.push(subsectionId);
                     }
                 }
-            };
 
-            if (passed) {
-                updateOperations.$addToSet = {
-                    completedQuizzes: subsectionId,
-                    passedQuizzes: subsectionId
-                };
+                await courseProgress.save();
+                console.log('Course progress updated successfully');
+            } catch (updateError) {
+                console.error('Error updating course progress:', updateError);
+                throw updateError;
             }
-
-            // If quiz result doesn't exist, push it
-            if (!existingQuizResult) {
-                updateOperations.$push = {
-                    quizResults: {
-                        quiz: quiz._id,
-                        subSection: subsectionId,
-                        score,
-                        totalMarks,
-                        percentage,
-                        passed,
-                        attempts,
-                        completedAt: new Date()
-                    }
-                };
-                delete updateOperations.$set;
-            }
-
-            courseProgress = await CourseProgress.findOneAndUpdate(
-                { userId, courseID },
-                updateOperations,
-                { 
-                    new: true,
-                    arrayFilters: [{ "elem.quiz": quiz._id }]
-                }
-            );
         }
+
+        console.log('Sending success response...');
 
         return res.status(200).json({
             success: true,
@@ -597,28 +629,31 @@ exports.submitQuiz = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error submitting quiz:', {
-            error: error.message,
-            stack: error.stack,
-            data: {
-                quizId: req.body.quizId,
-                courseID: req.body.courseID,
-                subsectionId: req.body.subsectionId,
-                userId: req.user.id,
-                timerExpired: req.body.timerExpired
-            }
+        console.error('=== QUIZ SUBMISSION ERROR ===');
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        console.error('Error name:', error.name);
+        console.error('Request data:', {
+            quizId: req.body?.quizId,
+            courseID: req.body?.courseID,
+            subsectionId: req.body?.subsectionId,
+            userId: req.user?.id,
+            timerExpired: req.body?.timerExpired
         });
 
         // Check for specific error types
         if (error.name === 'ValidationError') {
+            console.error('Validation Error Details:', error.errors);
             return res.status(400).json({
                 success: false,
                 message: 'Validation error while submitting quiz',
-                error: error.message
+                error: error.message,
+                details: error.errors
             });
         }
 
         if (error.name === 'CastError') {
+            console.error('Cast Error Details:', error);
             return res.status(400).json({
                 success: false,
                 message: 'Invalid ID format',
@@ -626,10 +661,20 @@ exports.submitQuiz = async (req, res) => {
             });
         }
 
+        if (error.name === 'MongoError' || error.name === 'MongoServerError') {
+            console.error('MongoDB Error Details:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Database error while submitting quiz',
+                error: error.message
+            });
+        }
+
         return res.status(500).json({
             success: false,
             message: 'Error submitting quiz',
-            error: error.message
+            error: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 };

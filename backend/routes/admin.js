@@ -17,6 +17,7 @@ const {
     setCourseType,
     getAllInstructors
 } = require('../controllers/admin');
+const { createCoupon, validateCoupon, applyCoupon, getAllCoupons, getFrontendCoupons, toggleCouponStatus } = require('../controllers/coupon');
 
 // Import middleware
 const { auth, isAdmin } = require('../middleware/auth');
@@ -42,5 +43,13 @@ router.get('/instructors', auth, isAdmin, getAllInstructors);
 
 // ================ ANALYTICS ROUTES ================
 router.get('/analytics', auth, isAdmin, getAnalytics);
+
+// ================ COUPON ROUTES ================
+router.get('/coupons', auth, isAdmin, getAllCoupons);
+router.get('/coupons/frontend', getFrontendCoupons); // Public endpoint for frontend coupons
+router.post('/coupons/create', auth, isAdmin, createCoupon);
+router.post('/coupons/validate', auth, validateCoupon);
+router.post('/coupons/apply', auth, applyCoupon);
+router.patch('/coupons/:couponId/toggle', auth, isAdmin, toggleCouponStatus);
 
 module.exports = router;

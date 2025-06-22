@@ -86,7 +86,7 @@ app.use((err, req, res, next) => {
 connectDB();
 cloudinaryConnect();
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
     console.log(`Server Started on PORT ${PORT}`);
 });
