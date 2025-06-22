@@ -128,6 +128,7 @@ function App() {
         <Route path="/home" element={<Home />} />
         <Route path="/community-courses" element={<Courses />} />
         <Route path="/services/institute" element={<InstituteService />} />
+        <Route path="/services/student" element={<StudentService />} />
         <Route path="catalog/:catalogName" element={<Catalog />} />
         <Route path="free-courses" element={<FreeCourses />} />
         <Route path="courses/:courseId" element={<CourseDetails />} />

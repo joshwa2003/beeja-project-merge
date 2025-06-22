@@ -88,19 +88,39 @@ const Home = () => {
       allCourses = CatalogPageData.allCourses;
     }
 
-    // Popular Picks: Courses with more reviews (limited to 4)
-    const popularPicks = [...allCourses]
-      .sort((a, b) => {
-        const aReviews = a.ratingAndReviews?.length || a.totalRatings || 0;
-        const bReviews = b.ratingAndReviews?.length || b.totalRatings || 0;
-        return bReviews - aReviews;
-      })
-      .slice(0, 4);
-    
-    // Top Enrollments: Most enrolled courses (limited to 4)
-    const topEnrollments = [...allCourses]
-      .sort((a, b) => (b.studentsEnrolled?.length || 0) - (a.studentsEnrolled?.length || 0))
-      .slice(0, 4);
+    // Get featured courses from localStorage
+    const featuredCourses = JSON.parse(localStorage.getItem('featuredCourses')) || {
+      popularPicks: [],
+      topEnrollments: []
+    };
+
+    // Get courses based on featured IDs
+    const popularPicks = featuredCourses.popularPicks
+      .map(id => allCourses.find(course => course._id === id))
+      .filter(Boolean);
+
+    const topEnrollments = featuredCourses.topEnrollments
+      .map(id => allCourses.find(course => course._id === id))
+      .filter(Boolean);
+
+    // Fallback to default sorting if no featured courses are set
+    if (popularPicks.length === 0) {
+      console.log("No featured popular picks found, using default sorting");
+      popularPicks.push(...[...allCourses]
+        .sort((a, b) => {
+          const aReviews = a.ratingAndReviews?.length || a.totalRatings || 0;
+          const bReviews = b.ratingAndReviews?.length || b.totalRatings || 0;
+          return bReviews - aReviews;
+        })
+        .slice(0, 4));
+    }
+
+    if (topEnrollments.length === 0) {
+      console.log("No featured top enrollments found, using default sorting");
+      topEnrollments.push(...[...allCourses]
+        .sort((a, b) => (b.studentsEnrolled?.length || 0) - (a.studentsEnrolled?.length || 0))
+        .slice(0, 4));
+    }
     
     const additionalCourses = [...allCourses]
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
