@@ -1,8 +1,9 @@
 const Notification = require('../models/notification');
+const UserNotificationStatus = require('../models/userNotificationStatus');
 const User = require('../models/user');
 const Course = require('../models/course');
 
-// Create a new notification (internal use)
+// Create a new notification (internal use) - Legacy function for backward compatibility
 exports.createNotification = async (recipientId, type, title, message, relatedCourse = null) => {
     try {
         const notification = await Notification.create({
@@ -19,7 +20,7 @@ exports.createNotification = async (recipientId, type, title, message, relatedCo
     }
 };
 
-// Enhanced create notification with all fields
+// Enhanced create notification with all fields - Legacy function for backward compatibility
 exports.createAdvancedNotification = async (notificationData) => {
     try {
         const notification = new Notification(notificationData);
@@ -31,31 +32,221 @@ exports.createAdvancedNotification = async (notificationData) => {
     }
 };
 
-// Get user's notifications
+// New enhanced notification creation function
+exports.createEnhancedNotification = async (notificationData) => {
+    try {
+        const {
+            title,
+            message,
+            recipientType,
+            recipients,
+            type,
+            sender,
+            priority = 'medium',
+            actionUrl,
+            relatedCourse,
+            relatedUser,
+            metadata = {}
+        } = notificationData;
+
+        // Validate required fields
+        if (!title || !message || !recipientType || !type) {
+            throw new Error('Title, message, recipientType, and type are required');
+        }
+
+        // Validate recipientType
+        if (!['All', 'Student', 'Instructor', 'Admin', 'Specific'].includes(recipientType)) {
+            throw new Error('Invalid recipientType');
+        }
+
+        // If recipientType is 'Specific', recipients array is required
+        if (recipientType === 'Specific' && (!recipients || recipients.length === 0)) {
+            throw new Error('Recipients array is required for Specific recipientType');
+        }
+
+        // Create the notification
+        const notification = await Notification.create({
+            title,
+            message,
+            recipientType,
+            recipients: recipientType === 'Specific' ? recipients : [],
+            type,
+            sender,
+            priority,
+            actionUrl,
+            relatedCourse,
+            relatedUser,
+            metadata,
+            isRead: false
+        });
+
+        console.log(`Created notification: ${notification._id} for ${recipientType}`);
+        return notification;
+    } catch (error) {
+        console.error('Error creating enhanced notification:', error);
+        throw error;
+    }
+};
+
+// Helper function to get target users based on recipientType
+const getTargetUsers = async (recipientType, recipients = []) => {
+    let targetUsers = [];
+
+    switch (recipientType) {
+        case 'All':
+            targetUsers = await User.find({ active: true }).select('_id accountType');
+            break;
+        case 'Student':
+            targetUsers = await User.find({ 
+                accountType: 'Student', 
+                active: true 
+            }).select('_id accountType');
+            break;
+        case 'Instructor':
+            targetUsers = await User.find({ 
+                accountType: 'Instructor', 
+                active: true 
+            }).select('_id accountType');
+            break;
+        case 'Admin':
+            targetUsers = await User.find({ 
+                accountType: 'Admin', 
+                active: true 
+            }).select('_id accountType');
+            break;
+        case 'Specific':
+            targetUsers = await User.find({ 
+                _id: { $in: recipients },
+                active: true 
+            }).select('_id accountType');
+            break;
+        default:
+            throw new Error('Invalid recipientType');
+    }
+
+    return targetUsers;
+};
+
+// Check if user should receive notification
+const shouldUserReceiveNotification = (notification, user) => {
+    // Legacy notifications (with recipient field)
+    if (notification.recipient) {
+        return notification.recipient.toString() === user._id.toString();
+    }
+
+    // New notification system
+    switch (notification.recipientType) {
+        case 'All':
+            return true;
+        case 'Student':
+            return user.accountType === 'Student';
+        case 'Instructor':
+            return user.accountType === 'Instructor';
+        case 'Admin':
+            return user.accountType === 'Admin';
+        case 'Specific':
+            return notification.recipients.some(
+                recipientId => recipientId.toString() === user._id.toString()
+            );
+        default:
+            return false;
+    }
+};
+
+// Get user's notifications with enhanced role-based filtering
 exports.getUserNotifications = async (req, res) => {
     try {
-        const { page = 1, limit = 10 } = req.query;
+        const { page = 1, limit = 10, filter = 'all' } = req.query;
         const userId = req.user.id;
+        const user = await User.findById(userId).select('accountType');
 
-        const notifications = await Notification.find({ recipient: userId })
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        // Build query for both legacy and new notifications
+        const query = {
+            $or: [
+                // Legacy notifications
+                { recipient: userId },
+                // New notification system
+                {
+                    $and: [
+                        { recipientType: { $in: ['All', user.accountType] } },
+                        {
+                            $or: [
+                                { recipients: { $exists: false } },
+                                { recipients: [] },
+                                { recipients: userId }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // Apply additional filters
+        if (filter === 'unread') {
+            query.$or = query.$or.map(condition => ({
+                ...condition,
+                $or: [
+                    { read: false },
+                    { isRead: false }
+                ]
+            }));
+        }
+
+        // Get user's notification statuses
+        const userStatuses = await UserNotificationStatus.find({
+            user: userId
+        }).select('notification read deleted');
+
+        // Create a map of notification statuses for efficient lookup
+        const statusMap = new Map(
+            userStatuses.map(status => [
+                status.notification.toString(),
+                { read: status.read, deleted: status.deleted }
+            ])
+        );
+
+        // Fetch notifications
+        const notifications = await Notification.find(query)
             .populate('relatedCourse', 'courseName thumbnail')
             .populate('relatedUser', 'firstName lastName email')
             .populate('relatedSection', 'sectionName')
             .populate('relatedSubSection', 'title')
+            .populate('sender', 'firstName lastName')
             .sort({ createdAt: -1 })
             .limit(limit * 1)
             .skip((page - 1) * limit);
 
-        const totalNotifications = await Notification.countDocuments({ recipient: userId });
-        const unreadCount = await Notification.countDocuments({ 
-            recipient: userId, 
-            read: false 
-        });
+        // Filter out deleted notifications and enhance with user-specific status
+        const enhancedNotifications = notifications
+            .filter(notification => {
+                const status = statusMap.get(notification._id.toString());
+                return !status?.deleted;
+            })
+            .map(notification => {
+                const status = statusMap.get(notification._id.toString());
+                const isRead = status?.read || notification.read || false;
+                return {
+                    ...notification.toObject(),
+                    isRead: isRead,
+                    read: isRead  // Add backward compatibility
+                };
+            });
+
+        // Count total and unread notifications
+        const totalNotifications = await Notification.countDocuments(query);
+        const unreadCount = enhancedNotifications.filter(n => !n.isRead).length;
 
         return res.status(200).json({
             success: true,
             data: {
-                notifications,
+                notifications: enhancedNotifications,
                 totalNotifications,
                 unreadCount,
                 currentPage: page,
@@ -72,18 +263,14 @@ exports.getUserNotifications = async (req, res) => {
     }
 };
 
-// Mark notification as read
+// Mark notification as read with enhanced user status tracking
 exports.markNotificationAsRead = async (req, res) => {
     try {
         const { notificationId } = req.body;
         const userId = req.user.id;
 
-        const notification = await Notification.findOneAndUpdate(
-            { _id: notificationId, recipient: userId },
-            { read: true },
-            { new: true }
-        );
-
+        // Find the notification
+        const notification = await Notification.findById(notificationId);
         if (!notification) {
             return res.status(404).json({
                 success: false,
@@ -91,9 +278,33 @@ exports.markNotificationAsRead = async (req, res) => {
             });
         }
 
+        // Check if user should have access to this notification
+        if (!shouldUserReceiveNotification(notification, req.user)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied to this notification'
+            });
+        }
+
+        // Handle legacy notifications
+        if (notification.recipient) {
+            await Notification.findOneAndUpdate(
+                { _id: notificationId, recipient: userId },
+                { read: true },
+                { new: true }
+            );
+        }
+
+        // Update or create user notification status
+        await UserNotificationStatus.findOneAndUpdate(
+            { user: userId, notification: notificationId },
+            { read: true },
+            { upsert: true, new: true }
+        );
+
         return res.status(200).json({
             success: true,
-            notification
+            message: 'Notification marked as read'
         });
     } catch (error) {
         console.error('Error marking notification as read:', error);
@@ -105,12 +316,51 @@ exports.markNotificationAsRead = async (req, res) => {
     }
 };
 
-// Mark all notifications as read
+// Mark all notifications as read with enhanced user status tracking
 exports.markAllNotificationsAsRead = async (req, res) => {
     try {
         const userId = req.user.id;
+        const user = await User.findById(userId).select('accountType');
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        // Get all relevant notifications for the user
+        const notifications = await Notification.find({
+            $or: [
+                { recipient: userId },
+                {
+                    recipientType: { $in: ['All', user.accountType] },
+                    $or: [
+                        { recipients: { $exists: false } },
+                        { recipients: [] },
+                        { recipients: userId }
+                    ]
+                }
+            ]
+        });
+
+        // Create status entries for all notifications
+        const statusUpdates = notifications.map(notification => ({
+            updateOne: {
+                filter: { user: userId, notification: notification._id },
+                update: { $set: { read: true } },
+                upsert: true
+            }
+        }));
+
+        // Update user notification statuses in bulk
+        if (statusUpdates.length > 0) {
+            await UserNotificationStatus.bulkWrite(statusUpdates);
+        }
+
+        // Update legacy notifications
         await Notification.updateMany(
-            { recipient: userId, read: false },
+            { recipient: userId },
             { read: true }
         );
 
@@ -128,22 +378,42 @@ exports.markAllNotificationsAsRead = async (req, res) => {
     }
 };
 
-// Delete a notification
+// Delete (hide) a notification for a user
 exports.deleteNotification = async (req, res) => {
     try {
         const { notificationId } = req.body;
         const userId = req.user.id;
 
-        const notification = await Notification.findOneAndDelete({
-            _id: notificationId,
-            recipient: userId
-        });
-
+        // Find the notification
+        const notification = await Notification.findById(notificationId);
         if (!notification) {
             return res.status(404).json({
                 success: false,
                 message: 'Notification not found'
             });
+        }
+
+        // Check if user should have access to this notification
+        if (!shouldUserReceiveNotification(notification, req.user)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied to this notification'
+            });
+        }
+
+        // For legacy notifications, perform hard delete
+        if (notification.recipient?.toString() === userId) {
+            await Notification.findOneAndDelete({
+                _id: notificationId,
+                recipient: userId
+            });
+        } else {
+            // For new notifications, mark as deleted in user status
+            await UserNotificationStatus.findOneAndUpdate(
+                { user: userId, notification: notificationId },
+                { deleted: true },
+                { upsert: true }
+            );
         }
 
         return res.status(200).json({

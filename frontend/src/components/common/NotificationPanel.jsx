@@ -25,12 +25,11 @@ export default function NotificationPanel() {
       const response = await getNotifications(token);
       if (response.success) {
         const notificationsList = response.data?.notifications || [];
-        // Only show unread notifications
-        const unreadNotifications = notificationsList.filter((n) => !n.read);
-        setNotifications(unreadNotifications);
-        setUnreadCount(
-          response.data?.unreadCount || unreadNotifications.length
-        );
+        // Show all notifications but mark read status properly
+        setNotifications(notificationsList);
+        // Count unread notifications properly - check both read and isRead for compatibility
+        const unreadCount = notificationsList.filter((n) => !n.read && !n.isRead).length;
+        setUnreadCount(response.data?.unreadCount || unreadCount);
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -43,11 +42,17 @@ export default function NotificationPanel() {
     try {
       const response = await markNotificationAsRead(notificationId, token);
       if (response.success) {
-        // Remove the notification from the list after marking as read
-        setNotifications(
-          notifications.filter((notification) => notification._id !== notificationId)
+        // Update the notification in the list to mark it as read
+        setNotifications(prevNotifications =>
+          prevNotifications.map(notification =>
+            notification._id === notificationId
+              ? { ...notification, isRead: true, read: true }
+              : notification
+          )
         );
         setUnreadCount((prev) => Math.max(0, prev - 1));
+        // Refresh notifications from backend to ensure sync
+        setTimeout(() => fetchNotifications(), 500);
       }
     } catch (error) {
       console.error('Error marking notification as read:', error);
@@ -58,14 +63,25 @@ export default function NotificationPanel() {
     try {
       const response = await markAllNotificationsAsRead(token);
       if (response.success) {
-        // Clear all notifications from the list
-        setNotifications([]);
+        // Mark all notifications as read in the state
+        setNotifications(prevNotifications =>
+          prevNotifications.map(notification => ({
+            ...notification,
+            isRead: true,
+            read: true
+          }))
+        );
         setUnreadCount(0);
+        // Refresh notifications from backend to ensure sync
+        setTimeout(() => fetchNotifications(), 500);
       }
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
     }
   };
+
+  // Filter notifications to show only unread ones in the panel
+  const unreadNotifications = notifications.filter((n) => !n.read && !n.isRead);
 
   return (
     <div className="relative">
@@ -140,9 +156,9 @@ export default function NotificationPanel() {
 
             {/* Notification List */}
             <div className="overflow-y-auto max-h-[calc(85vh-80px)] scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
-              {notifications.length > 0 ? (
+              {unreadNotifications.length > 0 ? (
                 <ul className="divide-y divide-gray-700/50">
-                  {notifications.map((notification) => (
+                  {unreadNotifications.map((notification) => (
                     <motion.li
                       key={notification._id}
                       initial={{ opacity: 0, x: 10 }}
@@ -219,14 +235,14 @@ export default function NotificationPanel() {
                   <div className="mx-auto w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mb-4">
                     <FiBell className="w-7 h-7 text-gray-500" />
                   </div>
-                  <h4 className="text-gray-300 font-bold text-lg mb-1">No notifications yet</h4>
-                  <p className="text-gray-400 text-sm">When you get notifications, they'll appear here</p>
+                  <h4 className="text-gray-300 font-bold text-lg mb-1">No unread notifications</h4>
+                  <p className="text-gray-400 text-sm">All caught up! New notifications will appear here</p>
                 </motion.div>
               )}
             </div>
 
             {/* Panel Footer */}
-            {notifications.length > 0 && (
+            {unreadNotifications.length > 0 && (
               <div className="sticky bottom-0 bg-gradient-to-t from-[#1a1a2e] via-[#1a1a2e]/95 to-transparent p-4 border-t border-gray-700/50 text-center">
                 <button 
                   className="px-5 py-2 text-sm font-bold text-indigo-400 hover:text-indigo-300 transition-colors duration-200 rounded-lg hover:bg-indigo-500/10"

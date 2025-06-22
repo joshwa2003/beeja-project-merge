@@ -98,7 +98,7 @@ export const adminEndpoints = {
   // Notification Management
   SEND_NOTIFICATION_API: BASE_URL + "/api/v1/admin/notifications/send",
   GET_ALL_NOTIFICATIONS_API: BASE_URL + "/api/v1/admin/notifications",
-  DELETE_NOTIFICATION_API: BASE_URL + "/api/v1/admin/notifications",
+  DELETE_NOTIFICATION_API: BASE_URL + "/api/v1/admin/notifications/:notificationId",
 }
 
 // COURSE ACCESS ENDPOINTS

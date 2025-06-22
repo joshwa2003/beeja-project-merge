@@ -1,11 +1,27 @@
 const mongoose = require('mongoose');
 
 const notificationSchema = new mongoose.Schema({
+    // Legacy field for backward compatibility
     recipient: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: false // Made optional for new notification system
     },
+    
+    // New fields for enhanced notification system
+    recipientType: {
+        type: String,
+        enum: ['All', 'Student', 'Instructor', 'Admin', 'Specific'],
+        required: function() {
+            // Required for new notifications (when recipient is not set)
+            return !this.recipient;
+        }
+    },
+    recipients: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }], // Array of specific user IDs for targeted delivery
+    
     type: {
         type: String,
         enum: [
@@ -50,10 +66,19 @@ const notificationSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    
+    // Legacy field for backward compatibility
     read: {
         type: Boolean,
         default: false
     },
+    
+    // New field for default read status
+    isRead: {
+        type: Boolean,
+        default: false
+    },
+    
     relatedCourse: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Course'
@@ -80,14 +105,19 @@ const notificationSchema = new mongoose.Schema({
     },
     priority: {
         type: String,
-        enum: ['low', 'medium', 'high'],
+        enum: ['low', 'medium', 'high', 'urgent'],
         default: 'medium'
     },
     actionUrl: {
         type: String // URL to redirect when notification is clicked
     },
     metadata: {
-        type: mongoose.Schema.Types.Mixed // Additional data specific to notification type
+        type: mongoose.Schema.Types.Mixed, // Additional data specific to notification type
+        default: {}
+    },
+    bulkId: {
+        type: mongoose.Schema.Types.ObjectId,
+        index: true
     },
     createdAt: {
         type: Date,
@@ -95,9 +125,25 @@ const notificationSchema = new mongoose.Schema({
     }
 });
 
-// Index for efficient queries
+// Indexes for efficient queries
+// Legacy indexes
 notificationSchema.index({ recipient: 1, read: 1, createdAt: -1 });
 notificationSchema.index({ type: 1, createdAt: -1 });
 notificationSchema.index({ relatedCourse: 1 });
+
+// New indexes for enhanced notification system
+notificationSchema.index({ recipientType: 1, createdAt: -1 });
+notificationSchema.index({ recipients: 1, createdAt: -1 });
+notificationSchema.index({ recipientType: 1, isRead: 1, createdAt: -1 });
+notificationSchema.index({ sender: 1, createdAt: -1 });
+notificationSchema.index({ priority: 1, createdAt: -1 });
+
+// Compound index for efficient user notification queries
+notificationSchema.index({ 
+    recipientType: 1, 
+    recipients: 1, 
+    isRead: 1, 
+    createdAt: -1 
+});
 
 module.exports = mongoose.model('Notification', notificationSchema);

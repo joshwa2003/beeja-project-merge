@@ -19,8 +19,14 @@ import {
 import { BsCheckAll, BsPeople, BsPersonCheck } from 'react-icons/bs';
 import { IoClose, IoSparkles } from 'react-icons/io5';
 import { HiOutlineAcademicCap } from 'react-icons/hi';
-import { sendNotification, getAllNotifications, deleteNotificationAdmin } from '../../../services/operations/adminNotificationAPI';
-import { getAllUsers } from '../../../services/operations/adminAPI';
+import { 
+  sendNotification, 
+  getAllNotifications, 
+  deleteNotificationAdmin, 
+  getAllUsers,
+  formatRecipientType,
+  getPriorityColor 
+} from '../../../services/operations/adminNotificationAPI';
 import toast from 'react-hot-toast';
 
 const NotificationManagement = () => {
@@ -37,10 +43,10 @@ const NotificationManagement = () => {
   const [formData, setFormData] = useState({
     title: '',
     message: '',
-    recipients: 'all', // 'all', 'specific', 'students', 'instructors'
+    recipients: 'all', // 'all', 'specific', 'students', 'instructors', 'admins'
     selectedUsers: [],
     relatedCourse: '',
-    priority: 'normal' // 'low', 'normal', 'high', 'urgent'
+    priority: 'medium' // 'low', 'medium', 'high'
   });
 
   useEffect(() => {
@@ -67,7 +73,7 @@ const NotificationManagement = () => {
     try {
       const response = await getAllUsers(token);
       if (response.success) {
-        setUsers(response.data || []);
+        setUsers(response.users || []);
       }
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -111,24 +117,23 @@ const NotificationManagement = () => {
         message: formData.message.trim(),
         recipients: formData.recipients,
         selectedUsers: formData.recipients === 'specific' ? formData.selectedUsers : undefined,
-        relatedCourse: formData.relatedCourse || undefined
+        relatedCourse: formData.relatedCourse || undefined,
+        priority: formData.priority
       };
 
       const response = await sendNotification(notificationData, token);
       
       if (response.success) {
-        toast.success('Notification sent successfully!');
         setFormData({
           title: '',
           message: '',
           recipients: 'all',
           selectedUsers: [],
-          relatedCourse: ''
+          relatedCourse: '',
+          priority: 'medium'
         });
         setShowCreateForm(false);
         fetchNotifications();
-      } else {
-        toast.error(response.error || 'Failed to send notification');
       }
     } catch (error) {
       console.error('Error sending notification:', error);
@@ -138,15 +143,23 @@ const NotificationManagement = () => {
     }
   };
 
-  const handleDeleteNotification = async (notificationId) => {
-    if (!window.confirm('Are you sure you want to delete this notification?')) {
+  const handleDeleteNotification = async (notification) => {
+    const displayText = notification.recipientCount > 1 
+      ? `this notification group (${notification.recipientCount} recipients)` 
+      : 'this notification';
+    
+    if (!window.confirm(`Are you sure you want to delete ${displayText}?`)) {
       return;
     }
 
     try {
-      const response = await deleteNotificationAdmin(notificationId, token);
+      // Always use the MongoDB _id for deletion
+      const deleteId = notification._id;
+      console.log('Deleting notification with ID:', deleteId);
+      const response = await deleteNotificationAdmin(deleteId, token);
       if (response.success) {
-        toast.success('Notification deleted successfully');
+        const deletedCount = response.deletedCount || 1;
+        toast.success(`${deletedCount} notification${deletedCount > 1 ? 's' : ''} deleted successfully`);
         fetchNotifications();
       } else if (response.notFound) {
         toast.success('Notification was already deleted');
@@ -161,31 +174,36 @@ const NotificationManagement = () => {
   };
 
   const getRecipientText = (notification) => {
-    if (notification.recipients === 'all') return 'All Users';
-    if (notification.recipients === 'students') return 'All Students';
-    if (notification.recipients === 'instructors') return 'All Instructors';
-    if (notification.recipients === 'specific') {
+    if (notification.recipients === 'all' || notification.recipientType === 'All') return 'All Users';
+    if (notification.recipients === 'students' || notification.recipientType === 'Student') return 'All Students';
+    if (notification.recipients === 'instructors' || notification.recipientType === 'Instructor') return 'All Instructors';
+    if (notification.recipients === 'admins' || notification.recipientType === 'Admin') return 'All Administrators';
+    if (notification.recipients === 'specific' || notification.recipientType === 'Specific') {
       return `${notification.recipientCount || 0} Selected Users`;
     }
-    return 'Unknown';
+    return formatRecipientType(notification.recipients || notification.recipientType);
   };
 
   const getRecipientIcon = (recipients) => {
-    switch (recipients) {
+    const type = recipients || 'unknown';
+    switch (type.toLowerCase()) {
       case 'all': return <BsPeople className="w-4 h-4" />;
+      case 'student':
       case 'students': return <HiOutlineAcademicCap className="w-4 h-4" />;
+      case 'instructor':
       case 'instructors': return <BsPersonCheck className="w-4 h-4" />;
+      case 'admin':
+      case 'admins': return <FiUser className="w-4 h-4" />;
       case 'specific': return <FiUsers className="w-4 h-4" />;
       default: return <FiUsers className="w-4 h-4" />;
     }
   };
 
-  const getPriorityColor = (priority) => {
+  const getLocalPriorityColor = (priority) => {
     switch (priority) {
-      case 'urgent': return 'bg-red-500/20 text-red-400 border-red-500/30';
-      case 'high': return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
-      case 'normal': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-      case 'low': return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+      case 'high': return 'bg-red-500/20 text-red-400 border-red-500/30';
+      case 'medium': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+      case 'low': return 'bg-green-500/20 text-green-400 border-green-500/30';
       default: return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
     }
   };
@@ -194,7 +212,8 @@ const NotificationManagement = () => {
     .filter(notification => {
       const matchesSearch = notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            notification.message.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesFilter = filterType === 'all' || notification.recipients === filterType;
+      const recipientType = notification.recipients || notification.recipientType || '';
+      const matchesFilter = filterType === 'all' || recipientType.toLowerCase() === filterType.toLowerCase();
       return matchesSearch && matchesFilter;
     })
     .sort((a, b) => {
@@ -209,10 +228,11 @@ const NotificationManagement = () => {
   const getNotificationStats = () => {
     const total = notifications.length;
     const byType = {
-      all: notifications.filter(n => n.recipients === 'all').length,
-      students: notifications.filter(n => n.recipients === 'students').length,
-      instructors: notifications.filter(n => n.recipients === 'instructors').length,
-      specific: notifications.filter(n => n.recipients === 'specific').length,
+      all: notifications.filter(n => (n.recipients === 'all' || n.recipientType === 'All')).length,
+      students: notifications.filter(n => (n.recipients === 'students' || n.recipientType === 'Student')).length,
+      instructors: notifications.filter(n => (n.recipients === 'instructors' || n.recipientType === 'Instructor')).length,
+      admins: notifications.filter(n => (n.recipients === 'admins' || n.recipientType === 'Admin')).length,
+      specific: notifications.filter(n => (n.recipients === 'specific' || n.recipientType === 'Specific')).length,
     };
     return { total, byType };
   };
@@ -347,8 +367,9 @@ const NotificationManagement = () => {
               className="px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
               <option value="all">All Recipients</option>
-              <option value="students">Students Only</option>
-              <option value="instructors">Instructors Only</option>
+              <option value="student">Students Only</option>
+              <option value="instructor">Instructors Only</option>
+              <option value="admin">Administrators Only</option>
               <option value="specific">Specific Users</option>
             </select>
             <select
@@ -421,6 +442,7 @@ const NotificationManagement = () => {
                       <option value="all">🌐 All Users</option>
                       <option value="students">🎓 All Students</option>
                       <option value="instructors">👨‍🏫 All Instructors</option>
+                      <option value="admins">👑 All Administrators</option>
                       <option value="specific">👥 Specific Users</option>
                     </select>
                   </div>
@@ -437,9 +459,8 @@ const NotificationManagement = () => {
                       className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
                     >
                       <option value="low">🟢 Low Priority</option>
-                      <option value="normal">🔵 Normal Priority</option>
-                      <option value="high">🟠 High Priority</option>
-                      <option value="urgent">🔴 Urgent</option>
+                      <option value="medium">🟡 Medium Priority</option>
+                      <option value="high">🔴 High Priority</option>
                     </select>
                   </div>
                 </div>
@@ -550,7 +571,7 @@ const NotificationManagement = () => {
                           <h5 className="text-white font-medium">{formData.title || 'Notification Title'}</h5>
                           <p className="text-gray-300 text-sm mt-1">{formData.message || 'Notification message will appear here...'}</p>
                           <div className="flex items-center gap-2 mt-2">
-                            <span className={`text-xs px-2 py-1 rounded-full border ${getPriorityColor(formData.priority)}`}>
+                            <span className={`text-xs px-2 py-1 rounded-full border ${getLocalPriorityColor(formData.priority)}`}>
                               {formData.priority.charAt(0).toUpperCase() + formData.priority.slice(1)} Priority
                             </span>
                             <span className="text-xs text-gray-400">
@@ -696,15 +717,8 @@ const NotificationManagement = () => {
                         })}
                       </span>
                       
-                      {notification.readCount !== undefined && (
-                        <span className="flex items-center gap-1.5 text-green-400 bg-green-500/10 px-2 py-1 rounded-lg">
-                          <FiCheckCircle className="w-3 h-3" />
-                          {notification.readCount} read
-                        </span>
-                      )}
-                      
-                      {notification.priority && notification.priority !== 'normal' && (
-                        <span className={`text-xs px-2 py-1 rounded-lg border ${getPriorityColor(notification.priority)}`}>
+                      {notification.priority && notification.priority !== 'medium' && (
+                        <span className={`text-xs px-2 py-1 rounded-lg border ${getLocalPriorityColor(notification.priority)}`}>
                           {notification.priority.charAt(0).toUpperCase() + notification.priority.slice(1)}
                         </span>
                       )}
@@ -715,9 +729,9 @@ const NotificationManagement = () => {
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                      onClick={() => handleDeleteNotification(notification._id)}
+                      onClick={() => handleDeleteNotification(notification)}
                       className="p-2 text-gray-400 hover:text-red-400 rounded-lg hover:bg-red-500/10 transition-all duration-200"
-                      title="Delete notification"
+                      title={`Delete ${notification.recipientCount > 1 ? 'notification group' : 'notification'}`}
                     >
                       <FiTrash2 className="w-4 h-4" />
                     </motion.button>

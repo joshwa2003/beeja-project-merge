@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 
 const mongoose = require('mongoose');
 const Notification = require('../models/notification');
+const UserNotificationStatus = require('../models/userNotificationStatus');
 const { 
     createInstructorApprovalNotification,
     createNewCourseCreationNotification,
@@ -661,7 +662,7 @@ exports.getAllInstructors = async (req, res) => {
 
 exports.sendNotification = async (req, res) => {
     try {
-        const { title, message, recipients, selectedUsers, relatedCourse } = req.body;
+        const { title, message, recipients, selectedUsers, relatedCourse, priority = 'medium' } = req.body;
 
         // Validate admin user
         if (!req.user?.id) {
@@ -679,19 +680,25 @@ exports.sendNotification = async (req, res) => {
             });
         }
 
-        // Get recipient IDs based on the selection
-        let recipientIds = [];
+        // Map recipients to recipientType
+        let recipientType;
+        let recipientUsers = [];
+
         switch (recipients) {
             case 'all':
-                recipientIds = await User.find({}).distinct('_id');
+                recipientType = 'All';
                 break;
             case 'students':
-                recipientIds = await User.find({ accountType: 'Student' }).distinct('_id');
+                recipientType = 'Student';
                 break;
             case 'instructors':
-                recipientIds = await User.find({ accountType: 'Instructor' }).distinct('_id');
+                recipientType = 'Instructor';
+                break;
+            case 'admins':
+                recipientType = 'Admin';
                 break;
             case 'specific':
+                recipientType = 'Specific';
                 if (!selectedUsers || !Array.isArray(selectedUsers) || selectedUsers.length === 0) {
                     return res.status(400).json({
                         success: false,
@@ -700,16 +707,17 @@ exports.sendNotification = async (req, res) => {
                 }
                 // Validate each selected user ID
                 const validUsers = await User.find({
-                    _id: { $in: selectedUsers }
+                    _id: { $in: selectedUsers },
+                    active: true
                 }).distinct('_id');
                 
                 if (validUsers.length !== selectedUsers.length) {
                     return res.status(400).json({
                         success: false,
-                        message: 'One or more selected users are invalid'
+                        message: 'One or more selected users are invalid or inactive'
                     });
                 }
-                recipientIds = selectedUsers;
+                recipientUsers = selectedUsers;
                 break;
             default:
                 return res.status(400).json({
@@ -718,38 +726,56 @@ exports.sendNotification = async (req, res) => {
                 });
         }
 
-        // Create a single bulkId for all notifications in this batch
-        const bulkId = new mongoose.Types.ObjectId();
+        // Use the new enhanced notification system
+        const { createEnhancedNotification } = require('./notification');
         
-        // Create individual notifications for each recipient
-        const notifications = [];
-        for (const recipientId of recipientIds) {
-            const notification = await Notification.create({
-                recipient: recipientId,  // Single recipient per notification
-                title,
-                message,
-                sender: req.user.id,
-                type: 'ADMIN_ANNOUNCEMENT',
-                relatedCourse: relatedCourse || null,
-                metadata: {
-                    isBulk: true,
-                    recipientType: recipients,
-                    sentByAdmin: true,
-                    bulkId: bulkId // Same bulkId for all notifications in this batch
-                }
-            });
-            notifications.push(notification);
+        const notification = await createEnhancedNotification({
+            title,
+            message,
+            recipientType,
+            recipients: recipientUsers,
+            type: 'ADMIN_ANNOUNCEMENT',
+            sender: req.user.id,
+            priority,
+            relatedCourse: relatedCourse || null,
+            metadata: {
+                sentByAdmin: true,
+                adminId: req.user.id,
+                sentAt: new Date()
+            }
+        });
+
+        // Count target users for response
+        let targetUserCount = 0;
+        switch (recipientType) {
+            case 'All':
+                targetUserCount = await User.countDocuments({ active: true });
+                break;
+            case 'Student':
+                targetUserCount = await User.countDocuments({ accountType: 'Student', active: true });
+                break;
+            case 'Instructor':
+                targetUserCount = await User.countDocuments({ accountType: 'Instructor', active: true });
+                break;
+            case 'Admin':
+                targetUserCount = await User.countDocuments({ accountType: 'Admin', active: true });
+                break;
+            case 'Specific':
+                targetUserCount = recipientUsers.length;
+                break;
         }
 
-        console.log(`Created ${notifications.length} notifications for ${recipientIds.length} recipients`);
+        console.log(`Created enhanced notification: ${notification._id} for ${recipientType} (${targetUserCount} users)`);
 
         return res.status(201).json({
             success: true,
-            message: `Notification sent to ${recipientIds.length} users successfully`,
+            message: `Notification sent to ${targetUserCount} users successfully`,
             data: {
-                notificationCount: notifications.length,
+                notificationId: notification._id,
                 title,
-                recipientCount: recipientIds.length
+                recipientType,
+                recipientCount: targetUserCount,
+                priority
             }
         });
 
@@ -766,14 +792,26 @@ exports.sendNotification = async (req, res) => {
 // Get all notifications sent by admin
 exports.getAllNotifications = async (req, res) => {
     try {
-        // First, get distinct bulkIds
-        const distinctBulkIds = await Notification.distinct('metadata.bulkId', {
+        // First, get distinct bulkIds from both the dedicated field and metadata
+        const distinctBulkIds = await Notification.distinct('bulkId', {
             $or: [
                 { 'metadata.sentByAdmin': true },
                 { type: 'ADMIN_ANNOUNCEMENT' }
             ],
-            'metadata.bulkId': { $exists: true }
+            bulkId: { $exists: true, $ne: null }
         });
+
+        // Also get bulkIds from metadata for backward compatibility
+        const metadataBulkIds = await Notification.distinct('metadata.bulkId', {
+            $or: [
+                { 'metadata.sentByAdmin': true },
+                { type: 'ADMIN_ANNOUNCEMENT' }
+            ],
+            'metadata.bulkId': { $exists: true, $ne: null }
+        });
+
+        // Combine both arrays and remove duplicates
+        const allBulkIds = [...new Set([...distinctBulkIds, ...metadataBulkIds])];
 
         // Get all admin notifications
         const allNotifications = await Notification.find({
@@ -789,9 +827,10 @@ exports.getAllNotifications = async (req, res) => {
         const groupedNotifications = new Map();
         
         // First, handle notifications with bulkIds
-        for (const bulkId of distinctBulkIds) {
+        for (const bulkId of allBulkIds) {
             const bulkNotifications = allNotifications.filter(
-                n => n.metadata?.bulkId?.toString() === bulkId.toString()
+                n => n.bulkId?.toString() === bulkId.toString() || 
+                     n.metadata?.bulkId?.toString() === bulkId.toString()
             );
             
             if (bulkNotifications.length > 0) {
@@ -815,7 +854,7 @@ exports.getAllNotifications = async (req, res) => {
 
         // Then handle individual notifications (without bulkId)
         allNotifications
-            .filter(notification => !notification.metadata?.bulkId)
+            .filter(notification => !notification.bulkId && !notification.metadata?.bulkId)
             .forEach(notification => {
                 groupedNotifications.set(notification._id.toString(), {
                     _id: notification._id,
@@ -835,6 +874,11 @@ exports.getAllNotifications = async (req, res) => {
 
         // Convert map to array and sort by creation date
         const formattedNotifications = Array.from(groupedNotifications.values())
+            .map(notification => ({
+                ...notification,
+                // Use bulkId as displayId for bulk notifications, otherwise use the notification _id
+                displayId: notification.bulkId || notification._id
+            }))
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
             .slice(0, 50); // Limit to 50 most recent
 
@@ -860,51 +904,75 @@ exports.deleteNotification = async (req, res) => {
     try {
         const { notificationId } = req.params;
 
-        console.log('Delete notification request:', { notificationId });
+        console.log('Delete notification request:', { 
+            notificationId, 
+            user: req.user?.id,
+            userType: req.user?.accountType 
+        });
 
-        if (!mongoose.Types.ObjectId.isValid(notificationId)) {
+        // Validate notification ID format
+        if (!notificationId) {
+            console.log('Missing notification ID');
             return res.status(400).json({
                 success: false,
-                message: 'Invalid notification ID'
+                message: 'Notification ID is required'
             });
         }
 
-        // First try to find the notification
+        if (!mongoose.Types.ObjectId.isValid(notificationId)) {
+            console.log('Invalid notification ID format:', notificationId);
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid notification ID format'
+            });
+        }
+
+        // Find the notification
         const notification = await Notification.findById(notificationId);
-        
         if (!notification) {
+            console.log('Notification not found in database');
             return res.status(404).json({
                 success: false,
                 message: 'Notification not found'
             });
         }
 
-        // Delete all notifications with the same title and message
-        const deleteResult = await Notification.deleteMany({
+        console.log('Found notification to delete:', {
+            id: notification._id,
             title: notification.title,
-            message: notification.message,
             type: notification.type
         });
 
-        const deletedCount = deleteResult.deletedCount;
-        console.log(`Deleted ${deletedCount} notifications with the same content`);
+        // Delete related user notification statuses first
+        const statusDeleteResult = await UserNotificationStatus.deleteMany({
+            notification: notificationId
+        });
+        console.log(`Deleted ${statusDeleteResult.deletedCount} user notification statuses`);
+
+        // Delete the notification
+        await Notification.findByIdAndDelete(notificationId);
+        console.log('Successfully deleted notification');
 
         return res.status(200).json({
             success: true,
-            message: `Notification${deletedCount > 1 ? 's' : ''} deleted successfully`,
-            deletedCount
+            message: '1 notification deleted successfully',
+            deletedCount: 1
         });
 
     } catch (error) {
-        console.error('Error deleting notification:', error, {
+        console.error('Error deleting notification:', {
+            message: error.message,
             stack: error.stack,
             name: error.name,
-            fullError: error
+            code: error.code,
+            notificationId: req.params?.notificationId
         });
+        
         return res.status(500).json({
             success: false,
             message: 'Error deleting notification',
-            error: error.message
+            error: error.message,
+            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 };
