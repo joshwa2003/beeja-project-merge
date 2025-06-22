@@ -63,7 +63,15 @@ export const catalogData = {
 }
 // CONTACT-US API
 export const contactusEndpoint = {
-  CONTACT_US_API: BASE_URL + "/api/v1/reach/contact",
+  CONTACT_US_API: BASE_URL + "/api/v1/contact/submit",
+}
+
+// CONTACT MESSAGE ENDPOINTS (Admin)
+export const contactMessageEndpoints = {
+  GET_ALL_MESSAGES_API: BASE_URL + "/api/v1/contact/messages",
+  MARK_MESSAGE_READ_API: BASE_URL + "/api/v1/contact/messages/:messageId/mark-read",
+  DELETE_MESSAGE_API: BASE_URL + "/api/v1/contact/messages/:messageId",
+  GET_MESSAGE_STATS_API: BASE_URL + "/api/v1/contact/stats",
 }
 
 // SETTINGS PAGE API

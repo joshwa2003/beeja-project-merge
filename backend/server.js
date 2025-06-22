@@ -20,6 +20,7 @@ const adminRoutes = require('./routes/admin');
 const courseAccessRoutes = require('./routes/courseAccess');
 const quizRoutes = require('./routes/quiz');
 const notificationRoutes = require('./routes/notification');
+const contactMessageRoutes = require('./routes/contactMessage');
 
 // middleware 
 app.use(cookieParser());
@@ -58,6 +59,7 @@ app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/course-access', courseAccessRoutes);
 app.use('/api/v1/quiz', quizRoutes);
 app.use('/api/v1/notification', notificationRoutes);
+app.use('/api/v1/contact', contactMessageRoutes);
 
 // Default Route
 app.get('/', (req, res) => {
@@ -69,15 +71,24 @@ app.get('/', (req, res) => {
 
 // Error handling middleware for Multer errors and others
 app.use((err, req, res, next) => {
+    console.error('Global error handler caught:', err);
+    
     if (err.name === 'MulterError') {
         if (err.code === 'LIMIT_FILE_SIZE') {
             return res.status(400).json({ error: 'File size is too large. Maximum limit is 100MB.' });
         }
         return res.status(400).json({ error: err.message });
     }
-    // Handle other errors
-    console.error(err);
-    res.status(500).json({ error: 'An internal server error occurred.' });
+    
+    // Only handle errors that haven't been handled by route controllers
+    if (!res.headersSent) {
+        console.error('Unhandled error:', err);
+        res.status(500).json({ 
+            error: 'An internal server error occurred.',
+            message: err.message,
+            stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        });
+    }
 });
 
 // connections

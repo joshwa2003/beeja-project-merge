@@ -27,6 +27,7 @@ const AdminSidebar = ({ activeTab, onTabChange }) => {
     { id: 'quizzes', label: 'Quiz Management', icon: <FaQuestionCircle size={16} /> },
     { id: 'accessRequests', label: 'Access Requests', icon: <FaUsers size={16} /> },
     { id: 'notifications', label: 'Notifications', icon: <FiBell size={16} /> },
+    { id: 'contactMessages', label: 'Contact Messages', icon: <FiBell size={16} /> },
     { id: 'featuredCourses', label: 'Featured Courses', icon: <FaStar size={16} /> },
     { id: 'analytics', label: 'Analytics', icon: <FaChartBar size={16} /> },
     { id: 'settings', label: 'Settings', icon: <MdSettings size={16} /> },
