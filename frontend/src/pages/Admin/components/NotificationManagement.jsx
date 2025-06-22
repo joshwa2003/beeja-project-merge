@@ -186,8 +186,9 @@ const NotificationManagement = () => {
   };
 
   const getRecipientIcon = (recipients) => {
-    const type = recipients || 'unknown';
-    switch (type.toLowerCase()) {
+    // Ensure we have a valid string to work with
+    const type = (recipients || 'unknown').toString().toLowerCase();
+    switch (type) {
       case 'all': return <BsPeople className="w-4 h-4" />;
       case 'student':
       case 'students': return <HiOutlineAcademicCap className="w-4 h-4" />;
