@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+ import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -175,14 +175,39 @@ const NotificationManagement = () => {
   };
 
   const getRecipientText = (notification) => {
-    if (notification.recipients === 'all' || notification.recipientType === 'All') return 'All Users';
-    if (notification.recipients === 'students' || notification.recipientType === 'Student') return 'All Students';
-    if (notification.recipients === 'instructors' || notification.recipientType === 'Instructor') return 'All Instructors';
-    if (notification.recipients === 'admins' || notification.recipientType === 'Admin') return 'All Administrators';
-    if (notification.recipients === 'specific' || notification.recipientType === 'Specific') {
-      return `${notification.recipientCount || 0} Selected Users`;
+    // Handle different recipient types
+    const recipients = notification.recipients;
+    const recipientType = notification.recipientType;
+    
+    // Check for standard recipient types first
+    if (recipients === 'all' || recipientType === 'All') return 'All Users';
+    if (recipients === 'students' || recipientType === 'Student') return 'All Students';
+    if (recipients === 'instructors' || recipientType === 'Instructor') return 'All Instructors';
+    if (recipients === 'admins' || recipientType === 'Admin') return 'All Administrators';
+    
+    // Handle specific users
+    if (recipients === 'specific' || recipientType === 'Specific') {
+      const count = notification.recipientCount || 0;
+      return `${count} Selected User${count !== 1 ? 's' : ''}`;
     }
-    return formatRecipientType(notification.recipients || notification.recipientType);
+    
+    // Handle array of user IDs (legacy format)
+    if (Array.isArray(recipients) && recipients.length > 0) {
+      return `${recipients.length} Selected User${recipients.length !== 1 ? 's' : ''}`;
+    }
+    
+    // Handle single user ID (legacy format)
+    if (typeof recipients === 'string' && recipients.length === 24) {
+      return '1 Selected User';
+    }
+    
+    // Fallback to formatted recipient type
+    try {
+      return formatRecipientType(recipients || recipientType || 'Unknown');
+    } catch (error) {
+      console.warn('Error formatting recipient type:', error);
+      return 'Unknown Recipients';
+    }
   };
 
   const getRecipientIcon = (recipients) => {
@@ -719,13 +744,31 @@ const NotificationManagement = () => {
                         <p className="text-gray-300 text-sm mb-3 line-clamp-2 leading-relaxed">
                           {notification.message}
                         </p>
+                        {/* Show sender information if available */}
+                        {notification.sender && (
+                          <p className="text-gray-400 text-xs mb-2">
+                            Sent by: {notification.sender.firstName} {notification.sender.lastName}
+                            {notification.sender.email && ` (${notification.sender.email})`}
+                          </p>
+                        )}
                       </div>
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-4 text-xs">
                       <span className="flex items-center gap-1.5 text-gray-400 bg-slate-700/50 px-2 py-1 rounded-lg">
                         {getRecipientIcon(notification.recipients)}
-                        {getRecipientText(notification)}
+                        {notification.recipients === 'specific' && notification.recipientsList && notification.recipientsList.length > 0 ? (
+                          <>
+                            {notification.recipientsList.map((user, idx) => (
+                              <span key={user._id}>
+                                {user.email || `${user.firstName} ${user.lastName}`}
+                                {idx < notification.recipientsList.length - 1 ? ', ' : ''}
+                              </span>
+                            ))}
+                          </>
+                        ) : (
+                          getRecipientText(notification)
+                        )}
                       </span>
                       
                       <span className="flex items-center gap-1.5 text-gray-400 bg-slate-700/50 px-2 py-1 rounded-lg">
