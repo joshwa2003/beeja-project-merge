@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+it import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -492,27 +492,44 @@ const NotificationManagement = () => {
                     </label>
                     <div className="max-h-64 overflow-y-auto bg-slate-700 rounded-xl border border-slate-600">
                       <div className="p-3 border-b border-slate-600 bg-slate-600/50">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-300">Select recipients</span>
-                          <div className="flex gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setFormData(prev => ({ ...prev, selectedUsers: users.map(u => u._id) }))}
-                              className="text-xs px-2 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors"
-                            >
-                              Select All
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setFormData(prev => ({ ...prev, selectedUsers: [] }))}
-                              className="text-xs px-2 py-1 bg-slate-500 text-white rounded hover:bg-slate-400 transition-colors"
-                            >
-                              Clear All
-                            </button>
+                        <div className="flex flex-col gap-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-300">Select recipients</span>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setFormData(prev => ({ ...prev, selectedUsers: users.map(u => u._id) }))}
+                                className="text-xs px-2 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors"
+                              >
+                                Select All
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setFormData(prev => ({ ...prev, selectedUsers: [] }))}
+                                className="text-xs px-2 py-1 bg-slate-500 text-white rounded hover:bg-slate-400 transition-colors"
+                              >
+                                Clear All
+                              </button>
+                            </div>
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              placeholder="Search users by email..."
+                              value={searchTerm}
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                              className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            />
+                            <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                           </div>
                         </div>
                       </div>
-                      {users.map((user) => (
+                      {users
+                        .filter(user => 
+                          searchTerm === '' || 
+                          user.email.toLowerCase().includes(searchTerm.toLowerCase())
+                        )
+                        .map((user) => (
                         <motion.label
                           key={user._id}
                           whileHover={{ backgroundColor: 'rgba(71, 85, 105, 0.5)' }}
