@@ -239,7 +239,10 @@ const NotificationManagement = () => {
     .filter(notification => {
       const matchesSearch = notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            notification.message.toLowerCase().includes(searchTerm.toLowerCase());
-      const recipientType = notification.recipients || notification.recipientType || '';
+      let recipientType = notification.recipients || notification.recipientType || '';
+      if (typeof recipientType !== 'string') {
+        recipientType = String(recipientType);
+      }
       const matchesFilter = filterType === 'all' || recipientType.toLowerCase() === filterType.toLowerCase();
       return matchesSearch && matchesFilter;
     })
