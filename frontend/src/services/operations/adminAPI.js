@@ -12,7 +12,7 @@ const {
   GET_ALL_COURSES_API,
   CREATE_COURSE_AS_ADMIN_API,
   APPROVE_COURSE_API,
-  DELETE_COURSE_API,
+  ADMIN_DELETE_COURSE_API,
   TOGGLE_COURSE_VISIBILITY_API,
   SET_COURSE_TYPE_API,
   GET_ANALYTICS_API,
@@ -414,13 +414,13 @@ export const deleteCourse = async (courseId, token) => {
       throw new Error("Course ID is required")
     }
 
-    const url = DELETE_COURSE_API.replace(':courseId', courseId)
+    const url = ADMIN_DELETE_COURSE_API.replace(':courseId', courseId)
     
     const response = await apiConnector("DELETE", url, undefined, {
       Authorization: `Bearer ${token}`
     })
     
-    console.log("DELETE_COURSE_API RESPONSE............", response)
+    console.log("ADMIN_DELETE_COURSE_API RESPONSE............", response)
 
     if (!response?.data?.success) {
       throw new Error(response?.data?.message || "Could Not Delete Course")
@@ -429,7 +429,7 @@ export const deleteCourse = async (courseId, token) => {
     toast.success("Course deleted successfully")
     result = true
   } catch (error) {
-    console.error("DELETE_COURSE_API ERROR:", {
+    console.error("ADMIN_DELETE_COURSE_API ERROR:", {
       message: error.message,
       response: error.response?.data,
       status: error.response?.status

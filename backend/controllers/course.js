@@ -1,3 +1,4 @@
+
 const Course = require('../models/course');
 const User = require('../models/user');
 const Category = require('../models/category');
@@ -452,6 +453,14 @@ exports.editCourse = async (req, res) => {
             return res.status(404).json({ error: "Course not found" })
         }
 
+        // Check if user is instructor and owns the course, or is admin
+        if (req.user.accountType === 'Instructor' && course.instructor.toString() !== req.user.id) {
+            return res.status(403).json({ 
+                success: false,
+                message: "You don't have permission to edit this course" 
+            })
+        }
+
         // If Thumbnail Image is found, update it
         if (req.file) {
             // console.log("thumbnail update")
@@ -588,6 +597,14 @@ exports.deleteCourse = async (req, res) => {
         const course = await Course.findById(courseId)
         if (!course) {
             return res.status(404).json({ message: "Course not found" })
+        }
+
+        // Check if user is instructor and owns the course, or is admin
+        if (req.user.accountType === 'Instructor' && course.instructor.toString() !== req.user.id) {
+            return res.status(403).json({ 
+                success: false,
+                message: "You don't have permission to delete this course" 
+            })
         }
 
         // Unenroll students from the course

@@ -34,7 +34,7 @@ export const courseEndpoints = {
   CREATE_SUBSECTION_API: BASE_URL + "/api/v1/course/addSubSection",
   UPDATE_SECTION_API: BASE_URL + "/api/v1/course/updateSection",
   UPDATE_SUBSECTION_API: BASE_URL + "/api/v1/course/updateSubSection",
-  GET_ALL_INSTRUCTOR_COURSES_API: BASE_URL + "/api/v1/course/getInstructorCourses",
+  GET_ALL_INSTRUCTOR_COURSES_API: BASE_URL + "/api/v1/course/getInstructorCoursesForInstructor",
   COURSE_PURCHASE_HISTORY_API: BASE_URL + "/api/v1/payment/purchaseHistory",
   DELETE_SECTION_API: BASE_URL + "/api/v1/course/deleteSection",
   DELETE_SUBSECTION_API: BASE_URL + "/api/v1/course/deleteSubSection",
@@ -96,7 +96,7 @@ export const adminEndpoints = {
   GET_ALL_COURSES_API: BASE_URL + "/api/v1/admin/courses",
   CREATE_COURSE_AS_ADMIN_API: BASE_URL + "/api/v1/admin/courses/create",
   APPROVE_COURSE_API: BASE_URL + "/api/v1/admin/courses/:courseId/approve",
-  DELETE_COURSE_API: BASE_URL + "/api/v1/admin/courses/:courseId",
+  ADMIN_DELETE_COURSE_API: BASE_URL + "/api/v1/admin/courses/:courseId",
   TOGGLE_COURSE_VISIBILITY_API: BASE_URL + "/api/v1/admin/courses/:courseId/toggle-visibility",
   SET_COURSE_TYPE_API: BASE_URL + "/api/v1/admin/courses/:courseId/set-type",
 

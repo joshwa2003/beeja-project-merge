@@ -89,11 +89,11 @@ router.get("/getInstructorCourses", auth, isAdmin, getInstructorCourses)
 router.get("/getInstructorCoursesForInstructor", auth, isInstructor, getInstructorCourses)
 
 
-// Edit Course routes
-router.post("/editCourse", auth, isAdmin, upload.single('thumbnailImage'), editCourse)
+// Edit Course routes - Allow both instructors and admins
+router.post("/editCourse", auth, upload.single('thumbnailImage'), editCourse)
 
-// Delete a Course
-router.delete("/deleteCourse", auth, isAdmin, deleteCourse)
+// Delete a Course - Allow both instructors and admins
+router.delete("/deleteCourse", auth, deleteCourse)
 
 // update Course Progress
 router.post("/updateCourseProgress", auth, isStudent, updateCourseProgress)
