@@ -141,8 +141,8 @@ const FaqManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-richblack-900 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-richblack-900 p-4 md:p-6 overflow-x-hidden">
+      <div className="max-w-7xl mx-auto w-full">
         {/* Header */}
         <div className="bg-richblack-800 rounded-xl p-6 mb-6 shadow-lg">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -171,9 +171,9 @@ const FaqManagement = () => {
 
         {/* Filters and Search */}
         <div className="bg-richblack-800 rounded-xl p-6 mb-6 shadow-lg">
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col md:flex-row gap-4 flex-wrap">
             {/* Search */}
-            <div className="relative flex-1">
+            <div className="relative flex-1 min-w-[250px]">
               <input
                 type="text"
                 placeholder="Search FAQs, users, or content..."
@@ -185,11 +185,11 @@ const FaqManagement = () => {
             </div>
 
             {/* Filter */}
-            <div className="relative">
+            <div className="relative min-w-[200px]">
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="appearance-none bg-richblack-700 border border-richblack-600 rounded-lg px-4 py-3 pr-10 text-richblack-5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full appearance-none bg-richblack-700 border border-richblack-600 rounded-lg px-4 py-3 pr-10 text-richblack-5 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All FAQs</option>
                 <option value="pending">Pending</option>
@@ -238,7 +238,7 @@ const FaqManagement = () => {
                 <div key={faq._id} className="bg-richblack-800 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow relative">
                   {deleteConfirm === faq._id && (
                     <div className="absolute inset-0 bg-richblack-900 bg-opacity-95 flex items-center justify-center z-10">
-                      <div className="bg-richblack-800 rounded-xl p-6 max-w-md w-full mx-4">
+                      <div className="bg-richblack-800 rounded-xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
                         <h3 className="text-xl font-bold text-richblack-5 mb-4">Confirm Delete</h3>
                         <p className="text-richblack-300 mb-6">
                           Are you sure you want to delete this FAQ? This action cannot be undone.

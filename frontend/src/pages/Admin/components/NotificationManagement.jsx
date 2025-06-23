@@ -270,7 +270,8 @@ const NotificationManagement = () => {
   const stats = getNotificationStats();
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-richblack-900 p-4 md:p-6">
+      <div className="max-w-7xl mx-auto space-y-6 w-full">
       {/* Header */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div className="flex items-center gap-4">
@@ -390,27 +391,31 @@ const NotificationManagement = () => {
               className="w-full pl-12 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
-          <div className="flex gap-3">
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            >
-              <option value="all">All Recipients</option>
-              <option value="student">Students Only</option>
-              <option value="instructor">Instructors Only</option>
-              <option value="admin">Administrators Only</option>
-              <option value="specific">Specific Users</option>
-            </select>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="title">By Title</option>
-            </select>
+          <div className="flex flex-wrap gap-3">
+            <div className="min-w-[200px] flex-1">
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              >
+                <option value="all">All Recipients</option>
+                <option value="student">Students Only</option>
+                <option value="instructor">Instructors Only</option>
+                <option value="admin">Administrators Only</option>
+                <option value="specific">Specific Users</option>
+              </select>
+            </div>
+            <div className="min-w-[200px] flex-1">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="title">By Title</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
@@ -858,6 +863,7 @@ const NotificationManagement = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };
