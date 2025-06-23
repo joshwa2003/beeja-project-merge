@@ -82,6 +82,12 @@ export const settingsEndpoints = {
   DELETE_PROFILE_API: BASE_URL + "/api/v1/profile/deleteProfile",
 }
 
+// FEATURED COURSES ENDPOINTS
+export const featuredCoursesEndpoints = {
+  GET_FEATURED_COURSES_API: BASE_URL + "/api/v1/featured-courses",
+  UPDATE_FEATURED_COURSES_API: BASE_URL + "/api/v1/featured-courses/update",
+}
+
 // ADMIN ENDPOINTS
 export const adminEndpoints = {
   // User Management

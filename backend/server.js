@@ -21,6 +21,7 @@ const courseAccessRoutes = require('./routes/courseAccess');
 const quizRoutes = require('./routes/quiz');
 const notificationRoutes = require('./routes/notification');
 const contactMessageRoutes = require('./routes/contactMessage');
+const featuredCoursesRoutes = require('./routes/featuredCourses');
 
 // middleware 
 app.use(cookieParser());
@@ -66,6 +67,7 @@ app.use('/api/v1/course-access', courseAccessRoutes);
 app.use('/api/v1/quiz', quizRoutes);
 app.use('/api/v1/notification', notificationRoutes);
 app.use('/api/v1/contact', contactMessageRoutes);
+app.use('/api/v1/featured-courses', featuredCoursesRoutes);
 
 // Default Route
 app.get('/', (req, res) => {

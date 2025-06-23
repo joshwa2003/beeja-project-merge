@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaStar, FaUsers, FaEye, FaEdit, FaSave, FaTimes } from 'react-icons/fa';
 import { getAllCourses } from '../../../services/operations/courseDetailsAPI';
+import { getFeaturedCourses, updateFeaturedCourses } from '../../../services/operations/featuredCoursesAPI';
 import { toast } from 'react-hot-toast';
 
 const FeaturedCoursesManagement = () => {
@@ -35,19 +36,29 @@ const FeaturedCoursesManagement = () => {
     }
   };
 
-  const loadFeaturedCourses = () => {
-    const saved = localStorage.getItem('featuredCourses');
-    if (saved) {
-      setFeaturedCourses(JSON.parse(saved));
+  const loadFeaturedCourses = async () => {
+    try {
+      const response = await getFeaturedCourses();
+      if (response) {
+        setFeaturedCourses({
+          popularPicks: response.popularPicks || [],
+          topEnrollments: response.topEnrollments || []
+        });
+      }
+    } catch (error) {
+      console.error('Error loading featured courses:', error);
+      toast.error('Failed to load featured courses');
     }
   };
 
-  const saveFeaturedCourses = () => {
+  const saveFeaturedCourses = async () => {
     setSaving(true);
     try {
-      localStorage.setItem('featuredCourses', JSON.stringify(featuredCourses));
+      const token = localStorage.getItem('token');
+      await updateFeaturedCourses(featuredCourses, token);
       toast.success('Featured courses updated successfully!');
     } catch (error) {
+      console.error('Error saving featured courses:', error);
       toast.error('Failed to save featured courses');
     } finally {
       setSaving(false);
@@ -55,11 +66,6 @@ const FeaturedCoursesManagement = () => {
   };
 
   const addToFeatured = (courseId, section) => {
-    if (featuredCourses[section].length >= 4) {
-      toast.error(`Maximum 4 courses allowed in ${section === 'popularPicks' ? 'Popular Picks' : 'Top Enrollments'}`);
-      return;
-    }
-
     if (featuredCourses[section].includes(courseId)) {
       toast.error('Course already added to this section');
       return;

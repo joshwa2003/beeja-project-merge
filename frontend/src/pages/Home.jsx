@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link } from "react-router-dom";
 import { useDispatch } from 'react-redux';
 
@@ -13,12 +13,10 @@ import InstructorSection from '../components/core/HomePage/InstructorSection';
 import ImprovedFooter from '../components/common/ImprovedFooter';
 import ExploreMore from '../components/core/HomePage/ExploreMore';
 import ReviewSlider from '../components/common/ReviewSlider';
-import Course_Slider from '../components/core/Catalog/Course_Slider'
+import FeaturedCourses from '../components/core/HomePage/FeaturedCourses';
 
 import TeamSlider from '../components/core/HomePage/TeamSlider';
 import SplitScreen from '../components/core/HomePage/SplitScreen';
-
-import { getAllCourses } from '../services/operations/courseDetailsAPI';
 
 import { MdOutlineRateReview } from 'react-icons/md';
 import { FaArrowRight } from "react-icons/fa";
@@ -32,130 +30,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import { faGraduationCap } from '@fortawesome/free-solid-svg-icons';
 
-
-
-
 const Home = () => {
-  const [CatalogPageData, setCatalogPageData] = useState(null);
-  const [categoryID, setCategoryID] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    const fetchAllCourses = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const courses = await getAllCourses();
-        console.log("Courses from API:", courses);
-        if (courses && Array.isArray(courses)) {
-          console.log("Sample course data:", courses[0]);
-          console.log("Course statuses:", courses.map(c => c.status).join(', '));
-          setCatalogPageData({ allCourses: courses });
-        } else {
-          console.error("Invalid courses data received:", courses);
-          setError("Invalid course data received");
-        }
-      } catch (err) {
-        console.error("Error fetching courses:", err);
-        setError("Failed to fetch courses");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAllCourses();
-  }, []);
-
-  const getUniqueCourseSections = () => {
-    if (!CatalogPageData?.allCourses) {
-      console.log("No catalog data available");
-      return { popularPicks: [], topEnrollments: [], additionalCourses: [] };
-    }
-
-    console.log("Total courses before filtering:", CatalogPageData.allCourses.length);
-    console.log("Sample course data:", CatalogPageData.allCourses[0]);
-    
-    // Filter for published courses, with fallback to show all courses if no published courses found
-    let allCourses = CatalogPageData.allCourses.filter(course => course.status === 'Published');
-    console.log("Published courses after filtering:", allCourses.length);
-    
-    // Fallback: if no published courses, show all courses (for development/testing)
-    if (allCourses.length === 0) {
-      console.log("No published courses found, showing all courses as fallback");
-      allCourses = CatalogPageData.allCourses;
-    }
-
-    // Get featured courses from localStorage
-    const featuredCourses = JSON.parse(localStorage.getItem('featuredCourses')) || {
-      popularPicks: [],
-      topEnrollments: []
-    };
-
-    // Get courses based on featured IDs
-    const popularPicks = featuredCourses.popularPicks
-      .map(id => allCourses.find(course => course._id === id))
-      .filter(Boolean);
-
-    const topEnrollments = featuredCourses.topEnrollments
-      .map(id => allCourses.find(course => course._id === id))
-      .filter(Boolean);
-
-    // Fallback to default sorting if no featured courses are set
-    if (popularPicks.length === 0) {
-      console.log("No featured popular picks found, using default sorting");
-      popularPicks.push(...[...allCourses]
-        .sort((a, b) => {
-          const aReviews = a.ratingAndReviews?.length || a.totalRatings || 0;
-          const bReviews = b.ratingAndReviews?.length || b.totalRatings || 0;
-          return bReviews - aReviews;
-        })
-        .slice(0, 4));
-    }
-
-    if (topEnrollments.length === 0) {
-      console.log("No featured top enrollments found, using default sorting");
-      topEnrollments.push(...[...allCourses]
-        .sort((a, b) => (b.studentsEnrolled?.length || 0) - (a.studentsEnrolled?.length || 0))
-        .slice(0, 4));
-    }
-    
-    const additionalCourses = [...allCourses]
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-      .slice(0, 6);
-
-    console.log("Popular picks count:", popularPicks.length);
-    console.log("Top enrollments count:", topEnrollments.length);
-    console.log("Popular picks data:", popularPicks);
-    console.log("Top enrollments data:", topEnrollments);
-
-    return { popularPicks, topEnrollments, additionalCourses };
-  };
-
-  const { popularPicks, topEnrollments, additionalCourses } = getUniqueCourseSections();
-
-
-
-  // increment count js code
-
-  // let valueDisplay = document.querySelector(".count-num"),
-  //     interval = 1000;
-
-  // function value() {
-  //     let startValue = 0,
-  //         endValue = valueDisplay.getAttribute("data-value"),
-  //         duration = Math.floor(interval / endValue);
-  //     let counter = setInterval(function () {
-  //         startValue += 1;
-  //         valueDisplay.textContent = startValue + "+"
-  //         if(startValue == endValue){
-  //             clearInterval(counter)
-  //         }
-  //     });
-  // }
-
 
   const learnerRef1 = useRef(null);
   const learnerRef2 = useRef(null);
@@ -407,52 +283,16 @@ const Home = () => {
           </div>
 
 
-          {/* Course Sliders */}
-          <div className="mx-auto box-content w-full max-w-maxContentTab px-4 py-8 lg:max-w-maxContent">
-            <motion.div
-              variants={fadeIn('up', 0.2)}
-              initial='hidden'
-              whileInView={'show'}
-              viewport={{ once: false, amount: 0.2 }}
-              className="space-y-12"
-            >
-              {/* Popular Picks Section */}
-              <div>
-                <h2 className="text-white mb-6 text-2xl font-semibold">
-                  Popular Picks for You
-                </h2>
-                {loading ? (
-                  <div className="h-[200px] w-full flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-50"></div>
-                  </div>
-                ) : error ? (
-                  <p className="text-red-500 text-center py-8">{error}</p>
-                ) : popularPicks?.length > 0 ? (
-                  <Course_Slider Courses={popularPicks} />
-                ) : (
-                  <p className="text-richblack-300 text-center py-8">No courses available at the moment</p>
-                )}
-              </div>
-
-              {/* Top Enrollments Section */}
-              <div>
-                <h2 className="text-white mb-6 text-2xl font-semibold">
-                  Top Enrollments Today
-                </h2>
-                {loading ? (
-                  <div className="h-[200px] w-full flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-50"></div>
-                  </div>
-                ) : error ? (
-                  <p className="text-red-500 text-center py-8">{error}</p>
-                ) : topEnrollments?.length > 0 ? (
-                  <Course_Slider Courses={topEnrollments} />
-                ) : (
-                  <p className="text-richblack-300 text-center py-8">No courses available at the moment</p>
-                )}
-              </div>
-            </motion.div>
-          </div>
+          {/* Featured Courses Section */}
+          <motion.div
+            variants={fadeIn('up', 0.2)}
+            initial='hidden'
+            whileInView={'show'}
+            viewport={{ once: false, amount: 0.2 }}
+            className="mx-auto box-content w-full max-w-maxContentTab px-4 py-8 lg:max-w-maxContent"
+          >
+            <FeaturedCourses />
+          </motion.div>
 
 
 

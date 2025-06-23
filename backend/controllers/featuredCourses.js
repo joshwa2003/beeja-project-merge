@@ -1,5 +1,5 @@
 const FeaturedCourses = require('../models/FeaturedCourses');
-const Course = require('../models/Course');
+const Course = require('../models/course');
 
 // Get featured courses
 exports.getFeaturedCourses = async (req, res) => {
@@ -39,38 +39,64 @@ exports.updateFeaturedCourses = async (req, res) => {
     try {
         const { popularPicks, topEnrollments } = req.body;
 
-        // Validate course IDs
-        const allCourseIds = [...(popularPicks || []), ...(topEnrollments || [])];
-        const validCourses = await Course.find({
-            _id: { $in: allCourseIds },
-            status: 'Published'
+        console.log('Update request received:', {
+            popularPicks: popularPicks ? popularPicks.length : 'undefined',
+            topEnrollments: topEnrollments ? topEnrollments.length : 'undefined',
+            popularPicksData: popularPicks,
+            topEnrollmentsData: topEnrollments
         });
 
-        const validCourseIds = validCourses.map(course => course._id.toString());
-        const invalidCourseIds = allCourseIds.filter(id => !validCourseIds.includes(id));
+        // Get current featured courses to check existing counts
+        let currentFeaturedCourses = await FeaturedCourses.findOne();
+        
+        console.log('Current featured courses:', {
+            currentPopularPicks: currentFeaturedCourses?.popularPicks?.length || 0,
+            currentTopEnrollments: currentFeaturedCourses?.topEnrollments?.length || 0
+        });
 
-        if (invalidCourseIds.length > 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Some course IDs are invalid or unpublished',
-                invalidCourseIds
+        // Validate course IDs
+        const allCourseIds = [...(popularPicks || []), ...(topEnrollments || [])];
+        if (allCourseIds.length > 0) {
+            const validCourses = await Course.find({
+                _id: { $in: allCourseIds },
+                status: 'Published'
             });
+
+            const validCourseIds = validCourses.map(course => course._id.toString());
+            const invalidCourseIds = allCourseIds.filter(id => !validCourseIds.includes(id));
+
+            if (invalidCourseIds.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Some course IDs are invalid or unpublished',
+                    invalidCourseIds
+                });
+            }
         }
 
         // Update or create featured courses
-        let featuredCourses = await FeaturedCourses.findOne();
+        let featuredCourses = currentFeaturedCourses;
         
         if (featuredCourses) {
-            featuredCourses.popularPicks = popularPicks || featuredCourses.popularPicks;
-            featuredCourses.topEnrollments = topEnrollments || featuredCourses.topEnrollments;
+            if (popularPicks !== undefined) {
+                featuredCourses.popularPicks = popularPicks;
+            }
+            if (topEnrollments !== undefined) {
+                featuredCourses.topEnrollments = topEnrollments;
+            }
             featuredCourses.lastUpdated = Date.now();
             await featuredCourses.save();
         } else {
             featuredCourses = await FeaturedCourses.create({
-                popularPicks,
-                topEnrollments
+                popularPicks: popularPicks || [],
+                topEnrollments: topEnrollments || []
             });
         }
+
+        console.log('Featured courses updated successfully:', {
+            popularPicksCount: featuredCourses.popularPicks.length,
+            topEnrollmentsCount: featuredCourses.topEnrollments.length
+        });
 
         return res.status(200).json({
             success: true,
