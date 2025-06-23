@@ -1,4 +1,4 @@
- import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -175,45 +175,19 @@ const NotificationManagement = () => {
   };
 
   const getRecipientText = (notification) => {
-    // Handle different recipient types
-    const recipients = notification.recipients;
-    const recipientType = notification.recipientType;
-    
-    // Check for standard recipient types first
-    if (recipients === 'all' || recipientType === 'All') return 'All Users';
-    if (recipients === 'students' || recipientType === 'Student') return 'All Students';
-    if (recipients === 'instructors' || recipientType === 'Instructor') return 'All Instructors';
-    if (recipients === 'admins' || recipientType === 'Admin') return 'All Administrators';
-    
-    // Handle specific users
-    if (recipients === 'specific' || recipientType === 'Specific') {
-      const count = notification.recipientCount || 0;
-      return `${count} Selected User${count !== 1 ? 's' : ''}`;
+    if (notification.recipients === 'all' || notification.recipientType === 'All') return 'All Users';
+    if (notification.recipients === 'students' || notification.recipientType === 'Student') return 'All Students';
+    if (notification.recipients === 'instructors' || notification.recipientType === 'Instructor') return 'All Instructors';
+    if (notification.recipients === 'admins' || notification.recipientType === 'Admin') return 'All Administrators';
+    if (notification.recipients === 'specific' || notification.recipientType === 'Specific') {
+      return `${notification.recipientCount || 0} Selected Users`;
     }
-    
-    // Handle array of user IDs (legacy format)
-    if (Array.isArray(recipients) && recipients.length > 0) {
-      return `${recipients.length} Selected User${recipients.length !== 1 ? 's' : ''}`;
-    }
-    
-    // Handle single user ID (legacy format)
-    if (typeof recipients === 'string' && recipients.length === 24) {
-      return '1 Selected User';
-    }
-    
-    // Fallback to formatted recipient type
-    try {
-      return formatRecipientType(recipients || recipientType || 'Unknown');
-    } catch (error) {
-      console.warn('Error formatting recipient type:', error);
-      return 'Unknown Recipients';
-    }
+    return formatRecipientType(notification.recipients || notification.recipientType);
   };
 
   const getRecipientIcon = (recipients) => {
-    // Ensure we have a valid string to work with
-    const type = (recipients || 'unknown').toString().toLowerCase();
-    switch (type) {
+    const type = recipients || 'unknown';
+    switch (type.toLowerCase()) {
       case 'all': return <BsPeople className="w-4 h-4" />;
       case 'student':
       case 'students': return <HiOutlineAcademicCap className="w-4 h-4" />;
@@ -239,10 +213,7 @@ const NotificationManagement = () => {
     .filter(notification => {
       const matchesSearch = notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            notification.message.toLowerCase().includes(searchTerm.toLowerCase());
-      let recipientType = notification.recipients || notification.recipientType || '';
-      if (typeof recipientType !== 'string') {
-        recipientType = String(recipientType);
-      }
+      const recipientType = notification.recipients || notification.recipientType || '';
       const matchesFilter = filterType === 'all' || recipientType.toLowerCase() === filterType.toLowerCase();
       return matchesSearch && matchesFilter;
     })
@@ -270,8 +241,7 @@ const NotificationManagement = () => {
   const stats = getNotificationStats();
 
   return (
-    <div className="min-h-screen bg-richblack-900 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto space-y-6 w-full">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div className="flex items-center gap-4">
@@ -391,31 +361,27 @@ const NotificationManagement = () => {
               className="w-full pl-12 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
-          <div className="flex flex-wrap gap-3">
-            <div className="min-w-[200px] flex-1">
-              <select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              >
-                <option value="all">All Recipients</option>
-                <option value="student">Students Only</option>
-                <option value="instructor">Instructors Only</option>
-                <option value="admin">Administrators Only</option>
-                <option value="specific">Specific Users</option>
-              </select>
-            </div>
-            <div className="min-w-[200px] flex-1">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="title">By Title</option>
-              </select>
-            </div>
+          <div className="flex gap-3">
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              className="px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            >
+              <option value="all">All Recipients</option>
+              <option value="student">Students Only</option>
+              <option value="instructor">Instructors Only</option>
+              <option value="admin">Administrators Only</option>
+              <option value="specific">Specific Users</option>
+            </select>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            >
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="title">By Title</option>
+            </select>
           </div>
         </div>
       </div>
@@ -752,31 +718,13 @@ const NotificationManagement = () => {
                         <p className="text-gray-300 text-sm mb-3 line-clamp-2 leading-relaxed">
                           {notification.message}
                         </p>
-                        {/* Show sender information if available */}
-                        {notification.sender && (
-                          <p className="text-gray-400 text-xs mb-2">
-                            Sent by: {notification.sender.firstName} {notification.sender.lastName}
-                            {notification.sender.email && ` (${notification.sender.email})`}
-                          </p>
-                        )}
                       </div>
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-4 text-xs">
                       <span className="flex items-center gap-1.5 text-gray-400 bg-slate-700/50 px-2 py-1 rounded-lg">
                         {getRecipientIcon(notification.recipients)}
-                        {notification.recipients === 'specific' && notification.recipientsList && notification.recipientsList.length > 0 ? (
-                          <>
-                            {notification.recipientsList.map((user, idx) => (
-                              <span key={user._id}>
-                                {user.email || `${user.firstName} ${user.lastName}`}
-                                {idx < notification.recipientsList.length - 1 ? ', ' : ''}
-                              </span>
-                            ))}
-                          </>
-                        ) : (
-                          getRecipientText(notification)
-                        )}
+                        {getRecipientText(notification)}
                       </span>
                       
                       <span className="flex items-center gap-1.5 text-gray-400 bg-slate-700/50 px-2 py-1 rounded-lg">
@@ -863,7 +811,6 @@ const NotificationManagement = () => {
           </div>
         </div>
       )}
-      </div>
     </div>
   );
 };
