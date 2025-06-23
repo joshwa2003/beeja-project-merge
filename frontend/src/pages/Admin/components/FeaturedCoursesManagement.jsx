@@ -41,8 +41,8 @@ const FeaturedCoursesManagement = () => {
       const response = await getFeaturedCourses();
       if (response) {
         setFeaturedCourses({
-          popularPicks: response.popularPicks || [],
-          topEnrollments: response.topEnrollments || []
+          popularPicks: response.popularPicks?.map(course => course._id) || [],
+          topEnrollments: response.topEnrollments?.map(course => course._id) || []
         });
       }
     } catch (error) {
@@ -55,7 +55,12 @@ const FeaturedCoursesManagement = () => {
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      await updateFeaturedCourses(featuredCourses, token);
+      // Extract just the course IDs from the state
+      const dataToSend = {
+        popularPicks: featuredCourses.popularPicks,
+        topEnrollments: featuredCourses.topEnrollments
+      };
+      await updateFeaturedCourses(dataToSend, token);
       toast.success('Featured courses updated successfully!');
     } catch (error) {
       console.error('Error saving featured courses:', error);
