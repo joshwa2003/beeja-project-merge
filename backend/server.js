@@ -36,9 +36,15 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Body parser middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Body parser middleware with increased limits
+app.use(express.json({ limit: '500mb' }));
+app.use(express.urlencoded({ extended: true, limit: '500mb' }));
+
+// Increase timeout for large uploads
+app.use((req, res, next) => {
+    res.setTimeout(300000); // 5 minutes timeout
+    next();
+});
 
 // Log all incoming requests (after body parsing)
 app.use((req, res, next) => {
@@ -75,7 +81,7 @@ app.use((err, req, res, next) => {
     
     if (err.name === 'MulterError') {
         if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({ error: 'File size is too large. Maximum limit is 100MB.' });
+            return res.status(400).json({ error: 'File size is too large. Maximum limit is 500MB.' });
         }
         return res.status(400).json({ error: err.message });
     }

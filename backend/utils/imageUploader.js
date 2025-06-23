@@ -7,19 +7,42 @@ exports.uploadImageToCloudinary = async (file, folder, height, quality) => {
         if (quality) options.quality = quality;
 
         options.resource_type = 'auto';
+        options.chunk_size = 6000000; // 6MB chunks for better upload handling
         
-        // Handle both file path (disk storage) and file buffer (memory storage)
-        const filePath = file.path || file.tempFilePath;
-        return await cloudinary.uploader.upload(filePath, options);
+        // Create a promise to handle the upload
+        return new Promise((resolve, reject) => {
+            // Create upload stream
+            const uploadStream = cloudinary.uploader.upload_stream(
+                options,
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                }
+            );
+
+            // If file is in memory (Buffer)
+            if (file.buffer) {
+                uploadStream.end(file.buffer);
+            } 
+            // If file is on disk
+            else if (file.path) {
+                const fs = require('fs');
+                fs.createReadStream(file.path)
+                    .pipe(uploadStream)
+                    .on('error', (error) => {
+                        reject(error);
+                    });
+            } else {
+                reject(new Error('Invalid file format'));
+            }
+        });
     }
     catch (error) {
-        console.log("Error while uploading image");
+        console.log("Error while uploading file to Cloudinary");
         console.log(error);
         throw error;
     }
 }
-
-
 
 // Function to delete a resource by public ID
 exports.deleteResourceFromCloudinary = async (url) => {
@@ -52,7 +75,6 @@ exports.deleteResourceFromCloudinary = async (url) => {
 
         const result = await cloudinary.uploader.destroy(publicId);
         console.log(`Deleted resource with public ID: ${publicId}`);
-        console.log('Delete Resource result = ', result);
         return result;
     } catch (error) {
         console.error(`Error deleting resource with URL ${url}:`, error);
