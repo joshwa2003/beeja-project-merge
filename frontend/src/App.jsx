@@ -59,6 +59,7 @@ import VideoDetails from './components/core/ViewCourse/VideoDetails';
 import { ACCOUNT_TYPE } from './utils/constants';
 
 import { HiArrowNarrowUp } from "react-icons/hi"
+import FaqButton from "./components/common/FaqButton"
 
 
 function App() {
@@ -109,6 +110,9 @@ function App() {
       >
         <HiArrowNarrowUp />
       </button>
+
+      {/* FAQ Button */}
+      <FaqButton />
 
       <Routes>
         <Route path="/" element={<Home />} />

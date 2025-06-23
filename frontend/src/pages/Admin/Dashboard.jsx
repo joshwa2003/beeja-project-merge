@@ -14,6 +14,7 @@ import QuizManagement from './components/QuizManagement';
 import NotificationManagement from './components/NotificationManagement';
 import FeaturedCoursesManagement from './components/FeaturedCoursesManagement';
 import ContactMessages from '../../components/core/Dashboard/Admin/ContactMessages';
+import FaqManagement from './components/FaqManagement';
 
 const AdminDashboard = () => {
   const { user } = useSelector((state) => state.profile);
@@ -31,6 +32,7 @@ const AdminDashboard = () => {
     { id: 'notifications', label: 'Notification Management' },
     { id: 'contactMessages', label: 'Contact Messages' },
     { id: 'featuredCourses', label: 'Featured Courses Management' },
+    { id: 'faqs', label: 'FAQ Management' },
     { id: 'analytics', label: 'Analytics Dashboard' },
     { id: 'settings', label: 'Settings' },
   ];
@@ -94,6 +96,7 @@ const AdminDashboard = () => {
                   {activeTab === 'notifications' && <NotificationManagement />}
                   {activeTab === 'contactMessages' && <ContactMessages />}
                   {activeTab === 'featuredCourses' && <FeaturedCoursesManagement />}
+                  {activeTab === 'faqs' && <FaqManagement />}
                 </>
               )}
             </motion.div>

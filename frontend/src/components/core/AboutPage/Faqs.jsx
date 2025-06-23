@@ -1,12 +1,17 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import HighlightText from '../HomePage/HighlightText'
 import { motion } from 'framer-motion'
 import { fadeIn } from '../../common/motionFrameVarients'
+import { getPublishedFaqs } from '../../../services/operations/faqAPI'
+import { toast } from 'react-hot-toast'
 
 const FAQSection = () => {
   const [activeIndex, setActiveIndex] = useState(null)
+  const [faqData, setFaqData] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const faqData = [
+  // Fallback FAQ data in case API fails
+  const fallbackFaqData = [
     {
       question: "How does Beeja ensure the quality of its courses?",
       answer: "At Beeja, course quality is our priority. We collaborate with industry experts to design and update our curriculum, ensuring it aligns with the latest trends and standards. Our rigorous review process includes user feedback and continuous assessments. Rest assured, our commitment to providing high-quality, relevant content ensures an enriching learning experience for our users, preparing them for success in their chosen fields."
@@ -28,6 +33,31 @@ const FAQSection = () => {
       answer: "Yes, we offer a satisfaction guarantee. If you're unsatisfied with your course, you can request a refund within the first 7 days of purchase. Our support team will guide you through the refund process and gather feedback to help us improve our offerings. Terms and conditions apply to specific courses and circumstances."
     }
   ]
+
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      try {
+        setLoading(true)
+        const publishedFaqs = await getPublishedFaqs()
+        
+        if (publishedFaqs && Array.isArray(publishedFaqs) && publishedFaqs.length > 0) {
+          setFaqData(publishedFaqs)
+        } else {
+          // Use fallback data if no published FAQs are available
+          console.log('No published FAQs found, using fallback data')
+          setFaqData(fallbackFaqData)
+        }
+      } catch (error) {
+        console.error('Error fetching FAQs:', error)
+        // Use fallback data on error
+        setFaqData(fallbackFaqData)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchFaqs()
+  }, [])
 
   const toggleAccordion = (index) => {
     setActiveIndex(activeIndex === index ? null : index)
@@ -51,38 +81,42 @@ const FAQSection = () => {
       </motion.div>
 
       <div className="mt-8 space-y-4 max-w-[800px] mx-auto">
-        {faqData.map((faq, index) => (
-          <motion.div
-            key={index}
-            variants={fadeIn('up', 0.1 * (index + 1))}
-            initial='hidden'
-            whileInView={'show'}
-            viewport={{ once: false, amount: 0.1 }}
-            className="border border-richblack-600 rounded-lg overflow-hidden bg-richblack-800"
-          >
-            <button
-              className="w-full px-6 py-4 text-left hover:bg-richblack-700 transition-all duration-300 flex justify-between items-center"
-              onClick={() => toggleAccordion(index)}
+        {loading ? (
+          <div className="text-center text-richblack-300">Loading FAQs...</div>
+        ) : (
+          faqData.map((faq, index) => (
+            <motion.div
+              key={index}
+              variants={fadeIn('up', 0.1 * (index + 1))}
+              initial='hidden'
+              whileInView={'show'}
+              viewport={{ once: false, amount: 0.1 }}
+              className="border border-richblack-600 rounded-lg overflow-hidden bg-richblack-800"
             >
-              <span className="text-lg font-medium text-richblack-5">{faq.question}</span>
-              <span 
-                className={`transform transition-transform duration-300 text-xl text-richblack-5
-                  ${activeIndex === index ? 'rotate-180' : ''}`}
+              <button
+                className="w-full px-6 py-4 text-left hover:bg-richblack-700 transition-all duration-300 flex justify-between items-center"
+                onClick={() => toggleAccordion(index)}
               >
-                ▼
-              </span>
-            </button>
-            
-            <div 
-              className={`transition-all duration-300 ease-in-out overflow-hidden
-                ${activeIndex === index ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
-            >
-              <p className="p-6 text-richblack-300 text-base leading-relaxed">
-                {faq.answer}
-              </p>
-            </div>
-          </motion.div>
-        ))}
+                <span className="text-lg font-medium text-richblack-5">{faq.question}</span>
+                <span 
+                  className={`transform transition-transform duration-300 text-xl text-richblack-5
+                    ${activeIndex === index ? 'rotate-180' : ''}`}
+                >
+                  ▼
+                </span>
+              </button>
+              
+              <div 
+                className={`transition-all duration-300 ease-in-out overflow-hidden
+                  ${activeIndex === index ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
+              >
+                <p className="p-6 text-richblack-300 text-base leading-relaxed">
+                  {faq.answer}
+                </p>
+              </div>
+            </motion.div>
+          ))
+        )}
       </div>
     </section>
   )

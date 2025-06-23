@@ -147,3 +147,13 @@ export const notificationEndpoints = {
   MARK_ALL_READ_API: BASE_URL + "/api/v1/notification/mark-all-as-read",
   DELETE_NOTIFICATION_API: BASE_URL + "/api/v1/notification/delete",
 }
+
+// FAQ ENDPOINTS
+export const faqEndpoints = {
+  SUBMIT_QUESTION_API: BASE_URL + "/api/v1/faqs/ask",
+  GET_ALL_FAQS_API: BASE_URL + "/api/v1/faqs/all",
+  GET_PUBLISHED_FAQS_API: BASE_URL + "/api/v1/faqs/published",
+  ANSWER_FAQ_API: BASE_URL + "/api/v1/faqs/answer/:id",
+  TOGGLE_FAQ_PUBLISH_API: BASE_URL + "/api/v1/faqs/toggle-publish/:id",
+  DELETE_FAQ_API: BASE_URL + "/api/v1/faqs/delete/:id",
+}
