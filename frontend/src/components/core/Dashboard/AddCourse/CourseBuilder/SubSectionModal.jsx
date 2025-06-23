@@ -8,7 +8,6 @@ import {
   createSubSection,
   updateSubSection,
 } from "../../../../../services/operations/courseDetailsAPI"
-import { getAllQuizzes } from "../../../../../services/operations/quizAPI"
 import { setCourse } from "../../../../../slices/courseSlice"
 import IconBtn from "../../../../common/IconBtn"
 import Upload from "../Upload"
@@ -24,7 +23,6 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
 
   const dispatch = useDispatch()
   const [loading, setLoading] = useState(false)
-  const [quizzes, setQuizzes] = useState([])
   const { token } = useSelector((state) => state.auth)
   const { course } = useSelector((state) => state.course)
 
@@ -33,25 +31,8 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
       setValue("lectureTitle", modalData.title)
       setValue("lectureDesc", modalData.description)
       setValue("lectureVideo", modalData.videoUrl)
-      setValue("quiz", modalData.quiz?._id || "")
     }
-    
-    // Load available quizzes
-    loadQuizzes()
   }, [])
-
-  const loadQuizzes = async () => {
-    try {
-      const response = await getAllQuizzes(token)
-      if (response) {
-        setQuizzes(response)
-      }
-    } catch (error) {
-      console.error("Error loading quizzes:", error)
-      // Set empty array if quiz loading fails
-      setQuizzes([])
-    }
-  }
 
   // detect whether form is updated or not
   const isFormUpdated = () => {
@@ -59,8 +40,7 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
     if (
       currentValues.lectureTitle !== modalData.title ||
       currentValues.lectureDesc !== modalData.description ||
-      currentValues.lectureVideo !== modalData.videoUrl ||
-      currentValues.quiz !== (modalData.quiz?._id || "")
+      currentValues.lectureVideo !== modalData.videoUrl
     ) {
       return true
     }
@@ -84,9 +64,6 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
       }
       if (currentValues.lectureVideo !== modalData.videoUrl) {
         formData.append("video", currentValues.lectureVideo)
-      }
-      if (currentValues.quiz !== (modalData.quiz?._id || "")) {
-        formData.append("quiz", currentValues.quiz)
       }
       
       const result = await updateSubSection(formData, token)
@@ -143,42 +120,43 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
       formData.append("title", data.lectureTitle)
       formData.append("description", data.lectureDesc)
       formData.append("video", data.lectureVideo)
-      if (data.quiz) {
-        formData.append("quiz", data.quiz)
-      }
 
       // Create subsection with timeout
       const timeoutDuration = 300000 // 5 minutes
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), timeoutDuration)
 
-      const subsectionResult = await Promise.race([
-        createSubSection(formData, token),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Upload timeout')), timeoutDuration)
-        )
-      ])
+      try {
+        const subsectionResult = await Promise.race([
+          createSubSection(formData, token),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Upload timeout')), timeoutDuration)
+          )
+        ])
 
-      clearTimeout(timeoutId)
-      
-      if (subsectionResult) {
-        // Update course structure
-        const updatedCourseContent = course.courseContent.map((section) =>
-          section._id === modalData ? subsectionResult : section
-        )
-        const updatedCourse = { ...course, courseContent: updatedCourseContent }
-        dispatch(setCourse(updatedCourse))
-        toast.success("Lecture added successfully")
-        setModalData(null)
-      } else {
-        throw new Error("Failed to create lecture")
-      }
-    } catch (error) {
-      console.error("Error creating subsection:", error)
-      if (error.message === 'Upload timeout') {
-        toast.error("Upload timed out. Please try again with a smaller video file.")
-      } else {
-        toast.error("Failed to add lecture. Please try again.")
+        clearTimeout(timeoutId)
+        
+        if (subsectionResult) {
+          // Update course structure
+          const updatedCourseContent = course.courseContent.map((section) =>
+            section._id === modalData ? subsectionResult : section
+          )
+          const updatedCourse = { ...course, courseContent: updatedCourseContent }
+          dispatch(setCourse(updatedCourse))
+          toast.success("Lecture added successfully")
+          setModalData(null)
+        }
+      } catch (error) {
+        console.error("Error creating subsection:", error)
+        if (error?.response?.status === 401) {
+          toast.error("Session expired. Please login again.")
+          // You might want to redirect to login or refresh token here
+        } else if (error.message === 'Upload timeout') {
+          toast.error("Upload timed out. Please try again with a smaller video file.")
+        } else {
+          toast.error(error?.response?.data?.message || "Failed to add lecture. Please try again.")
+        }
+        throw error
       }
     } finally {
       setLoading(false)
@@ -187,10 +165,10 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
   }
 
   return (
-    <div className="fixed inset-0 z-[1000] !mt-0 flex h-screen w-screen items-center justify-center overflow-auto bg-white bg-opacity-10 backdrop-blur-sm p-4">
-      <div className="max-h-[90vh] w-full max-w-[700px] overflow-y-auto rounded-lg border border-richblack-400 bg-richblack-800 p-6">
+    <div className="fixed inset-0 z-[1000] !mt-0 grid place-items-center overflow-auto bg-white bg-opacity-10 backdrop-blur-sm">
+      <div className="my-4 w-11/12 max-w-[700px] rounded-lg border border-richblack-400 bg-richblack-800">
         {/* Modal Header */}
-        <div className="flex items-center justify-between rounded-t-lg bg-richblack-700 p-5">
+        <div className="sticky top-0 z-10 flex items-center justify-between rounded-t-lg bg-richblack-700 p-4 md:p-5">
           <p className="text-xl font-semibold text-richblack-5">
             {view && "Viewing"} {add && "Adding"} {edit && "Editing"} Lecture
           </p>
@@ -199,89 +177,131 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
           </button>
         </div>
         {/* Modal Form */}
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="space-y-8 px-8 py-10 max-h-[70vh] overflow-y-auto"
-        >
-          {/* Lecture Video Upload */}
-          <Upload
-            name="lectureVideo"
-            label="Lecture Video"
-            register={register}
-            setValue={setValue}
-            errors={errors}
-            video={true}
-            viewData={view ? modalData.videoUrl : null}
-            editData={edit ? modalData.videoUrl : null}
-          />
-          {/* Lecture Title */}
-          <div className="flex flex-col space-y-2">
-            <label className="text-sm text-richblack-5" htmlFor="lectureTitle">
-              Lecture Title {!view && <sup className="text-pink-200">*</sup>}
-            </label>
-            <input
-              disabled={view || loading}
-              id="lectureTitle"
-              placeholder="Enter Lecture Title"
-              {...register("lectureTitle", { required: true })}
-              className="form-style w-full"
-            />
-            {errors.lectureTitle && (
-              <span className="ml-2 text-xs tracking-wide text-pink-200">
-                Lecture title is required
-              </span>
-            )}
-          </div>
-          
-          {/* Lecture Description */}
-          <div className="flex flex-col space-y-2">
-            <label className="text-sm text-richblack-5" htmlFor="lectureDesc">
-              Lecture Description{" "}
-              {!view && <sup className="text-pink-200">*</sup>}
-            </label>
-            <textarea
-              disabled={view || loading}
-              id="lectureDesc"
-              placeholder="Enter Lecture Description"
-              {...register("lectureDesc", { required: true })}
-              className="form-style resize-x-none min-h-[130px] w-full"
-            />
-            {errors.lectureDesc && (
-              <span className="ml-2 text-xs tracking-wide text-pink-200">
-                Lecture Description is required
-              </span>
-            )}
-          </div>
-
-          {/* Quiz Selection
-          <div className="flex flex-col space-y-2">
-            <label className="text-sm text-richblack-5" htmlFor="quiz">
-              Attach Quiz (Optional)
-            </label>
-            <select
-              disabled={view || loading}
-              id="quiz"
-              {...register("quiz")}
-              className="form-style w-full"
-            >
-              <option value="">No Quiz</option>
-              {quizzes.map((quiz) => (
-                <option key={quiz._id} value={quiz._id}>
-                  {quiz.title}
-                </option>
-              ))}
-            </select>
-          </div> */}
-
-          {!view && (
-            <div className="flex justify-end">
-              <IconBtn
-                disabled={loading}
-                text={loading ? "Loading.." : edit ? "Save Changes" : "Save"}
+        <div className="max-h-[calc(90vh-80px)] overflow-y-auto">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-6 p-4 md:p-6 lg:p-8"
+          >
+            {/* Video Upload Section */}
+            <div className="space-y-4">
+              <div className="border-b border-richblack-600 pb-4">
+                <h3 className="text-lg font-medium text-richblack-5 mb-2">
+                  📹 Video Content
+                </h3>
+                <p className="text-sm text-richblack-300">
+                  Upload your lecture video (Max: 100MB, Format: MP4)
+                </p>
+              </div>
+              <Upload
+                name="lectureVideo"
+                label="Lecture Video"
+                register={register}
+                setValue={setValue}
+                errors={errors}
+                video={true}
+                viewData={view ? modalData.videoUrl : null}
+                editData={edit ? modalData.videoUrl : null}
               />
             </div>
-          )}
-        </form>
+
+            {/* Lecture Details Section */}
+            <div className="space-y-4">
+              <div className="border-b border-richblack-600 pb-4">
+                <h3 className="text-lg font-medium text-richblack-5 mb-2">
+                  📝 Lecture Details
+                </h3>
+                <p className="text-sm text-richblack-300">
+                  Provide clear and descriptive information about your lecture
+                </p>
+              </div>
+              
+              {/* Responsive Grid for Form Fields */}
+              <div className="grid grid-cols-1 gap-4 lg:gap-6">
+                {/* Lecture Title */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-richblack-5" htmlFor="lectureTitle">
+                    Lecture Title {!view && <sup className="text-pink-200">*</sup>}
+                  </label>
+                  <input
+                    disabled={view || loading}
+                    id="lectureTitle"
+                    placeholder="Enter a clear and descriptive title"
+                    {...register("lectureTitle", { 
+                      required: "Lecture title is required",
+                      minLength: {
+                        value: 3,
+                        message: "Title must be at least 3 characters long"
+                      },
+                      maxLength: {
+                        value: 100,
+                        message: "Title must be less than 100 characters"
+                      }
+                    })}
+                    className="form-style w-full transition-all duration-200 focus:ring-2 focus:ring-yellow-50 focus:border-yellow-50"
+                  />
+                  {errors.lectureTitle && (
+                    <span className="flex items-center text-xs text-pink-200 mt-1">
+                      <span className="mr-1">⚠️</span>
+                      {errors.lectureTitle.message}
+                    </span>
+                  )}
+                </div>
+                
+                {/* Lecture Description */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-richblack-5" htmlFor="lectureDesc">
+                    Lecture Description {!view && <sup className="text-pink-200">*</sup>}
+                  </label>
+                  <textarea
+                    disabled={view || loading}
+                    id="lectureDesc"
+                    placeholder="Describe what students will learn in this lecture..."
+                    {...register("lectureDesc", { 
+                      required: "Lecture description is required",
+                      minLength: {
+                        value: 10,
+                        message: "Description must be at least 10 characters long"
+                      },
+                      maxLength: {
+                        value: 1000,
+                        message: "Description must be less than 1000 characters"
+                      }
+                    })}
+                    className="form-style resize-none min-h-[120px] w-full transition-all duration-200 focus:ring-2 focus:ring-yellow-50 focus:border-yellow-50"
+                    rows="4"
+                  />
+                  {errors.lectureDesc && (
+                    <span className="flex items-center text-xs text-pink-200 mt-1">
+                      <span className="mr-1">⚠️</span>
+                      {errors.lectureDesc.message}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            {!view && (
+              <div className="sticky bottom-0 bg-richblack-800 pt-4 border-t border-richblack-600">
+                <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setModalData(null)}
+                    disabled={loading}
+                    className="w-full sm:w-auto px-6 py-3 text-richblack-5 bg-richblack-600 rounded-lg hover:bg-richblack-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Cancel
+                  </button>
+                  <IconBtn
+                    disabled={loading}
+                    text={loading ? "Processing..." : edit ? "Save Changes" : "Add Lecture"}
+                    className="w-full sm:w-auto"
+                  />
+                </div>
+              </div>
+            )}
+          </form>
+        </div>
       </div>
     </div>
   )

@@ -104,19 +104,36 @@ exports.isStudent = (req, res, next) => {
 // ================ IS INSTRUCTOR ================
 exports.isInstructor = (req, res, next) => {
     try {
-        // Allow both Instructors and Admins
-        if (req.user?.accountType !== 'Instructor' && req.user?.accountType !== 'Admin') {
+        console.log('=== IS INSTRUCTOR MIDDLEWARE START ===');
+        console.log('Checking instructor status for request:', req.method, req.url);
+        console.log('User object from request:', req.user);
+        
+        if (!req.user) {
+            console.log('❌ No user object found in request');
             return res.status(401).json({
                 success: false,
-                message: 'This page is protected for Instructors and Admins only'
+                message: 'User not authenticated'
+            });
+        }
+
+        // Allow both Instructors and Admins
+        if (req.user?.accountType !== 'Instructor' && req.user?.accountType !== 'Admin') {
+            console.log('❌ User is not instructor or admin:', req.user.accountType);
+            return res.status(401).json({
+                success: false,
+                message: 'This page is protected for Instructors and Admins only',
+                currentRole: req.user.accountType
             })
         }
+        
+        console.log('✅ User verified as Instructor/Admin:', req.user.accountType);
         // go to next middleware
         next();
     }
     catch (error) {
-        console.log('Error while checking user validity with Instructor/Admin accountType');
-        console.log(error);
+        console.log('❌ Error in isInstructor middleware:', error.message);
+        console.log('Error stack:', error.stack);
+        console.log('Request user at time of error:', req.user);
         return res.status(500).json({
             success: false,
             error: error.message,
