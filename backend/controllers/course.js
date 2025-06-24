@@ -322,8 +322,10 @@ exports.getCourseDetails = async (req, res) => {
         let totalDurationInSeconds = 0
         courseDetails.courseContent.forEach((content) => {
             content.subSection.forEach((subSection) => {
-                const timeDurationInSeconds = parseInt(subSection.timeDuration)
-                totalDurationInSeconds += timeDurationInSeconds
+                const timeDurationInSeconds = parseFloat(subSection.timeDuration)
+                if (!isNaN(timeDurationInSeconds) && timeDurationInSeconds > 0) {
+                    totalDurationInSeconds += timeDurationInSeconds
+                }
             })
         })
 
@@ -411,8 +413,10 @@ exports.getFullCourseDetails = async (req, res) => {
         let totalDurationInSeconds = 0
         courseDetails.courseContent.forEach((content) => {
             content.subSection.forEach((subSection) => {
-                const timeDurationInSeconds = parseInt(subSection.timeDuration)
-                totalDurationInSeconds += timeDurationInSeconds
+                const timeDurationInSeconds = parseFloat(subSection.timeDuration)
+                if (!isNaN(timeDurationInSeconds) && timeDurationInSeconds > 0) {
+                    totalDurationInSeconds += timeDurationInSeconds
+                }
             })
         })
 
@@ -576,11 +580,27 @@ exports.getInstructorCourses = async (req, res) => {
             .sort({ createdAt: -1 })
 
 
-        // Return the instructor's courses
+        // Calculate total duration for each course
+        const coursesWithDuration = instructorCourses.map(course => {
+            let totalDurationInSeconds = 0
+            course.courseContent.forEach((content) => {
+                content.subSection.forEach((subSection) => {
+                    const timeDurationInSeconds = parseFloat(subSection.timeDuration)
+                    if (!isNaN(timeDurationInSeconds) && timeDurationInSeconds > 0) {
+                        totalDurationInSeconds += timeDurationInSeconds
+                    }
+                })
+            })
+            return {
+                ...course.toObject(),
+                totalDuration: convertSecondsToDuration(totalDurationInSeconds)
+            }
+        })
+
+        // Return the instructor's courses with duration
         res.status(200).json({
             success: true,
-            data: instructorCourses,
-            // totalDurationInSeconds:totalDurationInSeconds,
+            data: coursesWithDuration,
             message: 'Courses made by Instructor fetched successfully'
         })
     } catch (error) {

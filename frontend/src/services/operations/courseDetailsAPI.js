@@ -343,58 +343,9 @@ export const fetchInstructorCourses = async (token, userRole) => {
     if (!response?.data?.success) {
       throw new Error("Could Not Fetch Instructor Courses")
     }
-    // Calculate total duration for each course
-    result = response?.data?.data.map(course => {
-      let totalDurationInSeconds = 0
-      
-      // First check if the course has any content
-      if (!course.courseContent || !Array.isArray(course.courseContent) || course.courseContent.length === 0) {
-        return { ...course, totalDuration: "0s" }
-      }
-
-      // Process each section's subsections
-      course.courseContent.forEach((section) => {
-        // Check if section has subsections
-        if (section && section.subSection && Array.isArray(section.subSection)) {
-          section.subSection.forEach((subSection) => {
-            if (subSection && subSection.timeDuration) {
-              const duration = parseFloat(subSection.timeDuration)
-              if (!isNaN(duration) && duration > 0) {
-                totalDurationInSeconds += duration
-              }
-            }
-          })
-        }
-      })
-      
-      console.log("Total duration in seconds:", totalDurationInSeconds)
-      
-      // Convert seconds to hours, minutes, and seconds
-      const hours = Math.floor(totalDurationInSeconds / 3600)
-      const minutes = Math.floor((totalDurationInSeconds % 3600) / 60)
-      const seconds = Math.floor((totalDurationInSeconds % 3600) % 60)
-
-      // Format duration string
-      let totalDuration = ""
-      if (hours > 0) {
-        totalDuration += `${hours}h `
-      }
-      if (minutes > 0 || hours > 0) {
-        totalDuration += `${minutes}m `
-      }
-      if (seconds > 0 || (hours === 0 && minutes === 0)) {
-        totalDuration += `${seconds}s`
-      }
-      totalDuration = totalDuration.trim() || "0s"
-      
-      console.log("Final duration:", totalDuration)
-      console.log("=== END COURSE DEBUG ===")
-
-      return {
-        ...course,
-        totalDuration
-      }
-    })
+    
+    // Use the totalDuration calculated by the backend
+    result = response?.data?.data || []
   } catch (error) {
     console.log("INSTRUCTOR COURSES API ERROR............", error)
     toast.error(error.message)
