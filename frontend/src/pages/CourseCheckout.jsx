@@ -184,9 +184,9 @@ function CourseCheckout() {
                 </div>
 
                 {couponDiscount > 0 && (
-                  <div className="flex justify-between text-green-300">
+                  <div className="flex justify-between text-green-400">
                     <span>Coupon Discount:</span>
-                    <span className="font-bold">-₹{couponDiscount}</span>
+                    <span className="font-bold text-green-400">-₹{couponDiscount}</span>
                   </div>
                 )}
                 

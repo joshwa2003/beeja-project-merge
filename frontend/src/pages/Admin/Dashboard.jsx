@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { FaUsers, FaBookOpen, FaChartBar, FaGraduationCap, FaQuestionCircle, FaChartLine, FaTag } from 'react-icons/fa';
 import { MdSettings } from 'react-icons/md';
+import { VscPackage } from 'react-icons/vsc';
 
 import StudentProgress from './components/StudentProgress/StudentProgress';
 
@@ -17,6 +18,7 @@ import QuizManagement from './components/QuizManagement';
 import CourseCategories from '../../components/core/Dashboard/AddCategory/CourseCategories';
 import BundleAccessRequests from './components/BundleAccessRequests';
 import Coupons from './Coupons';
+import Orders from './components/Orders';
 
 const AdminDashboard = () => {
   const { user } = useSelector((state) => state.profile);
@@ -34,6 +36,7 @@ const AdminDashboard = () => {
     { id: 'studentProgress', label: 'Student Progress', icon: <FaChartLine className="w-5 h-5" /> },
     { id: 'accessRequests', label: 'Access Requests', icon: <FaUsers className="w-5 h-5" /> },
     { id: 'bundleRequests', label: 'Bundle Requests', icon: <FaUsers className="w-5 h-5" /> },
+    { id: 'orders', label: 'Orders', icon: <VscPackage className="w-5 h-5" /> },
     { id: 'coupons', label: 'Coupons', icon: <FaTag className="w-5 h-5" /> },
     { id: 'analytics', label: 'Analytics', icon: <FaChartBar className="w-5 h-5" /> },
     { id: 'settings', label: 'Settings', icon: <MdSettings className="w-5 h-5" /> },
@@ -99,6 +102,7 @@ const AdminDashboard = () => {
                 {activeTab === 'quizzes' && <QuizManagement />}
                 {activeTab === 'bundleRequests' && <BundleAccessRequests />}
                 {activeTab === 'studentProgress' && <StudentProgress />}
+                {activeTab === 'orders' && <Orders />}
                 {activeTab === 'coupons' && <Coupons />}
               </>
             )}

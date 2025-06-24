@@ -36,27 +36,47 @@ export default function AdminCourseBuilder({ course, onCourseUpdate }) {
       if (course?._id && token) {
         try {
           setLoading(true)
+          console.log("Fetching course details for course ID:", course._id)
           const fullCourseDetails = await getFullDetailsOfCourse(course._id, token)
+          console.log("API Response:", fullCourseDetails)
+          
           if (fullCourseDetails) {
-            console.log("Full course details:", fullCourseDetails)
-            const courseData = fullCourseDetails.courseDetails || fullCourseDetails
+            // Handle different response structures
+            let courseData;
+            if (fullCourseDetails.data && fullCourseDetails.data.courseDetails) {
+              courseData = fullCourseDetails.data.courseDetails;
+            } else if (fullCourseDetails.courseDetails) {
+              courseData = fullCourseDetails.courseDetails;
+            } else if (fullCourseDetails.data) {
+              courseData = fullCourseDetails.data;
+            } else {
+              courseData = fullCourseDetails;
+            }
+            
+            console.log("Processed course data:", courseData)
+            console.log("Course content:", courseData.courseContent)
+            
             setCourseData(courseData)
             setOriginalCourseData(JSON.parse(JSON.stringify(courseData))) // Deep copy for comparison
             setHasUnsavedChanges(false)
           } else {
+            console.log("No course details returned, using original course data")
             setCourseData(course)
             setOriginalCourseData(JSON.parse(JSON.stringify(course)))
           }
         } catch (error) {
           console.error("Error fetching full course details:", error)
+          console.error("Error details:", error.response?.data || error.message)
           setCourseData(course)
           setOriginalCourseData(JSON.parse(JSON.stringify(course)))
         } finally {
           setLoading(false)
         }
       } else {
+        console.log("No course ID or token, using original course data")
         setCourseData(course)
         setOriginalCourseData(JSON.parse(JSON.stringify(course)))
+        setLoading(false)
       }
     }
 

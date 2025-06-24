@@ -26,17 +26,54 @@ export async function updateQuizProgress(data, token) {
 
 export async function checkSectionAccess(data, token) {
   try {
+    // Add timeout to prevent hanging requests
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+    
     const response = await apiConnector("POST", CHECK_SECTION_ACCESS_API, data, {
       Authorization: `Bearer ${token}`,
+      signal: controller.signal
     })
+    
+    clearTimeout(timeoutId)
     console.log("CHECK SECTION ACCESS API RESPONSE............", response)
+    
     if (!response?.data?.success) {
-      throw new Error("Could Not Check Section Access")
+      throw new Error(response?.data?.message || "Could Not Check Section Access")
     }
     return response?.data?.hasAccess
   } catch (error) {
     console.log("CHECK SECTION ACCESS API ERROR............", error)
-    // Return false to indicate no access in case of error
+    
+    // Handle timeout errors
+    if (error.name === 'AbortError') {
+      console.log("Request timeout - assuming no access for safety")
+      return false
+    }
+    
+    // Handle specific error cases
+    if (error.response?.status === 403) {
+      console.log("Access denied - course access disabled by admin")
+      return false
+    }
+    
+    if (error.response?.status === 404) {
+      console.log("Course or section not found")
+      return false
+    }
+    
+    if (error.response?.status === 400) {
+      console.log("Bad request - invalid course or section ID")
+      return false
+    }
+    
+    // For network errors or other issues, return false to be safe
+    if (error.code === 'NETWORK_ERROR' || error.code === 'ERR_NETWORK' || !error.response) {
+      console.log("Network error or server unavailable")
+      return false
+    }
+    
+    // Return false to indicate no access in case of any error
     return false
   }
 }

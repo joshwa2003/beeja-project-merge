@@ -70,4 +70,11 @@ export const sidebarLinks = [
     type: ACCOUNT_TYPE.ADMIN,
     icon: "VscTag",
   },
+  {
+    id: 11,
+    name: "Orders",
+    path: "/admin",
+    type: ACCOUNT_TYPE.ADMIN,
+    icon: "VscPackage",
+  },
 ];

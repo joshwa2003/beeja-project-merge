@@ -23,7 +23,9 @@ export default function CouponForm({ onSuccess }) {
     defaultValues: {
       linkedTo: 'course',
       showOnFront: false,
-      isActive: true
+      isActive: true,
+      priority: 0,
+      isCombinable: false
     }
   });
 
@@ -42,9 +44,12 @@ export default function CouponForm({ onSuccess }) {
         // Convert string numbers to actual numbers
         discountValue: parseFloat(data.discountValue),
         minimumOrderAmount: parseFloat(data.minimumOrderAmount || 0),
+        maxDiscountAmount: parseFloat(data.maxDiscountAmount || 0),
         usageLimit: parseInt(data.usageLimit || 0),
         perUserLimit: parseInt(data.perUserLimit || 0),
+        priority: parseInt(data.priority || 0),
         showOnFront: showOnFront,
+        isCombinable: !!data.isCombinable,
       };
 
       const result = await dispatch(createCoupon(formData, token));
@@ -187,6 +192,32 @@ export default function CouponForm({ onSuccess }) {
               </div>
               {errors.discountValue && <span className="text-xs text-red-400">{errors.discountValue.message}</span>}
             </div>
+
+            {/* Max Discount Amount (only for percentage) */}
+            {watchDiscountType === 'percentage' && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-richblack-5 flex items-center gap-2">
+                  <FiDollarSign className="text-orange-400 text-sm" />
+                  Max Discount Amount
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    placeholder="0 for unlimited"
+                    {...register("maxDiscountAmount", {
+                      min: {
+                        value: 0,
+                        message: "Value must be positive"
+                      }
+                    })}
+                    className="w-full px-4 py-3.5 bg-richblack-600 border border-richblack-500 rounded-xl text-richblack-5 placeholder-richblack-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 hover:bg-richblack-500/80"
+                  />
+                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-richblack-400 text-sm">₹</span>
+                </div>
+                {errors.maxDiscountAmount && <span className="text-xs text-red-400">{errors.maxDiscountAmount.message}</span>}
+                <p className="text-xs text-richblack-400">Maximum discount amount for percentage coupons</p>
+              </div>
+            )}
 
             {/* Minimum Order Amount */}
             <div className="space-y-2">
@@ -344,6 +375,48 @@ export default function CouponForm({ onSuccess }) {
                   : 'Coupon code will remain hidden from frontend'
                 }
               </p>
+            </div>
+
+            {/* Priority Setting */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-richblack-5 flex items-center gap-2">
+                <FiTag className="text-purple-400 text-sm" />
+                Priority Level
+              </label>
+              <input
+                type="number"
+                placeholder="0 (lowest) to 10 (highest)"
+                {...register("priority", {
+                  min: {
+                    value: 0,
+                    message: "Priority must be between 0 and 10"
+                  },
+                  max: {
+                    value: 10,
+                    message: "Priority must be between 0 and 10"
+                  }
+                })}
+                className="w-full px-4 py-3.5 bg-richblack-600 border border-richblack-500 rounded-xl text-richblack-5 placeholder-richblack-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 hover:bg-richblack-500/80"
+              />
+              {errors.priority && <span className="text-xs text-red-400">{errors.priority.message}</span>}
+              <p className="text-xs text-richblack-400">Higher priority coupons are applied first when multiple coupons are valid</p>
+            </div>
+
+            {/* Combinable Setting */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-richblack-5 flex items-center gap-2">
+                <FiTag className="text-cyan-400 text-sm" />
+                Combinable with Other Coupons
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  {...register("isCombinable")}
+                  className="h-5 w-5 text-cyan-500 bg-richblack-600 border-richblack-500 rounded-md focus:ring-cyan-500 focus:ring-2 transition-all duration-200"
+                />
+                <span className="text-sm text-richblack-300">Allow combining with other coupons</span>
+              </div>
+              <p className="text-xs text-richblack-400">If checked, this coupon can be used together with other combinable coupons</p>
             </div>
 
             {/* Active Status */}

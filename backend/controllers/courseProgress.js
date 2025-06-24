@@ -13,6 +13,32 @@ exports.updateCourseProgress = async (req, res) => {
   console.log("Request data:", { courseId, subsectionId, userId })
 
   try {
+    // Check if user has access to this course (either free course or active order)
+    const Order = require('../models/order');
+    const Course = require('../models/course');
+    
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: 'Course not found.',
+      });
+    }
+
+    const isFree = course.courseType === 'Free' || course.adminSetFree;
+    const activeOrder = await Order.findOne({
+      user: userId,
+      course: courseId,
+      status: true
+    });
+
+    if (!isFree && !activeOrder) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Course access has been disabled by admin.',
+      });
+    }
+
     // Check if the subsection is valid
     const subsection = await SubSection.findById(subsectionId)
     console.log("Subsection found:", subsection ? "Yes" : "No")
@@ -79,6 +105,32 @@ exports.updateQuizProgress = async (req, res) => {
   console.log("Request data:", { courseId, subsectionId, quizId, score, totalMarks, userId })
 
   try {
+    // Check if user has access to this course (either free course or active order)
+    const Order = require('../models/order');
+    const Course = require('../models/course');
+    
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: 'Course not found.',
+      });
+    }
+
+    const isFree = course.courseType === 'Free' || course.adminSetFree;
+    const activeOrder = await Order.findOne({
+      user: userId,
+      course: courseId,
+      status: true
+    });
+
+    if (!isFree && !activeOrder) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Course access has been disabled by admin.',
+      });
+    }
+
     // Check if the subsection is valid
     const subsection = await SubSection.findById(subsectionId)
     if (!subsection) {
@@ -169,8 +221,42 @@ exports.checkSectionAccess = async (req, res) => {
   const userId = req.user.id
 
   try {
-    // Get course with sections and subsections
+    // Input validation
+    if (!courseId || !sectionId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Course ID and Section ID are required.',
+      });
+    }
+
+    // Check if user has access to this course (either free course or active order)
+    const Order = require('../models/order');
     const Course = require("../models/course")
+    
+    const courseBasic = await Course.findById(courseId);
+    if (!courseBasic) {
+      return res.status(404).json({
+        success: false,
+        message: 'Course not found.',
+      });
+    }
+
+    const isFree = courseBasic.courseType === 'Free' || courseBasic.adminSetFree;
+    const activeOrder = await Order.findOne({
+      user: userId,
+      course: courseId,
+      status: true
+    });
+
+    if (!isFree && !activeOrder) {
+      console.log(`Access denied for user ${userId} - no active order for course ${courseId}`);
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Course access has been disabled or not purchased.',
+      });
+    }
+
+    // Get course with sections and subsections
     const course = await Course.findById(courseId)
       .populate({
         path: "courseContent",
@@ -183,7 +269,11 @@ exports.checkSectionAccess = async (req, res) => {
       })
 
     if (!course) {
-      return res.status(404).json({ error: "Course not found" })
+      console.log(`Course not found: ${courseId}`);
+      return res.status(404).json({
+        success: false,
+        message: "Course not found"
+      });
     }
 
     // Find the course progress
@@ -198,12 +288,17 @@ exports.checkSectionAccess = async (req, res) => {
     )
 
     if (sectionIndex === -1) {
-      return res.status(404).json({ error: "Section not found" })
+      console.log(`Section not found: ${sectionId} in course ${courseId}`);
+      return res.status(404).json({
+        success: false,
+        message: "Section not found"
+      });
     }
 
     // First section is always accessible
     if (sectionIndex === 0) {
       return res.status(200).json({ 
+        success: true,
         hasAccess: true,
         message: "First section is always accessible"
       })
@@ -212,6 +307,7 @@ exports.checkSectionAccess = async (req, res) => {
     // Check if previous section is completed (both video and quiz)
     const previousSection = course.courseContent[sectionIndex - 1]
     let previousSectionCompleted = true
+    let incompleteItems = [];
 
     for (const subsection of previousSection.subSection) {
       // Check if video is completed
@@ -224,21 +320,35 @@ exports.checkSectionAccess = async (req, res) => {
       }
 
       if (!videoCompleted || !quizCompleted) {
-        previousSectionCompleted = false
-        break
+        previousSectionCompleted = false;
+        incompleteItems.push({
+          type: !videoCompleted ? 'video' : 'quiz',
+          title: subsection.title
+        });
       }
     }
 
+    // Detailed response with incomplete items if access is denied
     return res.status(200).json({ 
+      success: true,
       hasAccess: previousSectionCompleted,
       message: previousSectionCompleted 
         ? "Access granted" 
-        : "Complete previous section's videos and quizzes to unlock"
+        : "Complete previous section's content to unlock",
+      details: !previousSectionCompleted ? {
+        sectionName: previousSection.sectionName,
+        incompleteItems: incompleteItems
+      } : undefined
     })
 
   } catch (error) {
-    console.error("Error in checkSectionAccess:", error)
-    return res.status(500).json({ error: "Internal server error" })
+    console.error("Error in checkSectionAccess:", error);
+    console.error("Stack trace:", error.stack);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 }
 

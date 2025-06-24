@@ -37,19 +37,19 @@ const VideoDetails = () => {
       if (!courseId && !sectionId && !subSectionId) {
         navigate(`/dashboard/enrolled-courses`)
       } else {
-        // console.log("courseSectionData", courseSectionData)
         const filteredData = courseSectionData.filter(
           (course) => course._id === sectionId
         )
-        // console.log("filteredData", filteredData)
         const filteredVideoData = filteredData?.[0]?.subSection.filter(
           (data) => data._id === subSectionId
         )
-        // console.log("filteredVideoData = ", filteredVideoData)
-        if (filteredVideoData) {
+        if (filteredVideoData?.length > 0) {
           setVideoData(filteredVideoData[0])
+          // Only set preview source if we have valid video data
+          if (courseEntireData?.thumbnail) {
+            setPreviewSource(courseEntireData.thumbnail)
+          }
         }
-        setPreviewSource(courseEntireData.thumbnail)
         setVideoEnded(false)
       }
     })()
@@ -167,11 +167,19 @@ const VideoDetails = () => {
 
 
       {!videoData ? (
-        <img
-          src={previewSource}
-          alt="Preview"
-          className="h-full w-full rounded-md object-cover"
-        />
+        <div className="flex flex-col items-center justify-center h-[400px] bg-richblack-800 rounded-md">
+          <div className="animate-pulse">
+            <div className="h-4 w-48 bg-richblack-700 rounded mb-4"></div>
+            <div className="h-2 w-32 bg-richblack-700 rounded"></div>
+          </div>
+        </div>
+      ) : !videoData.videoUrl ? (
+        <div className="flex flex-col items-center justify-center h-[400px] bg-richblack-800 rounded-md">
+          <div className="text-center">
+            <p className="text-richblack-200 text-lg mb-2">No video available for this lecture</p>
+            <p className="text-richblack-400 text-sm">Please proceed to the next section or check back later.</p>
+          </div>
+        </div>
       ) : (
         <Player
           ref={playerRef}
@@ -179,7 +187,7 @@ const VideoDetails = () => {
           playsInline
           autoPlay
           onEnded={() => setVideoEnded(true)}
-          src={videoData?.videoUrl}
+          src={videoData.videoUrl}
         >
           <BigPlayButton position="center" />
           {/* Render When Video Ends */}

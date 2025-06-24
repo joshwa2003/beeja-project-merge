@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const Course = require("../models/course");
+const Order = require("../models/order");
 const mongoose = require("mongoose");
 const mailSender = require("../utils/mailSender");
 const { courseEnrollmentEmail } = require("../mail/templates/courseEnrollmentEmail");
@@ -84,6 +85,21 @@ exports.verifyPayment = async (req, res) => {
         if (courses.length !== coursesId.length) {
             throw new Error("One or more courses not found");
         }
+
+        // Create order records for each course with active status
+        const orderPromises = courses.map(course => {
+            return Order.create({
+                user: userId,
+                course: course._id,
+                amount: course.price || 0,
+                status: true, // Set as active by default
+                paymentMethod: 'test', // Default payment method for testing
+                transactionId: `TXN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                purchaseDate: new Date()
+            });
+        });
+
+        const orders = await Promise.all(orderPromises);
 
         // Add courses to user's enrolled courses using $addToSet to avoid duplicates
         const updatedUser = await User.findByIdAndUpdate(

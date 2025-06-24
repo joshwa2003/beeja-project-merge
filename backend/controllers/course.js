@@ -344,7 +344,52 @@ exports.getFullCourseDetails = async (req, res) => {
     try {
         const { courseId } = req.body
         const userId = req.user.id
-        // console.log('courseId userId  = ', courseId, " == ", userId)
+        const userAccountType = req.user.accountType
+        console.log('getFullCourseDetails - User accessing course:', { userId, courseId, accountType: userAccountType })
+
+        // Find the course first
+        const course = await Course.findById(courseId);
+        if (!course) {
+            return res.status(404).json({
+                success: false,
+                message: 'Course not found'
+            });
+        }
+
+        // Check access permissions based on user type
+        if (userAccountType === 'Admin') {
+            // Admin has full access
+            console.log('Admin access granted');
+        } 
+        else if (userAccountType === 'Instructor' && course.instructor.toString() === userId) {
+            // Instructor can access their own courses
+            console.log('Instructor access granted - course owner');
+        }
+        else if (userAccountType === 'Student') {
+            // For students, check if they are enrolled in the course
+            const user = await User.findById(userId).select('courses');
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'User not found'
+                });
+            }
+
+            const isEnrolled = user.courses.some(c => c.toString() === courseId);
+            if (!isEnrolled) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'You are not enrolled in this course'
+                });
+            }
+            console.log('Student access granted - enrolled in course');
+        }
+        else {
+            return res.status(403).json({
+                success: false,
+                message: 'You are not authorized to access this course'
+            });
+        }
 
         const courseDetails = await Course.findOne({
             _id: courseId,

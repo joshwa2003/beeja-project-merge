@@ -93,6 +93,7 @@ export const adminEndpoints = {
   CREATE_COUPON_API: BASE_URL + "/api/v1/admin/coupons/create",
   VALIDATE_COUPON_API: BASE_URL + "/api/v1/admin/coupons/validate",
   APPLY_COUPON_API: BASE_URL + "/api/v1/admin/coupons/apply",
+  VALIDATE_AND_APPLY_COUPON_API: BASE_URL + "/api/v1/admin/coupons/validate-and-apply",
   TOGGLE_COUPON_STATUS_API: BASE_URL + "/api/v1/admin/coupons/:couponId/toggle",
 
   // Course Management
@@ -109,6 +110,12 @@ export const adminEndpoints = {
 
   // Analytics
   GET_ANALYTICS_API: BASE_URL + "/api/v1/admin/analytics",
+
+  // Orders Management
+  GET_ALL_ORDERS_API: BASE_URL + "/api/v1/admin/orders",
+  DELETE_ORDER_API: BASE_URL + "/api/v1/admin/orders/:orderId",
+  UPDATE_ORDER_STATUS_API: BASE_URL + "/api/v1/admin/orders/:orderId/status",
+  GENERATE_ORDERS_PDF_API: BASE_URL + "/api/v1/admin/orders/export-pdf",
 }
 
 // COURSE ACCESS ENDPOINTS

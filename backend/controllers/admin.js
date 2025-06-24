@@ -1,6 +1,7 @@
 const User = require('../models/user');
 const Course = require('../models/course');
 const Profile = require('../models/profile');
+const Order = require('../models/order');
 const bcrypt = require('bcrypt');
 
 const mongoose = require('mongoose');

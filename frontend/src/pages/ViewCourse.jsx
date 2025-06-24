@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { Outlet, useParams } from "react-router-dom"
+import { Outlet, useParams, useNavigate } from "react-router-dom"
+import { toast } from "react-hot-toast"
 
 import CourseReviewModal from "../components/core/ViewCourse/CourseReviewModal"
 import VideoDetailsSidebar from "../components/core/ViewCourse/VideoDetailsSidebar"
@@ -23,26 +24,58 @@ export default function ViewCourse() {
   const { courseId } = useParams()
   const { token } = useSelector((state) => state.auth)
   const dispatch = useDispatch()
+  const navigate = useNavigate()
   const [reviewModal, setReviewModal] = useState(false)
 
   // get Full Details Of Course
   useEffect(() => {
     ; (async () => {
-      const courseData = await getFullDetailsOfCourse(courseId, token)
-      // console.log("Course Data here... ", courseData.courseDetails)
-      dispatch(setCourseSectionData(courseData.courseDetails.courseContent))
-      dispatch(setEntireCourseData(courseData.courseDetails))
-      dispatch(setCompletedLectures(courseData.completedVideos))
-      dispatch(setCompletedQuizzes(courseData.completedQuizzes))
-      dispatch(setPassedQuizzes(courseData.passedQuizzes))
-      let lectures = 0
-      courseData?.courseDetails?.courseContent?.forEach((sec) => {
-        lectures += sec.subSection.length
-      })
-      dispatch(setTotalNoOfLectures(lectures))
+      try {
+        const courseData = await getFullDetailsOfCourse(courseId, token)
+        
+        // Check if courseData and courseDetails exist
+        if (courseData && courseData.courseDetails) {
+          // console.log("Course Data here... ", courseData.courseDetails)
+          dispatch(setCourseSectionData(courseData.courseDetails.courseContent))
+          dispatch(setEntireCourseData(courseData.courseDetails))
+          dispatch(setCompletedLectures(courseData.completedVideos || []))
+          dispatch(setCompletedQuizzes(courseData.completedQuizzes || []))
+          dispatch(setPassedQuizzes(courseData.passedQuizzes || []))
+          
+          let lectures = 0
+          courseData?.courseDetails?.courseContent?.forEach((sec) => {
+            lectures += sec.subSection.length
+          })
+          dispatch(setTotalNoOfLectures(lectures))
+        } else {
+          console.error("Course data not found or invalid response")
+          // Handle the case where course data is not available
+          dispatch(setCourseSectionData([]))
+          dispatch(setEntireCourseData({}))
+          dispatch(setCompletedLectures([]))
+          dispatch(setCompletedQuizzes([]))
+          dispatch(setPassedQuizzes([]))
+          dispatch(setTotalNoOfLectures(0))
+          // Navigate to dashboard if course data is not available
+          navigate('/dashboard/enrolled-courses')
+          toast.error("Unable to access this course")
+        }
+      } catch (error) {
+        console.error("Error fetching course details:", error)
+        // Handle error case
+        dispatch(setCourseSectionData([]))
+        dispatch(setEntireCourseData({}))
+        dispatch(setCompletedLectures([]))
+        dispatch(setCompletedQuizzes([]))
+        dispatch(setPassedQuizzes([]))
+        dispatch(setTotalNoOfLectures(0))
+        // Navigate to dashboard on error
+        navigate('/dashboard/enrolled-courses')
+        toast.error(error?.response?.data?.message || "Error loading course")
+      }
     })()
 
-  }, [])
+  }, [courseId, token, navigate])
 
 
   // handle sidebar for small devices

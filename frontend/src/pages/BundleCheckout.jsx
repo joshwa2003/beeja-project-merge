@@ -264,9 +264,9 @@ function BundleCheckout() {
 
                 {getBundleDiscount() > 0 && (
                   <>
-                    <div className="flex justify-between text-green-300">
+                    <div className="flex justify-between text-green-400">
                       <span className="text-richblack-100">Bundle Discount ({Math.round(getBundleDiscount() * 100)}%):</span>
-                      <span className="font-bold text-green-300">-₹{getSavings()}</span>
+                      <span className="font-bold text-green-400">-₹{getSavings()}</span>
                     </div>
                     
                     <div className="bg-gradient-to-r from-green-900/30 to-green-800/30 border border-green-600 rounded-lg p-4">
@@ -281,9 +281,9 @@ function BundleCheckout() {
                 <hr className="border-richblack-600" />
                 
                 {couponDiscount > 0 && (
-                  <div className="flex justify-between text-green-300">
+                  <div className="flex justify-between text-green-400">
                     <span>Coupon Discount:</span>
-                    <span className="font-bold">-₹{couponDiscount}</span>
+                    <span className="font-bold text-green-400">-₹{couponDiscount}</span>
                   </div>
                 )}
 

@@ -372,8 +372,19 @@ export const getFullDetailsOfCourse = async (courseId, token) => {
     result = response?.data?.data
   } catch (error) {
     console.log("COURSE_FULL_DETAILS_API API ERROR............", error)
-    result = error.response.data
-    // toast.error(error.response.data.message);
+    
+    // Show appropriate error message to user
+    if (error.response?.status === 401) {
+      toast.error("You are not authorized to access this course")
+    } else if (error.response?.status === 403) {
+      toast.error("You are not enrolled in this course")
+    } else if (error.response?.status === 404) {
+      toast.error("Course not found")
+    } else {
+      toast.error(error.response?.data?.message || error.message || "Failed to load course details")
+    }
+    
+    result = null // Return null instead of error data
   }
   // toast.dismiss(toastId)
   //   dispatch(setLoading(false));

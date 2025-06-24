@@ -1,12 +1,45 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import { useSelector } from "react-redux"
 import { motion, AnimatePresence } from "framer-motion"
 import BundleCourseCard from "./BundleCourseCard"
 import { FiShoppingCart, FiArrowRight, FiX, FiPackage } from "react-icons/fi"
+import { getUserEnrolledCourses } from "../../../services/operations/profileAPI"
 
 function BundleCourseSection({ courses }) {
   const [selectedCourses, setSelectedCourses] = useState([])
+  const [availableCourses, setAvailableCourses] = useState([])
+  const [enrolledCourses, setEnrolledCourses] = useState([])
   const navigate = useNavigate()
+  const { token } = useSelector((state) => state.auth)
+
+  // Fetch enrolled courses and filter available courses
+  useEffect(() => {
+    const fetchEnrolledCourses = async () => {
+      if (token) {
+        try {
+          const enrolled = await getUserEnrolledCourses(token)
+          setEnrolledCourses(enrolled)
+          
+          // Filter out enrolled courses from available courses
+          if (courses && courses.length > 0) {
+            const enrolledCourseIds = enrolled.map(course => course._id)
+            const filtered = courses.filter(course => !enrolledCourseIds.includes(course._id))
+            setAvailableCourses(filtered)
+          }
+        } catch (error) {
+          console.error("Error fetching enrolled courses:", error)
+          // If error, show all courses
+          setAvailableCourses(courses || [])
+        }
+      } else {
+        // If no token (not logged in), show all courses
+        setAvailableCourses(courses || [])
+      }
+    }
+
+    fetchEnrolledCourses()
+  }, [courses, token])
 
   const handleCourseSelect = (course) => {
     setSelectedCourses(prev => {
@@ -83,21 +116,30 @@ function BundleCourseSection({ courses }) {
       
       {/* Course Grid */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 md:grid-cols-2 xl:grid-cols-4">
-        {courses?.map((course, index) => (
-          <motion.div
-            key={course._id || index}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <BundleCourseCard
-              course={course}
-              isSelected={selectedCourses.some(c => c._id === course._id)}
-              onSelect={handleCourseSelect}
-              Height="h-[220px]"
-            />
-          </motion.div>
-        ))}
+        {availableCourses.length === 0 ? (
+          <div className="col-span-full text-center text-richblack-300 py-8">
+            {token ? 
+              "You are already enrolled in all available courses in this category." :
+              "Please log in to view available courses for bundle purchase."
+            }
+          </div>
+        ) : (
+          availableCourses.map((course, index) => (
+            <motion.div
+              key={course._id || index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <BundleCourseCard
+                course={course}
+                isSelected={selectedCourses.some(c => c._id === course._id)}
+                onSelect={handleCourseSelect}
+                Height="h-[220px]"
+              />
+            </motion.div>
+          ))
+        )}
       </div>
 
       {/* Selected Courses Summary */}

@@ -11,6 +11,25 @@ exports.generateCertificate = async (req, res) => {
 
     // Check if course exists
     const course = await Course.findById(courseId);
+    
+    // Check if user has access to this course (either free course or active order)
+    const isFree = course.courseType === 'Free' || course.adminSetFree;
+    
+    if (!isFree) {
+      const Order = require('../models/order');
+      const activeOrder = await Order.findOne({
+        user: userId,
+        course: courseId,
+        status: true
+      });
+
+      if (!activeOrder) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied. Course access has been disabled by admin.',
+        });
+      }
+    }
     if (!course) {
       return res.status(404).json({
         success: false,

@@ -306,60 +306,78 @@ exports.getEnrolledCourses = async (req, res) => {
 
         userDetails = userDetails.toObject()
 
-        var SubsectionLength = 0
-        for (var i = 0; i < userDetails.courses.length; i++) {
-            let totalDurationInSeconds = 0
-            SubsectionLength = 0
-            for (var j = 0; j < userDetails.courses[i].courseContent.length; j++) {
-                totalDurationInSeconds += userDetails.courses[i].courseContent[
-                    j
-                ].subSection.reduce((acc, curr) => acc + parseInt(curr.timeDuration), 0)
+        // Import Order model to check order status
+        const Order = require('../models/order');
 
-                userDetails.courses[i].totalDuration = convertSecondsToDuration(totalDurationInSeconds)
-                SubsectionLength += userDetails.courses[i].courseContent[j].subSection.length
-            }
-
-            let courseProgress = await CourseProgress.findOne({
-                courseID: userDetails.courses[i]._id,
-                userId: userId,
+        // Filter courses based on order status or if they're free
+        const activeCourses = []
+        
+        for (let i = 0; i < userDetails.courses.length; i++) {
+            const course = userDetails.courses[i]
+            
+            // Check if course is free or has an active order
+            const isFree = course.courseType === 'Free' || course.adminSetFree;
+            const activeOrder = await Order.findOne({
+                user: userId,
+                course: course._id,
+                status: true
             })
 
-            if (!courseProgress) {
-                userDetails.courses[i].progressPercentage = 0
-            } else {
-                // Calculate progress using the same logic as certificate generation
-                let totalItems = 0
-                let completedItems = 0
+            // Process courses that are either free or have active orders
+            if (isFree || activeOrder) {
+                let totalDurationInSeconds = 0
+                let SubsectionLength = 0
+                
+                for (var j = 0; j < course.courseContent.length; j++) {
+                    totalDurationInSeconds += course.courseContent[j].subSection.reduce((acc, curr) => acc + parseInt(curr.timeDuration), 0)
+                    course.totalDuration = convertSecondsToDuration(totalDurationInSeconds)
+                    SubsectionLength += course.courseContent[j].subSection.length
+                }
 
-                // Count videos and quizzes for each subsection
-                for (let j = 0; j < userDetails.courses[i].courseContent.length; j++) {
-                    for (let k = 0; k < userDetails.courses[i].courseContent[j].subSection.length; k++) {
-                        const subsection = userDetails.courses[i].courseContent[j].subSection[k]
-                        
-                        // Count video
-                        totalItems += 1
-                        if (courseProgress.completedVideos.includes(subsection._id)) {
-                            completedItems += 1
-                        }
+                let courseProgress = await CourseProgress.findOne({
+                    courseID: course._id,
+                    userId: userId,
+                })
 
-                        // Count quiz if exists
-                        if (subsection.quiz) {
+                if (!courseProgress) {
+                    course.progressPercentage = 0
+                } else {
+                    // Calculate progress using the same logic as certificate generation
+                    let totalItems = 0
+                    let completedItems = 0
+
+                    // Count videos and quizzes for each subsection
+                    for (let j = 0; j < course.courseContent.length; j++) {
+                        for (let k = 0; k < course.courseContent[j].subSection.length; k++) {
+                            const subsection = course.courseContent[j].subSection[k]
+                            
+                            // Count video
                             totalItems += 1
-                            if (courseProgress.completedQuizzes && courseProgress.completedQuizzes.includes(subsection._id)) {
+                            if (courseProgress.completedVideos.includes(subsection._id)) {
                                 completedItems += 1
+                            }
+
+                            // Count quiz if exists
+                            if (subsection.quiz) {
+                                totalItems += 1
+                                if (courseProgress.completedQuizzes && courseProgress.completedQuizzes.includes(subsection._id)) {
+                                    completedItems += 1
+                                }
                             }
                         }
                     }
-                }
 
-                if (totalItems === 0) {
-                    userDetails.courses[i].progressPercentage = 100
-                } else {
-                    // To make it up to 2 decimal point
-                    const multiplier = Math.pow(10, 2)
-                    userDetails.courses[i].progressPercentage =
-                        Math.round((completedItems / totalItems) * 100 * multiplier) / multiplier
+                    if (totalItems === 0) {
+                        course.progressPercentage = 100
+                    } else {
+                        // To make it up to 2 decimal point
+                        const multiplier = Math.pow(10, 2)
+                        course.progressPercentage =
+                            Math.round((completedItems / totalItems) * 100 * multiplier) / multiplier
+                    }
                 }
+                
+                activeCourses.push(course)
             }
         }
 
@@ -372,7 +390,7 @@ exports.getEnrolledCourses = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            data: userDetails.courses,
+            data: activeCourses,
         })
     } catch (error) {
         return res.status(500).json({

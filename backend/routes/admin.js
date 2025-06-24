@@ -17,11 +17,23 @@ const {
     setCourseType,
     getAllInstructors
 } = require('../controllers/admin');
-const { createCoupon, validateCoupon, applyCoupon, getAllCoupons, getFrontendCoupons, toggleCouponStatus } = require('../controllers/coupon');
+const { 
+    createCoupon, 
+    validateCoupon, 
+    applyCoupon, 
+    validateAndApplyCoupon,
+    getAllCoupons, 
+    getFrontendCoupons, 
+    toggleCouponStatus,
+    getCouponAnalytics,
+    cleanupExpiredCoupons
+} = require('../controllers/coupon');
+const { getAllOrders, deleteOrder, updateOrderStatus, generateOrdersPDF } = require('../controllers/order');
 
 // Import middleware
 const { auth, isAdmin } = require('../middleware/auth');
 const { upload } = require('../middleware/multer');
+const { couponValidationLimiter } = require('../middleware/rateLimiter');
 
 // ================ USER MANAGEMENT ROUTES ================
 router.get('/users', auth, isAdmin, getAllUsers);
@@ -47,9 +59,18 @@ router.get('/analytics', auth, isAdmin, getAnalytics);
 // ================ COUPON ROUTES ================
 router.get('/coupons', auth, isAdmin, getAllCoupons);
 router.get('/coupons/frontend', getFrontendCoupons); // Public endpoint for frontend coupons
+router.get('/coupons/:couponId/analytics', auth, isAdmin, getCouponAnalytics); // Get analytics for specific coupon
 router.post('/coupons/create', auth, isAdmin, createCoupon);
-router.post('/coupons/validate', auth, validateCoupon);
-router.post('/coupons/apply', auth, applyCoupon);
+router.post('/coupons/validate', auth, couponValidationLimiter, validateCoupon); // Legacy endpoint with rate limiting
+router.post('/coupons/apply', auth, couponValidationLimiter, applyCoupon); // Legacy endpoint with rate limiting
+router.post('/coupons/validate-and-apply', auth, couponValidationLimiter, validateAndApplyCoupon); // New combined endpoint
 router.patch('/coupons/:couponId/toggle', auth, isAdmin, toggleCouponStatus);
+router.post('/coupons/cleanup-expired', auth, isAdmin, cleanupExpiredCoupons); // Cleanup expired coupons
+
+// ================ ORDER ROUTES ================
+router.get('/orders', auth, isAdmin, getAllOrders);
+router.delete('/orders/:orderId', auth, isAdmin, deleteOrder);
+router.patch('/orders/:orderId/status', auth, isAdmin, updateOrderStatus);
+router.get('/orders/export-pdf', auth, isAdmin, generateOrdersPDF);
 
 module.exports = router;

@@ -146,7 +146,7 @@ exports.createSubSection = async (req, res) => {
             }
         } else {
             console.log('No video file provided, creating subsection without video');
-            videoUrl = 'https://via.placeholder.com/640x360?text=No+Video'; // Placeholder
+            videoUrl = null; // No video URL when no file is provided
         }
 
         // create entry in DB

@@ -16,6 +16,21 @@ const couponSchema = new mongoose.Schema({
     discountValue: {
         type: Number,
         required: true,
+        min: 0,
+        validate: {
+            validator: function(value) {
+                // For percentage discounts, value should not exceed 100
+                if (this.discountType === 'percentage') {
+                    return value <= 100;
+                }
+                return true;
+            },
+            message: 'Percentage discount cannot exceed 100%'
+        }
+    },
+    maxDiscountAmount: {
+        type: Number,
+        default: 0, // 0 means no maximum limit
         min: 0
     },
     usageLimit: {
@@ -43,6 +58,15 @@ const couponSchema = new mongoose.Schema({
     showOnFront: {
         type: Boolean,
         default: false
+    },
+    priority: {
+        type: Number,
+        default: 0, // Higher number = higher priority for display
+        min: 0
+    },
+    isCombinable: {
+        type: Boolean,
+        default: false // Whether this coupon can be combined with others
     },
     courses: [{
         type: mongoose.Schema.Types.ObjectId,
@@ -74,9 +98,30 @@ const couponSchema = new mongoose.Schema({
             default: 1
         }
     }],
+    analytics: {
+        timesViewed: {
+            type: Number,
+            default: 0
+        },
+        timesValidated: {
+            type: Number,
+            default: 0
+        },
+        successfulUses: {
+            type: Number,
+            default: 0
+        },
+        failedAttempts: {
+            type: Number,
+            default: 0
+        }
+    },
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    lastUsed: {
+        type: Date
     }
 });
 

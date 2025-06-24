@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { validateCoupon, applyCoupon, getAllCoupons } from '../../../../services/operations/couponAPI';
+import { validateAndApplyCoupon, getAllCoupons } from '../../../../services/operations/couponAPI';
 import { toast } from 'react-hot-toast';
 import CouponSuccessModal from '../../../common/CouponSuccessModal';
 
@@ -11,6 +11,7 @@ export default function CouponInput({ totalAmount, onCouponApply, checkoutType =
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [availableCoupons, setAvailableCoupons] = useState([]);
+  const [pricePreview, setPricePreview] = useState(null);
 
   useEffect(() => {
     const fetchAvailableCoupons = async () => {
@@ -37,9 +38,11 @@ export default function CouponInput({ totalAmount, onCouponApply, checkoutType =
     }
 
     setLoading(true);
+    setPricePreview(null);
+    
     try {
-      // First validate the coupon
-      const validationResult = await validateCoupon(
+      // Use the new combined endpoint to validate and apply in one call
+      const result = await validateAndApplyCoupon(
         {
           code,
           totalAmount,
@@ -48,27 +51,28 @@ export default function CouponInput({ totalAmount, onCouponApply, checkoutType =
         token
       );
 
-      // If validation successful, apply the coupon
-      if (validationResult.success) {
-        const applyResult = await applyCoupon({ code }, token);
+      if (result.success) {
+        // Store the applied coupon details
+        setAppliedCoupon({
+          code,
+          discountAmount: result.data.discountAmount,
+          finalAmount: result.data.finalAmount
+        });
         
-        if (applyResult.success) {
-          // Store the applied coupon details
-          setAppliedCoupon({
-            code,
-            discountAmount: validationResult.data.discountAmount
-          });
-          
-          // Call the parent component's callback with discount details
-          onCouponApply(validationResult.data);
-          
-          // Show success modal
-          setShowSuccessModal(true);
-        }
+        // Call the parent component's callback with discount details
+        onCouponApply(result.data);
+        
+        // Show success modal
+        setShowSuccessModal(true);
+        
+        // Clear any price preview
+        setPricePreview(null);
       }
     } catch (error) {
-      // Provide more specific error messages based on the error type
-      if (error.message && error.message.includes('not applicable for this checkout type')) {
+      // Handle rate limiting specifically
+      if (error.message && error.message.includes('Too many coupon attempts')) {
+        toast.error('Too many attempts. Please wait before trying again.');
+      } else if (error.message && error.message.includes('not applicable for this checkout type')) {
         toast.error('This coupon cannot be used for this type of purchase.');
       } else if (error.message) {
         toast.error(error.message);
@@ -85,6 +89,7 @@ export default function CouponInput({ totalAmount, onCouponApply, checkoutType =
   const handleCancelCoupon = () => {
     setAppliedCoupon(null);
     setCouponCode('');
+    setPricePreview(null);
     onCouponApply({ discountAmount: 0 });
   };
 

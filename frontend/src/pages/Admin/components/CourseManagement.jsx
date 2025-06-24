@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { getAllCourses, approveCourse, deleteCourse, toggleCourseVisibility } from "../../../services/operations/adminAPI";
+import { getFullDetailsOfCourse } from "../../../services/operations/courseDetailsAPI";
 import { FaCheck, FaTrash, FaEye, FaEyeSlash, FaPlus, FaEdit } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import ConfirmationModal from "../../../components/common/ConfirmationModal";
@@ -109,8 +110,22 @@ const CourseManagement = () => {
     }
   };
 
-  const handleEditCourse = (course) => {
-    setEditingCourse(course);
+  const handleEditCourse = async (course) => {
+    try {
+      console.log("Fetching full course details for editing...");
+      const fullCourseDetails = await getFullDetailsOfCourse(course._id, token);
+      if (fullCourseDetails?.data) {
+        console.log("Full course details fetched:", fullCourseDetails.data);
+        setEditingCourse(fullCourseDetails.data);
+      } else {
+        console.log("Using basic course details:", course);
+        setEditingCourse(course);
+      }
+    } catch (error) {
+      console.error("Error fetching full course details:", error);
+      toast.error("Error loading course details");
+      setEditingCourse(course);
+    }
     setShowCreateCourse(false);
   };
 

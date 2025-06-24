@@ -2,7 +2,7 @@ import { toast } from "react-hot-toast";
 import { apiConnector } from "../apiConnector";
 import { adminEndpoints } from "../apis";
 
-const { GET_ALL_COUPONS_API, GET_FRONTEND_COUPONS_API, CREATE_COUPON_API, VALIDATE_COUPON_API, APPLY_COUPON_API, TOGGLE_COUPON_STATUS_API } = adminEndpoints;
+const { GET_ALL_COUPONS_API, GET_FRONTEND_COUPONS_API, CREATE_COUPON_API, VALIDATE_COUPON_API, APPLY_COUPON_API, VALIDATE_AND_APPLY_COUPON_API, TOGGLE_COUPON_STATUS_API } = adminEndpoints;
 
 export function createCoupon(data, token) {
   return async (dispatch) => {
@@ -27,11 +27,39 @@ export function createCoupon(data, token) {
   };
 }
 
+// Validate and apply coupon in a single request
+export async function validateAndApplyCoupon(data, token) {
+  try {
+    const response = await apiConnector("POST", VALIDATE_AND_APPLY_COUPON_API, 
+      { ...data, applyImmediately: true },
+      { Authorization: `Bearer ${token}` }
+    );
+
+    if (!response?.data?.success) {
+      throw new Error(response?.data?.message || "Could Not Process Coupon");
+    }
+
+    return response.data;
+  } catch (error) {
+    // Handle specific error cases
+    if (error.response?.status === 404) {
+      throw new Error("This coupon cannot be used for this type of purchase.");
+    } else if (error.response?.status === 429) {
+      throw new Error("Too many coupon attempts. Please try again later.");
+    }
+    
+    // For other errors, throw without logging
+    throw new Error(error.response?.data?.message || "Could not process coupon");
+  }
+}
+
+// Legacy validate function (uses new combined endpoint without applying)
 export async function validateCoupon(data, token) {
   try {
-    const response = await apiConnector("POST", VALIDATE_COUPON_API, data, {
-      Authorization: `Bearer ${token}`,
-    });
+    const response = await apiConnector("POST", VALIDATE_AND_APPLY_COUPON_API, 
+      { ...data, applyImmediately: false },
+      { Authorization: `Bearer ${token}` }
+    );
 
     if (!response?.data?.success) {
       throw new Error(response?.data?.message || "Could Not Validate Coupon");
@@ -39,36 +67,19 @@ export async function validateCoupon(data, token) {
 
     return response.data;
   } catch (error) {
-    // Suppress console error for invalid coupons
     if (error.response?.status === 404) {
       throw new Error("This coupon cannot be used for this type of purchase.");
+    } else if (error.response?.status === 429) {
+      throw new Error("Too many coupon attempts. Please try again later.");
     }
     
-    // For other errors, throw without logging
     throw new Error(error.response?.data?.message || "Could not validate coupon");
   }
 }
 
+// Legacy apply function (uses new combined endpoint)
 export async function applyCoupon(data, token) {
-  try {
-    const response = await apiConnector("POST", APPLY_COUPON_API, data, {
-      Authorization: `Bearer ${token}`,
-    });
-
-    if (!response?.data?.success) {
-      throw new Error(response?.data?.message || "Could Not Apply Coupon");
-    }
-
-    return response.data;
-  } catch (error) {
-    // For 404 errors, show the same message as validateCoupon
-    if (error.response?.status === 404) {
-      throw new Error("This coupon cannot be used for this type of purchase.");
-    }
-    
-    // For other errors, throw without logging
-    throw new Error(error.response?.data?.message || "Could not apply coupon");
-  }
+  return validateAndApplyCoupon(data, token);
 }
 
 export async function getAllCoupons(token, linkedTo = null) {
@@ -113,6 +124,44 @@ export async function toggleCouponStatus(couponId, token) {
   } catch (error) {
     console.log("TOGGLE COUPON STATUS API ERROR............", error);
     toast.error(error.response?.data?.message || "Could Not Toggle Coupon Status");
+    throw error;
+  }
+}
+
+// Get analytics for a specific coupon
+export async function getCouponAnalytics(couponId, token) {
+  try {
+    const response = await apiConnector("GET", `${GET_ALL_COUPONS_API}/${couponId}/analytics`, {}, {
+      Authorization: `Bearer ${token}`,
+    });
+
+    if (!response?.data?.success) {
+      throw new Error(response?.data?.message || "Could Not Get Coupon Analytics");
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error("Error getting coupon analytics:", error);
+    throw new Error(error.response?.data?.message || "Could not get coupon analytics");
+  }
+}
+
+// Cleanup expired coupons
+export async function cleanupExpiredCoupons(token) {
+  try {
+    const response = await apiConnector("POST", `${GET_ALL_COUPONS_API.replace('/coupons', '/coupons/cleanup-expired')}`, {}, {
+      Authorization: `Bearer ${token}`,
+    });
+
+    if (!response?.data?.success) {
+      throw new Error(response?.data?.message || "Could Not Cleanup Expired Coupons");
+    }
+
+    toast.success("Expired coupons cleaned up successfully");
+    return response.data;
+  } catch (error) {
+    console.error("Error cleaning up expired coupons:", error);
+    toast.error(error.response?.data?.message || "Could not cleanup expired coupons");
     throw error;
   }
 }

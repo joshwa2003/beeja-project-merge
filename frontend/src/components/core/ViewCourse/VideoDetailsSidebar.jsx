@@ -53,29 +53,40 @@ export default function VideoDetailsSidebar({ setReviewModal }) {
     })()
   }, [courseSectionData, courseEntireData, location.pathname])
 
-  // Check section access for all sections
+  // Check section access for all sections with optimized logic
   useEffect(() => {
     const checkAllSectionAccess = async () => {
       if (!courseSectionData.length || !courseEntireData?._id || !token) return
       
       const accessStatus = {}
-      for (const section of courseSectionData) {
-        try {
-          const hasAccess = await checkSectionAccess({
-            courseId: courseEntireData._id,
-            sectionId: section._id
-          }, token)
-          accessStatus[section._id] = hasAccess
-        } catch (error) {
-          console.error("Error checking section access:", error)
-          accessStatus[section._id] = false
-        }
+      
+      // First section is always accessible
+      if (courseSectionData.length > 0) {
+        accessStatus[courseSectionData[0]._id] = true
       }
+      
+      // For subsequent sections, check if previous section is completed
+      for (let i = 1; i < courseSectionData.length; i++) {
+        const currentSection = courseSectionData[i]
+        const previousSection = courseSectionData[i - 1]
+        
+        // Check if all subsections in previous section are completed
+        const previousSectionCompleted = previousSection.subSection.every(subSec => {
+          const videoCompleted = completedLectures.includes(subSec._id)
+          // If there's a quiz, it should also be completed
+          const quizCompleted = subSec.quiz ? completedQuizzes.includes(subSec._id) : true
+          return videoCompleted && quizCompleted
+        })
+        
+        // Use client-side check as primary source of truth
+        accessStatus[currentSection._id] = previousSectionCompleted
+      }
+      
       setSectionAccess(accessStatus)
     }
 
     checkAllSectionAccess()
-  }, [courseSectionData, courseEntireData, completedLectures, token])
+  }, [courseSectionData, courseEntireData, completedLectures, completedQuizzes, token])
 
 
 
@@ -133,7 +144,7 @@ export default function VideoDetailsSidebar({ setReviewModal }) {
               <div className="flex justify-between bg-richblack-700 px-5 py-4">
                 <div className="w-[70%] font-semibold flex items-center gap-2">
                   {section?.sectionName}
-                  {index > 0 && !(courseSectionData[index-1].subSection.every(subSec => completedLectures.includes(subSec._id))) && (
+                  {index > 0 && !sectionAccess[section._id] && (
                     <div className="relative group">
                       <FaLock size={12} className="text-yellow-50" />
                       <div className="absolute left-0 -top-8 hidden group-hover:block bg-richblack-900 text-xs text-yellow-50 p-2 rounded-md whitespace-nowrap">
@@ -173,16 +184,23 @@ export default function VideoDetailsSidebar({ setReviewModal }) {
               {activeStatus === section?._id && (
                 <div className="transition-[height] duration-500 ease-in-out">
                   {section.subSection.map((topic, i) => {
-                    // Check if this section should be locked
+                    // Check if this section should be locked using the sectionAccess state
                     let isLocked = false
                     
                     if (index > 0) {
-                      // For sections after the first one, check if previous section is completed
-                      const previousSection = courseSectionData[index - 1]
-                      const previousSectionCompleted = previousSection.subSection.every(subSec => 
-                        completedLectures.includes(subSec._id)
-                      )
-                      isLocked = !previousSectionCompleted
+                      // Use the sectionAccess state if available, otherwise fall back to client-side check
+                      if (sectionAccess.hasOwnProperty(section._id)) {
+                        isLocked = !sectionAccess[section._id]
+                      } else {
+                        // Fallback: check if previous section is completed
+                        const previousSection = courseSectionData[index - 1]
+                        const previousSectionCompleted = previousSection.subSection.every(subSec => {
+                          const videoCompleted = completedLectures.includes(subSec._id)
+                          const quizCompleted = subSec.quiz ? completedQuizzes.includes(subSec._id) : true
+                          return videoCompleted && quizCompleted
+                        })
+                        isLocked = !previousSectionCompleted
+                      }
                     }
                     
                     return (

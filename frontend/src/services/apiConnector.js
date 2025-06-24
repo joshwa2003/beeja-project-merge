@@ -17,6 +17,20 @@ export const apiConnector = (method, url, bodyData, headers, params) => {
         ...(headers?.Authorization ? { 'Authorization': headers.Authorization } : {})
     };
 
+    // Extract axios-specific options from params
+    const axiosOptions = {};
+    let queryParams = null;
+    
+    if (params) {
+        // If params contains responseType, it's an axios option
+        if (params.responseType) {
+            axiosOptions.responseType = params.responseType;
+        } else {
+            // Otherwise, it's query parameters
+            queryParams = params;
+        }
+    }
+
     return axiosInstance({
         method: `${method}`,
         url: `${url}`,
@@ -25,7 +39,8 @@ export const apiConnector = (method, url, bodyData, headers, params) => {
             ...defaultHeaders,
             ...headers
         },
-        params: params ? params : null,
-        withCredentials: true
+        params: queryParams,
+        withCredentials: true,
+        ...axiosOptions
     });
 }
