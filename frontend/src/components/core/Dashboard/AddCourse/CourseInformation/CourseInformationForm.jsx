@@ -142,22 +142,34 @@ export default function CourseInformationForm() {
       return
     }
 
-    // user has visted first time to step 1 
-    const formData = new FormData()
-    formData.append("courseName", data.courseTitle)
-    formData.append("courseDescription", data.courseShortDesc)
-    formData.append("price", data.coursePrice)
-    formData.append("tag", JSON.stringify(data.courseTags))
-    formData.append("whatYouWillLearn", data.courseBenefits)
-    formData.append("category", data.courseCategory)
-    formData.append("status", COURSE_STATUS.DRAFT)
-    formData.append("instructions", JSON.stringify(data.courseRequirements))
-    formData.append("thumbnailImage", data.courseImage)
-    
-    setLoading(true)
-    let result
-    
+    // user has visited first time to step 1 
     try {
+      // Validate required fields first
+      if (!data.courseTitle || !data.courseShortDesc || !data.coursePrice || 
+          !data.courseCategory || !data.courseImage || 
+          (user?.accountType === 'Admin' && !data.instructorId)) {
+        throw new Error("Please fill all required fields")
+      }
+
+      const formData = new FormData()
+      formData.append("courseName", data.courseTitle)
+      formData.append("courseDescription", data.courseShortDesc)
+      formData.append("price", data.coursePrice)
+      formData.append("tag", JSON.stringify(data.courseTags || []))
+      formData.append("whatYouWillLearn", data.courseBenefits)
+      formData.append("category", data.courseCategory)
+      formData.append("status", COURSE_STATUS.DRAFT)
+      formData.append("instructions", JSON.stringify(data.courseRequirements || []))
+      formData.append("thumbnailImage", data.courseImage)
+
+      // Add instructor ID for admin course creation
+      if (user?.accountType === 'Admin' && data.instructorId) {
+        formData.append("instructorId", data.instructorId)
+      }
+    
+      setLoading(true)
+      let result
+      
       // Debug logs to verify user and token
       console.log('Current user:', {
         accountType: user?.accountType,
@@ -168,23 +180,9 @@ export default function CourseInformationForm() {
       // Use different API based on user type
       if (user?.accountType === 'Admin') {
         console.log('Creating course as admin')
-        console.log('Form data:', {
-          courseName: data.courseTitle,
-          instructorId: data.instructorId,
-          price: data.coursePrice,
-          category: data.courseCategory
-        })
-        
-        // Add instructor ID for admin course creation
-        if (data.instructorId) {
-          formData.append("instructorId", data.instructorId)
-        }
-        
-        // Call admin API with explicit headers
         result = await createCourseAsAdmin(formData, token)
       } else {
         console.log('Creating course as instructor')
-        // Regular instructor course creation
         result = await addCourseDetails(formData, token)
       }
       

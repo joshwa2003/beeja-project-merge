@@ -3,6 +3,8 @@ import { useSelector } from "react-redux";
 import { Chart, registerables } from "chart.js";
 import { Pie, Doughnut, Bar, Line } from "react-chartjs-2";
 import { getAnalytics } from "../../../services/operations/adminAPI";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 import {
   FaUsers,
   FaGraduationCap,
@@ -851,12 +853,7 @@ const EnhancedAnalytics = () => {
             </div>
             <div className="text-right">
               <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Revenue</p>
-              <div className="hidden sm:flex gap-2 mt-2">
-                <span className="text-xs text-gray-500 hover:text-gray-700 cursor-pointer">All</span>
-                <span className="text-xs text-gray-500 hover:text-gray-700 cursor-pointer">1M</span>
-                <span className="text-xs text-gray-500 hover:text-gray-700 cursor-pointer">6M</span>
-                <span className="text-xs text-blue-600 font-medium">1Y</span>
-              </div>
+
             </div>
           </div>
           <div>
@@ -1136,49 +1133,54 @@ const EnhancedAnalytics = () => {
       </div>
 
       {/* Recent Logins */}
-      <div className="bg-[#242424] p-6 rounded-xl border border-[#2F2F2F]">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-            <FaSignInAlt className="text-blue-400" />
+      <div className="bg-[#242424] p-4 sm:p-6 rounded-xl border border-[#2F2F2F]">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-2">
+          <h3 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
+            <FaSignInAlt className="text-blue-400 text-sm sm:text-base" />
             Recent Logins
           </h3>
-          <span className="text-sm text-gray-400">Last 24 hours</span>
+          <span className="text-xs sm:text-sm text-gray-400">Last 24 hours</span>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {analytics.recentLogins?.slice(0, 5).map((login, index) => (
-            <div key={login._id || login.id || index} className="flex items-center justify-between p-4 rounded-lg bg-[#2F2F2F] hover:bg-[#3A3A3A] transition-all duration-300">
-              <div className="flex items-center gap-4">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+            <div key={login._id || login.id || index} className="flex items-center justify-between p-3 sm:p-4 rounded-lg bg-[#2F2F2F] hover:bg-[#3A3A3A] transition-all duration-300">
+              <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                   login.accountType === 'Admin' || login.role === 'Admin' ? 'bg-red-500/20' :
                   login.accountType === 'Instructor' || login.role === 'Instructor' ? 'bg-purple-500/20' : 'bg-blue-500/20'
                 }`}>
-                  {(login.accountType === 'Admin' || login.role === 'Admin') ? <FaUserShield className="text-red-400" /> :
-                   (login.accountType === 'Instructor' || login.role === 'Instructor') ? <FaChalkboardTeacher className="text-purple-400" /> :
-                   <FaGraduationCap className="text-blue-400" />}
+                  {(login.accountType === 'Admin' || login.role === 'Admin') ? <FaUserShield className="text-red-400 text-sm sm:text-base" /> :
+                   (login.accountType === 'Instructor' || login.role === 'Instructor') ? <FaChalkboardTeacher className="text-purple-400 text-sm sm:text-base" /> :
+                   <FaGraduationCap className="text-blue-400 text-sm sm:text-base" />}
                 </div>
-                <div>
-                  <h4 className="text-white font-medium">
+                <div className="min-w-0 flex-1">
+                  <h4 className="text-sm sm:text-base text-white font-medium truncate">
                     {login.firstName && login.lastName ? `${login.firstName} ${login.lastName}` : login.user}
                   </h4>
-                  <p className="text-sm text-gray-400">{login.email}</p>
-                  <p className="text-xs text-gray-500">
-                    {new Date(login.createdAt || login.loginTime).toLocaleDateString()}
+                  <p className="text-xs sm:text-sm text-gray-400 truncate">{login.email}</p>
+                  <p className="text-xs text-gray-500 sm:hidden">
+                    {new Date(login.createdAt || login.loginTime).toLocaleDateString()} • {login.accountType || login.role}
                   </p>
                 </div>
               </div>
-              <div className="text-right">
+              <div className="text-right hidden sm:block flex-shrink-0">
                 <p className="text-sm text-white">
                   {new Date(login.createdAt || login.loginTime).toLocaleTimeString()}
                 </p>
                 <p className="text-xs text-gray-400">{login.accountType || login.role}</p>
               </div>
+              <div className="text-right sm:hidden flex-shrink-0">
+                <p className="text-xs text-white">
+                  {new Date(login.createdAt || login.loginTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </p>
+              </div>
             </div>
           ))}
           {(!analytics.recentLogins || analytics.recentLogins.length === 0) && (
-            <div className="text-center py-8">
-              <FaSignInAlt className="text-gray-500 text-3xl mx-auto mb-3" />
-              <p className="text-gray-400">No recent activity found</p>
-              <p className="text-gray-500 text-sm">Recent user registrations will appear here</p>
+            <div className="text-center py-6 sm:py-8">
+              <FaSignInAlt className="text-gray-500 text-2xl sm:text-3xl mx-auto mb-2 sm:mb-3" />
+              <p className="text-sm sm:text-base text-gray-400">No recent activity found</p>
+              <p className="text-xs sm:text-sm text-gray-500">Recent user registrations will appear here</p>
             </div>
           )}
         </div>

@@ -424,15 +424,17 @@ const NotificationManagement = () => {
                     <label className="block text-sm font-medium text-gray-300 mb-2">
                       Title *
                     </label>
-                    <input
-                      type="text"
-                      name="title"
-                      value={formData.title}
-                      onChange={handleInputChange}
-                      placeholder="Enter notification title"
-                      className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
-                      required
-                    />
+                    <div className="w-full overflow-hidden">
+                      <input
+                        type="text"
+                        name="title"
+                        value={formData.title}
+                        onChange={handleInputChange}
+                        placeholder="Enter notification title"
+                        className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 break-all word-break-break-all"
+                        required
+                      />
+                    </div>
                   </div>
 
                   {/* Recipients */}
@@ -477,15 +479,17 @@ const NotificationManagement = () => {
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     Message *
                   </label>
-                  <textarea
-                    name="message"
-                    value={formData.message}
-                    onChange={handleInputChange}
-                    placeholder="Enter notification message..."
-                    rows={4}
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none transition-all duration-200"
-                    required
-                  />
+                  <div className="w-full overflow-hidden">
+                    <textarea
+                      name="message"
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      placeholder="Enter notification message..."
+                      rows={4}
+                      className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none transition-all duration-200 break-all word-break-break-all"
+                      required
+                    />
+                  </div>
                   <div className="mt-2 text-xs text-gray-400">
                     {formData.message.length}/500 characters
                   </div>
@@ -596,8 +600,8 @@ const NotificationManagement = () => {
                           <FiBell className="w-4 h-4 text-indigo-400" />
                         </div>
                         <div className="flex-1">
-                          <h5 className="text-white font-medium">{formData.title || 'Notification Title'}</h5>
-                          <p className="text-gray-300 text-sm mt-1">{formData.message || 'Notification message will appear here...'}</p>
+                          <h5 className="text-white font-medium break-all word-break-break-all overflow-hidden max-w-full">{formData.title || 'Notification Title'}</h5>
+                          <p className="text-gray-300 text-sm mt-1 break-all word-break-break-all overflow-hidden max-w-full">{formData.message || 'Notification message will appear here...'}</p>
                           <div className="flex items-center gap-2 mt-2">
                             <span className={`text-xs px-2 py-1 rounded-full border ${getLocalPriorityColor(formData.priority)}`}>
                               {formData.priority.charAt(0).toUpperCase() + formData.priority.slice(1)} Priority
@@ -711,17 +715,17 @@ const NotificationManagement = () => {
                 transition={{ delay: index * 0.05 }}
                 className="p-6 hover:bg-slate-700/30 transition-all duration-200 group"
               >
-                <div className="flex justify-between items-start gap-4">
-                  <div className="flex-1">
+                <div className="flex justify-between items-start gap-4 w-full overflow-hidden">
+                  <div className="flex-1 min-w-0 overflow-hidden">
                     <div className="flex items-start gap-3 mb-3">
-                      <div className="p-2 bg-indigo-500/20 rounded-lg group-hover:bg-indigo-500/30 transition-colors">
+                      <div className="p-2 bg-indigo-500/20 rounded-lg group-hover:bg-indigo-500/30 transition-colors flex-shrink-0">
                         {getRecipientIcon(notification.recipients)}
                       </div>
-                      <div className="flex-1">
-                        <h4 className="text-white font-semibold mb-1 group-hover:text-indigo-300 transition-colors">
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <h4 className="text-base sm:text-lg text-white font-semibold mb-1 group-hover:text-indigo-300 transition-colors break-all word-break-break-all overflow-hidden max-w-full">
                           {notification.title}
                         </h4>
-                        <p className="text-gray-300 text-sm mb-3 line-clamp-2 leading-relaxed">
+                        <p className="text-sm sm:text-base text-gray-300 mb-3 leading-relaxed break-all word-break-break-all overflow-hidden max-w-full">
                           {notification.message}
                         </p>
                       </div>

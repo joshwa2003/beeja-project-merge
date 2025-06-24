@@ -79,14 +79,14 @@ const Home = () => {
       {/* Main Content above background */}
       <div className="relative z-10">
         {/* Section 1 */}
-        <div id='home-welcome' className='relative h-[600px] md:h-[400px] justify-center mx-auto flex flex-col w-11/12 max-w-maxContent items-center text-white'>
+        <div id='home-welcome' className='relative min-h-[400px] justify-center mx-auto flex flex-col w-11/12 max-w-maxContent items-center text-white px-4 py-8 md:py-12'>
 
           <motion.div
             variants={fadeIn('left', 0.1)}
             initial='hidden'
             whileInView={'show'}
             viewport={{ once: false, amount: 0.1 }}
-            className='text-center text-3xl lg:text-4xl font-semibold mt-7'
+            className='text-center text-2xl sm:text-3xl lg:text-4xl font-semibold'
           >
             Welcome to
             <HighlightText text={"Beeja "} />
@@ -98,7 +98,7 @@ const Home = () => {
             initial='hidden'
             whileInView={'show'}
             viewport={{ once: false, amount: 0.1 }}
-            className='mt-4 w-[90%] text-center text-base lg:text-lg font-bold text-richblack-200'
+            className='mt-4 w-full md:w-[90%] text-center text-sm sm:text-base lg:text-lg font-bold text-richblack-200 max-w-3xl mx-auto'
           >
             Embark on a seamless learning experienced with our state of the art platform. Dive into courses crafted to inspire, challenge, and empower you for success.
           </motion.div>
@@ -108,7 +108,7 @@ const Home = () => {
             initial='hidden'
             whileInView={'show'}
             viewport={{ once: false, amount: 0.2 }}
-            className='flex flex-row gap-7 mt-8'
+            className='flex flex-col sm:flex-row gap-4 sm:gap-7 mt-8 w-full justify-center items-center'
           >
             <motion.div
               whileHover={{ scale: 1.05 }}
@@ -206,7 +206,7 @@ const Home = () => {
           >
             <CodeBlocks
               position={"lg:flex-row"}
-              heading={<div className='text-3xl lg:text-4xl font-semibold'>Master Coding with <HighlightText text={"Beeja's Expert-Led "} /> courses</div>}
+              heading={<div className='text-2xl sm:text-3xl lg:text-4xl font-semibold'>Master Coding with <HighlightText text={"Beeja's Expert-Led "} /> courses</div>}
               subheading={"Elevate your programming skills with Beeja, where hands-on learning meets expert guidance to unlock your full coding potential."}
               ctabtn1={{ btnText: "try it yourself", link: "/login", active: true }}
               ctabtn2={{
@@ -233,7 +233,7 @@ const Home = () => {
           >
             <CodeBlocks
               position={"lg:flex-row-reverse"}
-              heading={<div className="w-[100%] text-3xl lg:text-4xl font-semibold lg:w-[50%]">Code Instantly  <HighlightText text={"with Beeja"} /></div>}
+              heading={<div className="w-[100%] text-2xl sm:text-3xl lg:text-4xl font-semibold lg:w-[50%]">Code Instantly  <HighlightText text={"with Beeja"} /></div>}
               subheading={"Jump right into coding at Beeja, where our interactive lessons get you building real-world projects from the very start."}
               ctabtn1={{ btnText: "Continue Lesson", link: "/signup", active: true }}
               ctabtn2={{ btnText: "Learn More", link: "/signup", active: false }}
@@ -249,7 +249,7 @@ const Home = () => {
             initial='hidden'
             whileInView={'show'}
             viewport={{ once: false, amount: 0.1 }}
-            className='text-center text-3xl lg:text-4xl font-semibold mt-8 mb-6'
+          className='text-center text-2xl sm:text-3xl lg:text-4xl font-semibold mt-12 mb-8 px-4'
           >
             Meet Our Expert
             <HighlightText text={" Team"} />
@@ -270,9 +270,9 @@ const Home = () => {
               initial='hidden'
               whileInView={'show'}
               viewport={{ once: false, amount: 0.1 }}
-              className='text-center mb-12'
+              className='text-center mb-12 px-4'
             >
-              <h2 className='text-3xl lg:text-4xl font-semibold text-white mb-4'>
+              <h2 className='text-2xl sm:text-3xl lg:text-4xl font-semibold text-white mb-4'>
                 Our Technology
                 <HighlightText text={" Partner"} />
               </h2>
@@ -289,7 +289,7 @@ const Home = () => {
             initial='hidden'
             whileInView={'show'}
             viewport={{ once: false, amount: 0.2 }}
-            className="mx-auto box-content w-full max-w-maxContentTab px-4 py-8 lg:max-w-maxContent"
+            className="mx-auto box-content w-full max-w-maxContentTab px-4 py-8 lg:max-w-maxContent overflow-hidden"
           >
             <FeaturedCourses />
           </motion.div>
@@ -319,7 +319,7 @@ const Home = () => {
                 initial='hidden'
                 whileInView={'show'}
                 viewport={{ once: false, amount: 0.2 }}
-                className='text-3xl lg:text-4xl font-semibold w-full lg:w-[45%]'
+                className='text-2xl sm:text-3xl lg:text-4xl font-semibold w-full lg:w-[45%] text-center lg:text-left'
               >
                 Get the Skills you need for a <HighlightText text={"Job that is in demand"} />
               </motion.div>
@@ -329,7 +329,7 @@ const Home = () => {
                 initial='hidden'
                 whileInView={'show'}
                 viewport={{ once: false, amount: 0.2 }}
-                className='flex flex-col gap-10 w-full lg:w-[40%] items-start'
+              className='flex flex-col gap-6 sm:gap-10 w-full lg:w-[40%] items-center lg:items-start text-center lg:text-left'
               >
                 <div className='text-[16px]'>
                   The modern StudyNotion dictates its own terms. Today, to be a competitive specialist requires more than professional skills.
@@ -381,7 +381,7 @@ const Home = () => {
             initial='hidden'
             whileInView={'show'}
             viewport={{ once: false, amount: 0.2 }}
-            className="text-center text-3xl lg:text-4xl font-semibold mt-8 flex justify-center items-center gap-x-3"
+            className="text-center text-2xl sm:text-3xl lg:text-4xl font-semibold mt-8 flex justify-center items-center gap-x-3 px-4"
           >
             Reviews from other learners
             <motion.span

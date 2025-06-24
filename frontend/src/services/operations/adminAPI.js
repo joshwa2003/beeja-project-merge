@@ -52,7 +52,6 @@ export const setCourseType = async (courseId, courseType, token) => {
       throw new Error("No course data received in response")
     }
 
-    toast.success("Course type updated successfully")
     result = response.data.data
   } catch (error) {
     console.error("SET_COURSE_TYPE_API ERROR:", {
@@ -148,7 +147,7 @@ export const createUser = async (data, token) => {
       throw new Error("No user data received in response")
     }
 
-    toast.success("User created successfully")
+    
     result = response.data.user
   } catch (error) {
     console.error("CREATE_USER_API ERROR:", {
@@ -426,7 +425,7 @@ export const deleteCourse = async (courseId, token) => {
       throw new Error(response?.data?.message || "Could Not Delete Course")
     }
 
-    toast.success("Course deleted successfully")
+    
     result = true
   } catch (error) {
     console.error("ADMIN_DELETE_COURSE_API ERROR:", {
@@ -474,8 +473,6 @@ export const toggleCourseVisibility = async (courseId, token) => {
     if (!response?.data?.course) {
       throw new Error("No course data received in response")
     }
-
-    toast.success("Course visibility updated successfully")
     result = response.data.course
   } catch (error) {
     console.error("TOGGLE_COURSE_VISIBILITY_API ERROR:", {
@@ -565,7 +562,7 @@ export const createCourseAsAdmin = async (formData, token) => {
       throw new Error("No course data received in response")
     }
 
-    toast.success("Course created successfully")
+    
     result = response.data.course
   } catch (error) {
     console.error("CREATE_COURSE_AS_ADMIN_API ERROR:", {

@@ -46,7 +46,7 @@ export const updateFeaturedCourses = async (data, token) => {
       throw new Error(response?.data?.message || "Could Not Update Featured Courses")
     }
 
-    toast.success("Featured courses updated successfully")
+    
     return response.data.data
   } catch (error) {
     console.error("UPDATE_FEATURED_COURSES_API ERROR:", error)

@@ -473,11 +473,28 @@ const ModernNavbar = () => {
                   </motion.li>
                 ))}
 
-                {/* Services for Mobile */}
+                {/* Free Courses for Mobile */}
                 <motion.li
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, delay: 0.4 }}
+                >
+                  <motion.div whileHover={{ x: 5 }} transition={{ duration: 0.2 }}>
+                    <Link
+                      to="/free-courses"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block rounded-lg p-2 hover:bg-white/10 text-sm font-medium transition-all duration-300"
+                    >
+                      Free Courses
+                    </Link>
+                  </motion.div>
+                </motion.li>
+
+                {/* Services for Mobile */}
+                <motion.li
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: 0.5 }}
                 >
                   <details>
                     <summary className="cursor-pointer rounded-lg p-2 hover:bg-white/10 text-sm font-medium transition-all duration-300">
@@ -512,7 +529,7 @@ const ModernNavbar = () => {
                     <motion.li
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: 0.5 }}
+                      transition={{ duration: 0.3, delay: 0.7 }}
                     >
                       <motion.div whileHover={{ x: 5 }} transition={{ duration: 0.2 }}>
                         <Link
@@ -525,11 +542,11 @@ const ModernNavbar = () => {
                       </motion.div>
                     </motion.li>
                     {user.accountType === "Admin" && (
-                      <motion.li
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: 0.6 }}
-                      >
+                    <motion.li
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: 0.8 }}
+                    >
                         <motion.div whileHover={{ x: 5 }} transition={{ duration: 0.2 }}>
                           <Link
                             to="/admin"
@@ -544,7 +561,7 @@ const ModernNavbar = () => {
                     <motion.li
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: 0.7 }}
+                      transition={{ duration: 0.3, delay: 0.9 }}
                     >
                       <motion.button
                         onClick={() => {
@@ -566,7 +583,7 @@ const ModernNavbar = () => {
                     <motion.li
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: 0.5 }}
+                      transition={{ duration: 0.3, delay: 0.6 }}
                     >
                       <motion.button
                         onClick={handleLogin}
@@ -579,7 +596,7 @@ const ModernNavbar = () => {
                     <motion.li
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: 0.6 }}
+                      transition={{ duration: 0.3, delay: 0.7 }}
                     >
                       <motion.button
                         onClick={handleSignup}

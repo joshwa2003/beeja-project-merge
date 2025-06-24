@@ -80,7 +80,7 @@ export const answerFaq = async (faqId, answer, token) => {
             throw new Error(response?.data?.message);
         }
 
-        toast.success("FAQ answered successfully");
+       
         return response.data.faq;
     } catch (error) {
         console.error("ANSWER_FAQ_API ERROR", error);
@@ -102,7 +102,7 @@ export const deleteFaq = async (faqId, token) => {
             throw new Error(response?.data?.message || "Failed to delete FAQ");
         }
 
-        toast.success("FAQ deleted successfully");
+
         return true;
     } catch (error) {
         console.error("DELETE_FAQ_API ERROR", error);

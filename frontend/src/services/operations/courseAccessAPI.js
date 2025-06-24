@@ -57,7 +57,6 @@ export const requestCourseAccess = async (data, token) => {
     }
 
     result = response?.data?.data
-    toast.success("Access request submitted successfully")
   } catch (error) {
     console.log("REQUEST_COURSE_ACCESS_API ERROR............", error)
     toast.error(error.response?.data?.message || error.message)

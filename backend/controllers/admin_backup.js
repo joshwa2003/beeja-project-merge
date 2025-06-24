@@ -155,7 +155,7 @@ exports.createUser = async (req, res) => {
         return res.status(201).json({
             success: true,
             user,
-            message: 'User created successfully'
+            
         });
     } catch (error) {
         console.error('Error creating user:', {
@@ -461,7 +461,7 @@ exports.deleteCourse = async (req, res) => {
 
         return res.status(200).json({ 
             success: true, 
-            message: 'Course deleted successfully' 
+             
         });
     } catch (error) {
         console.error('Delete course failed:', error);
@@ -703,10 +703,13 @@ exports.sendNotification = async (req, res) => {
                 });
             }
 
-            // Validate each user ID format
-            const invalidIds = selectedUsers.filter(id => {
-                return !mongoose.Types.ObjectId.isValid(id);
-            });
+            // Validate each user ID format - simplified validation
+            const invalidIds = [];
+            for (const id of selectedUsers) {
+                if (!id || typeof id !== 'string' || id.length !== 24) {
+                    invalidIds.push(id);
+                }
+            }
             
             if (invalidIds.length > 0) {
                 return res.status(400).json({
@@ -715,29 +718,169 @@ exports.sendNotification = async (req, res) => {
                 });
             }
 
-            // Verify users exist
-            const validUsers = await User.find({
-                _id: { $in: selectedUsers },
-                active: true
-            }).select('_id');
+            // Verify users exist - with error handling
+            try {
+                const validUsers = await User.find({
+                    _id: { $in: selectedUsers },
+                    active: true
+                }).select('_id');
 
-            if (validUsers.length === 0) {
+                if (validUsers.length === 0) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'No valid active users found from the selected users'
+                    });
+                }
+
+                if (validUsers.length !== selectedUsers.length) {
+                    const foundIds = validUsers.map(u => u._id.toString());
+                    const notFoundIds = selectedUsers.filter(id => !foundIds.includes(id));
+                    console.log('Some users were not found or are inactive:', notFoundIds);
+                }
+            } catch (userValidationError) {
+                console.error('Error validating users:', userValidationError);
                 return res.status(400).json({
                     success: false,
-                    message: 'No valid active users found from the selected users'
+                    message: 'Error validating selected users'
                 });
-            }
-
-            if (validUsers.length !== selectedUsers.length) {
-                const foundIds = validUsers.map(u => u._id.toString());
-                const notFoundIds = selectedUsers.filter(id => !foundIds.includes(id));
-                console.log('Some users were not found or are inactive:', notFoundIds);
             }
         }
 
-        // Rest of your function remains the same...
-        // [Keep all the existing code for processing notifications]
-        
+        // Validate priority
+        if (priority && !['low', 'medium', 'high'].includes(priority)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid priority. Must be one of: low, medium, high'
+            });
+        }
+
+        // Get target users based on recipient type
+        let targetUsers = [];
+        let recipientType = '';
+
+        console.log('Processing recipients:', recipients);
+        console.log('Selected users:', selectedUsers);
+
+        switch (recipients) {
+            case 'all':
+                recipientType = 'All';
+                targetUsers = await User.find({ active: true }).select('_id accountType firstName lastName');
+                break;
+            case 'students':
+                recipientType = 'Student';
+                targetUsers = await User.find({ 
+                    accountType: 'Student', 
+                    active: true 
+                }).select('_id accountType firstName lastName');
+                break;
+            case 'instructors':
+                recipientType = 'Instructor';
+                targetUsers = await User.find({ 
+                    accountType: 'Instructor', 
+                    active: true 
+                }).select('_id accountType firstName lastName');
+                break;
+            case 'admins':
+                recipientType = 'Admin';
+                targetUsers = await User.find({ 
+                    accountType: 'Admin', 
+                    active: true 
+                }).select('_id accountType firstName lastName');
+                break;
+            case 'specific':
+                recipientType = 'Specific';
+                if (!selectedUsers || !Array.isArray(selectedUsers) || selectedUsers.length === 0) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Selected users are required for specific recipients'
+                    });
+                }
+                
+                console.log('Processing specific users:', selectedUsers);
+                
+                // Find valid users
+                targetUsers = await User.find({
+                    _id: { $in: selectedUsers },
+                    active: true
+                }).select('_id accountType firstName lastName');
+                
+                console.log(`Found ${targetUsers.length} valid users out of ${selectedUsers.length} selected`);
+                
+                if (targetUsers.length === 0) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'No valid active users found from the selected users'
+                    });
+                }
+                
+                // Log which users were not found (for debugging)
+                const foundUserIds = targetUsers.map(user => user._id.toString());
+                const notFoundUsers = selectedUsers.filter(id => !foundUserIds.includes(id));
+                if (notFoundUsers.length > 0) {
+                    console.log('Users not found or inactive:', notFoundUsers);
+                }
+                break;
+            default:
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid recipients type'
+                });
+        }
+
+        if (targetUsers.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No valid users found for the selected recipient type'
+            });
+        }
+
+        // Generate a unique bulk ID for grouping these notifications
+        const bulkId = new mongoose.Types.ObjectId();
+
+        // Create individual notification records for each target user
+        const notifications = targetUsers.map(user => ({
+            recipient: user._id,
+            recipientType: recipientType,
+            recipients: recipients === 'specific' ? selectedUsers : undefined,
+            type: 'ADMIN_ANNOUNCEMENT',
+            title,
+            message,
+            sender: req.user.id,
+            priority,
+            relatedCourse: relatedCourse || null,
+            bulkId: bulkId,
+            isRead: false,
+            read: false,
+            metadata: {
+                sentByAdmin: true,
+                adminId: req.user.id,
+                sentAt: new Date(),
+                recipientType: recipientType,
+                recipients: recipients === 'specific' ? selectedUsers : undefined,
+                targetUsers: recipients === 'specific' ? selectedUsers : undefined,
+                bulkId: bulkId
+            },
+            createdAt: new Date()
+        }));
+
+        // Insert all notifications in bulk
+        const insertedNotifications = await Notification.insertMany(notifications);
+
+        console.log(`Created ${insertedNotifications.length} individual notifications for ${recipientType} users with bulkId: ${bulkId}`);
+
+        return res.status(201).json({
+            success: true,
+            message: `Notification sent to ${targetUsers.length} users successfully`,
+            data: {
+                notificationId: bulkId,
+                title,
+                recipientType,
+                recipientCount: targetUsers.length,
+                priority,
+                bulkId: bulkId
+            }
+        });
+
     } catch (error) {
         console.error('Error sending notification:', error);
         return res.status(500).json({
@@ -771,7 +914,7 @@ exports.getAllNotifications = async (req, res) => {
         // Combine both arrays and remove duplicates
         const allBulkIds = [...new Set([...distinctBulkIds, ...metadataBulkIds])];
 
-        // Get all admin notifications
+        // Get all admin notifications with populated user data
         const allNotifications = await Notification.find({
             $or: [
                 { 'metadata.sentByAdmin': true },
@@ -779,7 +922,8 @@ exports.getAllNotifications = async (req, res) => {
             ]
         })
         .sort({ createdAt: -1 })
-        .populate('sender', 'firstName lastName email');
+        .populate('sender', 'firstName lastName email')
+        .populate('recipient', 'firstName lastName email'); // Populate recipient details for specific notifications
 
         // Group notifications
         const groupedNotifications = new Map();
@@ -798,7 +942,19 @@ exports.getAllNotifications = async (req, res) => {
                     title: firstNotification.title,
                     message: firstNotification.message,
                     sender: firstNotification.sender,
-                    recipients: firstNotification.metadata?.recipients || firstNotification.recipientType || firstNotification.metadata?.recipientType || 'unknown',
+                    recipients: (() => {
+                        // For specific recipients, show actual email addresses
+                        if (firstNotification.metadata?.recipientType === 'Specific' || 
+                            firstNotification.recipientType === 'Specific') {
+                            const emails = bulkNotifications
+                                .filter(n => n.recipient && n.recipient.email)
+                                .map(n => n.recipient.email);
+                            return emails.length > 0 ? emails.join(', ') : 'Specific users';
+                        }
+                        // For bulk recipients (all, students, instructors, admins), show the type
+                        return firstNotification.metadata?.recipientType || 
+                               firstNotification.recipientType || 'unknown';
+                    })(),
                     relatedCourse: firstNotification.relatedCourse,
                     createdAt: firstNotification.createdAt,
                     recipientCount: bulkNotifications.length,
@@ -819,7 +975,7 @@ exports.getAllNotifications = async (req, res) => {
                     title: notification.title,
                     message: notification.message,
                     sender: notification.sender,
-                    recipients: notification.metadata?.recipients || notification.recipientType || 'unknown',
+                    recipients: notification.recipient?.email || notification.recipientType || 'unknown',
                     relatedCourse: notification.relatedCourse,
                     createdAt: notification.createdAt,
                     recipientCount: 1,

@@ -112,9 +112,7 @@ function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse }) {
 
   return (
     <>
-      <div
-        className={`flex flex-col gap-4 rounded-2xl bg-richblack-700 p-4 text-richblack-5 `}
-      >
+<div className="flex flex-col gap-4 rounded-2xl bg-richblack-700 p-4 text-richblack-5 shadow-lg border border-richblack-600">
         {/* Course Image */}
         <Img
           src={ThumbnailImage}
@@ -219,19 +217,24 @@ function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse }) {
             )}
           </div>
 
-          <div className={``}>
-            <p className={`my-2 text-xl font-semibold `}>
-              Course Requirements :
+          {/* Course Requirements Section with Fallback */}
+          <div className="mt-6 border-t border-richblack-600 pt-6">
+            <p className="mb-4 text-xl font-semibold text-richblack-5">
+              Course Requirements:
             </p>
-            <div className="flex flex-col gap-3 text-sm text-caribbeangreen-100">
-              {course?.instructions?.map((item, i) => {
-                return (
-                  <p className={`flex gap-2`} key={i}>
-                    <BsFillCaretRightFill />
-                    <span>{item}</span>
+            <div className="flex flex-col gap-3 text-sm text-richblack-300">
+              {course?.instructions && course.instructions.length > 0 ? (
+                course.instructions.map((item, i) => (
+                  <p className="flex items-start gap-2" key={i}>
+                    <BsFillCaretRightFill className="mt-1 text-caribbeangreen-100 flex-shrink-0" />
+                    <span className="text-richblack-50">{item}</span>
                   </p>
-                )
-              })}
+                ))
+              ) : (
+                <p className="text-richblack-300 italic">
+                  No specific requirements listed for this course.
+                </p>
+              )}
             </div>
           </div>
 

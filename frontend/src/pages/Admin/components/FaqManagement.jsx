@@ -235,7 +235,7 @@ const FaqManagement = () => {
             {/* FAQ List */}
             <div id="faq-list" className="space-y-4 mb-6">
               {currentFaqs.map((faq) => (
-                <div key={faq._id} className="bg-richblack-800 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow relative">
+                <div key={faq._id} className="bg-richblack-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow relative w-full">
                   {deleteConfirm === faq._id && (
                     <div className="absolute inset-0 bg-richblack-900 bg-opacity-95 flex items-center justify-center z-10">
                       <div className="bg-richblack-800 rounded-xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
@@ -261,10 +261,10 @@ const FaqManagement = () => {
                     </div>
                   )}
                   
-                  <div className="p-6">
+                  <div className="p-6 overflow-hidden">
                     {/* FAQ Header */}
-                    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
-                      <div className="flex-1">
+                    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4 w-full">
+                      <div className="flex-1 min-w-0 overflow-hidden">
                         <div className="flex items-center gap-3 mb-3">
                           {getStatusBadge(faq)}
                           <span className="text-sm text-richblack-400 flex items-center gap-1">
@@ -272,7 +272,7 @@ const FaqManagement = () => {
                             {formatDate(faq.createdAt)}
                           </span>
                         </div>
-                        <h3 className="text-xl font-semibold text-richblack-5 mb-3 leading-relaxed">
+                        <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-richblack-5 mb-3 leading-relaxed break-all word-break-break-all overflow-hidden max-w-full">
                           {faq.question}
                         </h3>
                       </div>
@@ -351,7 +351,7 @@ const FaqManagement = () => {
                       faq.answer && (
                         <div className="bg-richblack-700 rounded-lg p-4 mb-4">
                           <h4 className="text-sm font-medium text-richblack-300 mb-2">Answer:</h4>
-                          <p className="text-richblack-100 leading-relaxed">{faq.answer}</p>
+                          <p className="text-sm sm:text-base text-richblack-100 leading-relaxed break-all word-break-break-all overflow-hidden max-w-full">{faq.answer}</p>
                           {faq.answeredAt && (
                             <p className="text-xs text-richblack-400 mt-2">
                               Answered on {formatDate(faq.answeredAt)}
@@ -362,10 +362,10 @@ const FaqManagement = () => {
                     )}
 
                     {/* User Info */}
-                    <div className="flex items-center gap-3 text-sm text-richblack-400 bg-richblack-700 rounded-lg p-3">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 text-xs sm:text-sm text-richblack-400 bg-richblack-700 rounded-lg p-3">
                       <FaUser className="text-richblack-500" />
-                      <span>
-                        Asked by: <span className="text-richblack-300 font-medium">
+                      <span className="flex flex-wrap gap-1">
+                        <span>Asked by:</span> <span className="text-richblack-300 font-medium">
                           {faq.userId.firstName} {faq.userId.lastName}
                         </span> ({faq.userId.email})
                       </span>

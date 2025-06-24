@@ -1,4 +1,4 @@
-const Course = require('../models/Course');
+const Course = require('../models/course');
 const User = require('../models/user');
 const Category = require('../models/category');
 const Section = require('../models/section')
@@ -642,7 +642,7 @@ exports.deleteCourse = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Course deleted successfully",
+            
         })
 
     } catch (error) {
@@ -654,7 +654,6 @@ exports.deleteCourse = async (req, res) => {
         })
     }
 }
-
 
 
 

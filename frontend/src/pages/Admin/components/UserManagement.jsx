@@ -105,7 +105,7 @@ const UserManagement = () => {
         contactNumber: ""
       });
       await loadUsers(true); // Refresh user list
-      toast.success("User created successfully");
+      
     } catch (error) {
       setError(error.message);
     }

@@ -155,7 +155,7 @@ exports.createUser = async (req, res) => {
         return res.status(201).json({
             success: true,
             user,
-            message: 'User created successfully'
+            
         });
     } catch (error) {
         console.error('Error creating user:', {
@@ -461,7 +461,7 @@ exports.deleteCourse = async (req, res) => {
 
         return res.status(200).json({ 
             success: true, 
-            message: 'Course deleted successfully' 
+             
         });
     } catch (error) {
         console.error('Delete course failed:', error);

@@ -41,7 +41,7 @@ const FaqButton = () => {
       if (result) {
         setFormData({ question: '' });
         setShowModal(false);
-        toast.success('Your question has been submitted successfully!');
+        
       }
     } catch (error) {
       console.error('Error submitting question:', error);

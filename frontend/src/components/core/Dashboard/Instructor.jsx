@@ -185,12 +185,6 @@ export default function Instructor() {
           <p className="text-slate-400 mb-8 text-center max-w-md">
             You haven't created any courses yet. Start creating your first course to begin your teaching journey.
           </p>
-          <Link
-            to="/dashboard/add-course"
-            className="px-6 py-3 bg-purple-500/10 text-purple-400 rounded-xl hover:bg-purple-500/20 transition-all duration-300"
-          >
-            Create Course
-          </Link>
         </div>
       )}
     </div>

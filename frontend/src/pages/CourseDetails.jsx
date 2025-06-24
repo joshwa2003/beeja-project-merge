@@ -383,7 +383,7 @@ function CourseDetails() {
 
           {/* Enhanced Floating Course Card */}
           <motion.div 
-            className="right-[1.5rem] top-[60px] mx-auto hidden lg:block lg:absolute min-h-[600px] w-1/3 max-w-[410px] translate-y-24 md:translate-y-0"
+            className="right-[1.5rem] top-[60px] mx-auto hidden lg:block lg:absolute min-h-[600px] w-1/3 max-w-[410px] translate-y-24 md:translate-y-0 z-20"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
@@ -400,7 +400,7 @@ function CourseDetails() {
       {/* Professional Content Section */}
       <div className="bg-richblack-900 min-h-screen">
         <div className="mx-auto box-content px-4 text-start text-richblack-5 lg:w-[1260px]">
-          <div className="mx-auto max-w-maxContentTab lg:mx-0 xl:max-w-[810px]">
+          <div className="mx-auto max-w-maxContentTab lg:mx-0 xl:max-w-[810px] lg:pr-8">
             
             {/* Professional What you'll learn section */}
             <motion.div 
@@ -408,6 +408,7 @@ function CourseDetails() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
+              style={{ opacity: 1, transform: 'translateY(0px)' }}
             >
               <div className="flex items-center gap-3 mb-6">
                 <div className="bg-yellow-50/10 p-3 rounded-lg border border-yellow-50/20">
@@ -416,19 +417,27 @@ function CourseDetails() {
                 <h2 className="text-3xl font-bold text-richblack-5">What you'll learn</h2>
               </div>
               <div className="grid gap-3">
-                {whatYouWillLearn && (
-                  whatYouWillLearn.split('\n').map((line, index) => (
+                {whatYouWillLearn && whatYouWillLearn.trim() ? (
+                  whatYouWillLearn.split('\n').filter(line => line.trim()).map((line, index) => (
                     <motion.div 
                       key={index} 
                       className="flex items-start gap-3 p-3 bg-richblack-700/50 rounded-lg border border-richblack-600 hover:bg-richblack-700/70 transition-all duration-300"
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.4, delay: index * 0.1 }}
+                      style={{ opacity: 1, transform: 'translateX(0px)' }}
                     >
                       <BsCheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                      <p className="text-richblack-200 leading-relaxed">{line}</p>
+                      <p className="text-richblack-200 leading-relaxed">{line.trim()}</p>
                     </motion.div>
                   ))
+                ) : (
+                  <div className="flex items-start gap-3 p-3 bg-richblack-700/50 rounded-lg border border-richblack-600">
+                    <BsCheckCircle className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
+                    <p className="text-richblack-300 leading-relaxed italic">
+                      Course learning objectives will be updated soon.
+                    </p>
+                  </div>
                 )}
               </div>
             </motion.div>
@@ -439,21 +448,29 @@ function CourseDetails() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
+              style={{ opacity: 1, transform: 'translateY(0px)' }}
             >
               <h3 className="text-xl font-bold text-richblack-5 mb-4">Course Tags</h3>
               <div className="flex flex-wrap gap-3">
-                {tag && tag.map((item, ind) => (
-                  <motion.span 
-                    key={ind} 
-                    className="bg-yellow-50 text-richblack-900 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-yellow-25 transition-colors duration-300 shadow-md"
-                    whileHover={{ scale: 1.05 }}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3, delay: ind * 0.1 }}
-                  >
-                    {item}
-                  </motion.span>
-                ))}
+                {tag && tag.length > 0 ? (
+                  tag.map((item, ind) => (
+                    <motion.span 
+                      key={ind} 
+                      className="bg-yellow-50 text-richblack-900 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-yellow-25 transition-colors duration-300 shadow-md"
+                      whileHover={{ scale: 1.05 }}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3, delay: ind * 0.1 }}
+                      style={{ opacity: 1, transform: 'scale(1)' }}
+                    >
+                      {item}
+                    </motion.span>
+                  ))
+                ) : (
+                  <span className="bg-richblack-700 text-richblack-300 px-4 py-2 rounded-lg text-sm italic">
+                    No tags available for this course
+                  </span>
+                )}
               </div>
             </motion.div>
 
@@ -463,6 +480,7 @@ function CourseDetails() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
+              style={{ opacity: 1, transform: 'translateY(0px)' }}
             >
               <div className="bg-richblack-800 rounded-xl p-6 border border-richblack-700 mb-6 shadow-xl">
                 <div className="flex items-center gap-3 mb-6">
@@ -505,6 +523,7 @@ function CourseDetails() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: index * 0.1 }}
+                    style={{ opacity: 1, transform: 'translateY(0px)' }}
                   >
                     <CourseAccordionBar
                       course={course}
@@ -522,6 +541,7 @@ function CourseDetails() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
+              style={{ opacity: 1, transform: 'translateY(0px)' }}
             >
               <h2 className="text-3xl font-bold text-richblack-5 mb-6">Meet Your Instructor</h2>
               <div className="flex items-start gap-6">

@@ -116,7 +116,7 @@ export default function NotificationPanel() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            className="absolute right-0 mt-2 w-[380px] sm:w-[420px] max-h-[85vh] overflow-hidden bg-[#1a1a2e] rounded-xl shadow-2xl border border-gray-700/50 z-50"
+            className="absolute right-0 mt-2 w-[320px] sm:w-[380px] lg:w-[420px] max-h-[85vh] overflow-hidden bg-[#1a1a2e] rounded-xl shadow-2xl border border-gray-700/50 z-50"
           >
             {/* Panel Header */}
             <div className="sticky top-0 z-10 bg-[#1a1a2e] p-4 border-b border-gray-700/50 flex justify-between items-center">
@@ -168,60 +168,48 @@ export default function NotificationPanel() {
                       className="group relative bg-indigo-500/10 hover:bg-indigo-500/20 transition-all duration-300"
                     >
                       <div 
-                        className="p-4 cursor-pointer transition-all duration-200"
+                        className="p-3 sm:p-4 cursor-pointer transition-all duration-200"
                         onClick={() => handleMarkAsRead(notification._id)}
                       >
-                        <div className="flex items-start space-x-4">
+                        <div className="flex items-start space-x-3 sm:space-x-4">
                           <div className="relative flex-shrink-0">
                             {notification.relatedCourse?.thumbnail ? (
                               <img
                                 src={notification.relatedCourse.thumbnail}
                                 alt="Course thumbnail"
-                                className="w-12 h-12 rounded-lg object-cover border border-gray-700/50 group-hover:border-gray-600 transition-all duration-300"
+                                className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg object-cover border border-gray-700/50 group-hover:border-gray-600 transition-all duration-300"
                               />
                             ) : (
-                              <div className="w-12 h-12 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
-                                <FiBell className="w-5 h-5 text-indigo-400" />
+                              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+                                <FiBell className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400" />
                               </div>
                             )}
                             <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-indigo-500 rounded-full border-2 border-[#1a1a2e] animate-pulse"></div>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-start">
-                              <h4 className="text-[15px] font-bold text-white truncate pr-2">
+                          <div className="flex-1 min-w-0 overflow-hidden">
+                            <div className="flex justify-between items-start gap-2">
+                              <h4 className="text-sm sm:text-[15px] font-bold text-white break-all word-break-break-all overflow-hidden max-w-full flex-1">
                                 {notification.title}
                               </h4>
-                              <span className="text-xs text-gray-400 whitespace-nowrap">
+                              <span className="text-xs text-gray-400 whitespace-nowrap flex-shrink-0">
                                 {new Date(notification.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </span>
                             </div>
-                            <p className="text-[13.5px] text-gray-300 mt-1 leading-relaxed line-clamp-2">
+                            <p className="text-xs sm:text-[13.5px] text-gray-300 mt-1 leading-relaxed break-all word-break-break-all overflow-hidden max-w-full">
                               {notification.message}
                             </p>
-                            <div className="flex items-center mt-2 space-x-3">
+                            <div className="flex items-center mt-2 space-x-2 sm:space-x-3">
                               <span className="text-xs text-gray-400">
                                 {new Date(notification.createdAt).toLocaleDateString()}
                               </span>
                               {notification.relatedCourse?.name && (
-                                <span className="text-xs px-2.5 py-1 bg-gray-800 text-gray-300 rounded-full border border-gray-700">
+                                <span className="text-xs px-2 sm:px-2.5 py-1 bg-gray-800 text-gray-300 rounded-full border border-gray-700 break-all word-break-break-all overflow-hidden max-w-[120px] sm:max-w-[200px]">
                                   {notification.relatedCourse.name}
                                 </span>
                               )}
                             </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200">
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleMarkAsRead(notification._id);
-                          }}
-                          className="p-2 text-gray-400 hover:text-indigo-400 rounded-lg hover:bg-indigo-500/10 transition-all duration-200"
-                          title="Mark as read"
-                        >
-                          <BsCheckAll className="w-5 h-5" />
-                        </button>
                       </div>
                     </motion.li>
                   ))}

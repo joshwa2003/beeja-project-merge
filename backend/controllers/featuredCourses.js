@@ -100,7 +100,6 @@ exports.updateFeaturedCourses = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'Featured courses updated successfully',
             data: featuredCourses
         });
     } catch (error) {

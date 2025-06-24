@@ -391,7 +391,7 @@ export const deleteCourse = async (data, token) => {
     if (!response?.data?.success) {
       throw new Error("Could Not Delete Course")
     }
-    toast.success("Course Deleted")
+    
   } catch (error) {
     console.log("DELETE COURSE API ERROR............", error)
     toast.error(error.message)

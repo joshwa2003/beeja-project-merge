@@ -16,7 +16,7 @@ const CourseCard = ({ cardData, currentCard, setCurrentCard }) => {
         scale: 1.02,
         transition: { duration: 0.2 }
       }}
-      className={`w-[330px] h-[360px] flex flex-col
+      className={`w-full max-w-[330px] mx-auto h-[320px] sm:h-[360px] flex flex-col
         ${currentCard === cardData?.heading
           ? "bg-white shadow-lg shadow-yellow-50/50 border border-yellow-50/20"
           : "bg-richblack-800 hover:shadow-xl hover:shadow-yellow-50/10 border border-transparent hover:border-yellow-50/10"
@@ -42,7 +42,7 @@ const CourseCard = ({ cardData, currentCard, setCurrentCard }) => {
       }}
     >
       {/* Thumbnail Section - Fixed Height */}
-      <div className="relative h-40 overflow-hidden flex-shrink-0 rounded-t-lg group">
+      <div className="relative h-32 sm:h-40 overflow-hidden flex-shrink-0 rounded-t-lg group">
         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-all duration-300 z-10"></div>
         {cardData?.thumbnail ? (
           <img 
@@ -69,21 +69,21 @@ const CourseCard = ({ cardData, currentCard, setCurrentCard }) => {
       </div>
 
       {/* Content Section - Flexible Height */}
-      <div className="p-3 flex flex-col gap-1 flex-grow bg-gradient-to-b from-richblack-800 to-richblack-900">
-        <h3 className={`font-semibold text-base leading-tight mb-1
+      <div className="p-2 sm:p-3 flex flex-col gap-1 flex-grow bg-gradient-to-b from-richblack-800 to-richblack-900">
+        <h3 className={`font-semibold text-sm sm:text-base leading-tight mb-1
           ${currentCard === cardData?.heading ? "text-richblack-200" : "text-richblack-25"}`}>
           {cardData?.heading}
         </h3>
 
-        <p className="text-richblack-400 text-sm line-clamp-2 mb-2">
+        <p className="text-richblack-400 text-xs sm:text-sm line-clamp-2 mb-2">
           {cardData?.description}
         </p>
 
         {/* Stats Row */}
-        <div className={`flex items-center justify-between text-sm
+        <div className={`flex items-center justify-between text-xs sm:text-sm
           ${currentCard === cardData?.heading ? "text-richblack-200" : "text-richblack-400"}`}>
           <div className="flex items-center gap-1">
-            <HiUsers className="text-lg" />
+            <HiUsers className="text-sm sm:text-lg" />
             <span>{cardData?.level || "Beginner"}</span>
           </div>
           
@@ -93,18 +93,18 @@ const CourseCard = ({ cardData, currentCard, setCurrentCard }) => {
           
           {/* Price Display */}
           {cardData?.price !== undefined && (
-            <div className={`flex items-center font-bold text-lg
+            <div className={`flex items-center font-bold text-base sm:text-lg
               ${currentCard === cardData?.heading ? "text-richblack-800" : "text-yellow-50"}`}>
               {cardData.price === 0 ? (
-              <div className="flex items-center gap-3">
-                <span className="text-lg font-bold bg-gradient-to-r from-caribbeangreen-300 to-caribbeangreen-200 bg-clip-text text-transparent">FREE</span>
-                <span className="text-sm text-richblack-400 line-through">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="text-sm sm:text-lg font-bold bg-gradient-to-r from-caribbeangreen-300 to-caribbeangreen-200 bg-clip-text text-transparent">FREE</span>
+                <span className="text-xs sm:text-sm text-richblack-400 line-through">
                   ₹{cardData?.originalPrice || cardData?.price || 1999}
                 </span>
               </div>
               ) : (
                 <>
-                  <FaRupeeSign className="text-sm" />
+                  <FaRupeeSign className="text-xs sm:text-sm" />
                   <span>{cardData.price.toLocaleString()}</span>
                 </>
               )}

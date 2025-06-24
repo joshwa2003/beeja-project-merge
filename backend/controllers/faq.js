@@ -133,7 +133,7 @@ exports.answerFaq = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'FAQ answered successfully',
+            
             faq
         });
     } catch (error) {

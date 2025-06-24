@@ -31,7 +31,7 @@ const AdminSidebar = ({ activeTab, onTabChange }) => {
     { id: 'featuredCourses', label: 'Featured Courses', icon: <FaStar size={16} /> },
     { id: 'faqs', label: 'FAQ Management', icon: <FaComments size={16} /> },
     { id: 'analytics', label: 'Analytics', icon: <FaChartBar size={16} /> },
-    { id: 'settings', label: 'Settings', icon: <MdSettings size={16} /> },
+    // { id: 'settings', label: 'Settings', icon: <MdSettings size={16} /> },
   ];
 
   useEffect(() => {
