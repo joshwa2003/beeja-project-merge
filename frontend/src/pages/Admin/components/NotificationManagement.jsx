@@ -154,9 +154,15 @@ const NotificationManagement = () => {
     }
 
     try {
-      // Always use the MongoDB _id for deletion
-      const deleteId = notification._id;
-      console.log('Deleting notification with ID:', deleteId);
+      // Use bulkId for grouped notifications, otherwise use _id for individual notifications
+      const deleteId = notification.bulkId || notification.displayId || notification._id;
+      console.log('Deleting notification with ID:', deleteId, {
+        bulkId: notification.bulkId,
+        displayId: notification.displayId,
+        _id: notification._id,
+        recipientCount: notification.recipientCount
+      });
+      
       const response = await deleteNotificationAdmin(deleteId, token);
       if (response.success) {
         const deletedCount = response.deletedCount || 1;
@@ -186,7 +192,7 @@ const NotificationManagement = () => {
   };
 
   const getRecipientIcon = (recipients) => {
-    const type = recipients || 'unknown';
+    const type = String(recipients || 'unknown');
     switch (type.toLowerCase()) {
       case 'all': return <BsPeople className="w-4 h-4" />;
       case 'student':
