@@ -9,7 +9,7 @@ const {
 
 // Get featured courses
 export const getFeaturedCourses = async () => {
-  const toastId = toast.loading("Loading featured courses...")
+  // const toastId = toast.loading("Loading featured courses...")
   try {
     const response = await apiConnector("GET", GET_FEATURED_COURSES_API)
     console.log("GET_FEATURED_COURSES_API Response:", response)
@@ -24,7 +24,7 @@ export const getFeaturedCourses = async () => {
     toast.error(error.message)
     return null
   } finally {
-    toast.dismiss(toastId)
+    // toast.dismiss(toastId)
   }
 }
 

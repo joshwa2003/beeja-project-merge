@@ -70,11 +70,42 @@
   background: rgba(148, 163, 184, 0.3);
 }
 
-/* Smooth transitions */
-* {
-  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform, filter;
+/* Smooth transitions - Exclude Framer Motion and course components */
+*:not([data-framer-motion]):not(.framer-motion):not([data-course-component]) {
+  transition-property: background-color, border-color, color, fill, stroke;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+}
+
+/* Course component specific styles */
+[data-course-component] {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+/* Framer Motion specific fixes - Only for course components */
+[data-course-component] [data-framer-motion] {
+  transition: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+}
+
+[data-course-component] .framer-motion {
+  transition: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+}
+
+/* Force visibility for motion divs - Only within course components */
+[data-course-component] div[style*="opacity: 0"] {
+  opacity: 1 !important;
+}
+
+[data-course-component] div[style*="transform"] {
+  transform: none !important;
 }
 
 /* Grid background pattern */

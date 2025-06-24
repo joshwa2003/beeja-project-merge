@@ -346,11 +346,28 @@ export const fetchInstructorCourses = async (token, userRole) => {
     // Calculate total duration for each course
     result = response?.data?.data.map(course => {
       let totalDurationInSeconds = 0
-      course.courseContent?.forEach(section => {
-        section.subSection?.forEach(subSection => {
-          totalDurationInSeconds += parseInt(subSection.timeDuration) || 0
-        })
+      
+      // First check if the course has any content
+      if (!course.courseContent || !Array.isArray(course.courseContent) || course.courseContent.length === 0) {
+        return { ...course, totalDuration: "0s" }
+      }
+
+      // Process each section's subsections
+      course.courseContent.forEach((section) => {
+        // Check if section has subsections
+        if (section && section.subSection && Array.isArray(section.subSection)) {
+          section.subSection.forEach((subSection) => {
+            if (subSection && subSection.timeDuration) {
+              const duration = parseFloat(subSection.timeDuration)
+              if (!isNaN(duration) && duration > 0) {
+                totalDurationInSeconds += duration
+              }
+            }
+          })
+        }
       })
+      
+      console.log("Total duration in seconds:", totalDurationInSeconds)
       
       // Convert seconds to hours, minutes, and seconds
       const hours = Math.floor(totalDurationInSeconds / 3600)
@@ -358,14 +375,20 @@ export const fetchInstructorCourses = async (token, userRole) => {
       const seconds = Math.floor((totalDurationInSeconds % 3600) % 60)
 
       // Format duration string
-      let totalDuration = "0s"
+      let totalDuration = ""
       if (hours > 0) {
-        totalDuration = `${hours}h ${minutes}m`
-      } else if (minutes > 0) {
-        totalDuration = `${minutes}m ${seconds}s`
-      } else if (seconds > 0) {
-        totalDuration = `${seconds}s`
+        totalDuration += `${hours}h `
       }
+      if (minutes > 0 || hours > 0) {
+        totalDuration += `${minutes}m `
+      }
+      if (seconds > 0 || (hours === 0 && minutes === 0)) {
+        totalDuration += `${seconds}s`
+      }
+      totalDuration = totalDuration.trim() || "0s"
+      
+      console.log("Final duration:", totalDuration)
+      console.log("=== END COURSE DEBUG ===")
 
       return {
         ...course,
@@ -388,7 +411,7 @@ export const deleteCourse = async (data, token) => {
       Authorization: `Bearer ${token}`,
     })
     console.log("DELETE COURSE API RESPONSE............", response)
-    if (!response?.data?.success) {
+     if (!response?.data?.success) {
       throw new Error("Could Not Delete Course")
     }
     

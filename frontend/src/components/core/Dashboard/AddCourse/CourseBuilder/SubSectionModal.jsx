@@ -112,7 +112,7 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
     }
 
     setLoading(true)
-    const toastId = toast.loading("Uploading lecture... This may take a few minutes.")
+    
     
     try {
       const formData = new FormData()

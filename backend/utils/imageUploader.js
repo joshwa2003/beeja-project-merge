@@ -6,8 +6,17 @@ exports.uploadImageToCloudinary = async (file, folder, height, quality) => {
         if (height) options.height = height;
         if (quality) options.quality = quality;
 
-        options.resource_type = 'auto';
-        options.chunk_size = 6000000; // 6MB chunks for better upload handling
+        // Set resource type and options for video uploads
+        if (file.mimetype && file.mimetype.startsWith('video/')) {
+            options.resource_type = 'video';
+            options.chunk_size = 6000000; // 6MB chunks for better upload handling
+            options.eager = [{ format: 'mp4' }];
+            options.eager_async = false; // Wait for eager transformation
+            options.video_metadata = true; // Request video metadata including duration
+        } else {
+            options.resource_type = 'auto';
+            options.chunk_size = 6000000;
+        }
         
         // Create a promise to handle the upload
         return new Promise((resolve, reject) => {

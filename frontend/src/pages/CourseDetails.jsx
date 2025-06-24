@@ -404,6 +404,7 @@ function CourseDetails() {
             
             {/* Professional What you'll learn section */}
             <motion.div 
+              data-course-component
               className="my-12 bg-richblack-800 border border-richblack-700 rounded-xl p-8 shadow-xl"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -444,6 +445,7 @@ function CourseDetails() {
 
             {/* Professional Tags Section */}
             <motion.div 
+              data-course-component
               className="my-8 bg-richblack-800/60 backdrop-blur-sm rounded-xl p-6 border border-richblack-700 shadow-lg"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -476,6 +478,7 @@ function CourseDetails() {
 
             {/* Professional Course Content Section */}
             <motion.div 
+              data-course-component
               className="max-w-[830px] my-12"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -537,6 +540,7 @@ function CourseDetails() {
 
             {/* Professional Author Section */}
             <motion.div 
+              data-course-component
               className="mb-12 bg-richblack-800 rounded-xl p-8 border border-richblack-700 shadow-xl"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}

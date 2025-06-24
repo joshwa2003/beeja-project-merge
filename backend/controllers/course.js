@@ -565,7 +565,15 @@ exports.getInstructorCourses = async (req, res) => {
         const instructorId = req.user.id
 
         // Find all courses belonging to the instructor
-        const instructorCourses = await Course.find({ instructor: instructorId, }).sort({ createdAt: -1 })
+        const instructorCourses = await Course.find({ instructor: instructorId })
+            .populate({
+                path: "courseContent",
+                populate: {
+                    path: "subSection",
+                    select: "title timeDuration"
+                }
+            })
+            .sort({ createdAt: -1 })
 
 
         // Return the instructor's courses

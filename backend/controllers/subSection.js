@@ -113,10 +113,20 @@ exports.createSubSection = async (req, res) => {
 
         // upload video to cloudinary
         const videoFileDetails = await uploadImageToCloudinary(videoFile, process.env.FOLDER_NAME);
+        
+        console.log('Video upload details:', {
+            duration: videoFileDetails.duration,
+            secure_url: videoFileDetails.secure_url,
+            resource_type: videoFileDetails.resource_type
+        });
 
-// create entry in DB
-        const SubSectionDetails = await SubSection.create(
-            { title, timeDuration: videoFileDetails.duration, description, videoUrl: videoFileDetails.secure_url });
+        // create entry in DB
+        const SubSectionDetails = await SubSection.create({
+            title,
+            timeDuration: videoFileDetails.duration || 0,
+            description,
+            videoUrl: videoFileDetails.secure_url
+        });
 
         // Handle quiz attachment
         if (req.body.quiz) {

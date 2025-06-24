@@ -112,7 +112,7 @@ function CourseDetailsCard({ course, setConfirmationModal, handleBuyCourse }) {
 
   return (
     <>
-<div className="flex flex-col gap-4 rounded-2xl bg-richblack-700 p-4 text-richblack-5 shadow-lg border border-richblack-600">
+<div data-course-component className="flex flex-col gap-4 rounded-2xl bg-richblack-700 p-4 text-richblack-5 shadow-lg border border-richblack-600">
         {/* Course Image */}
         <Img
           src={ThumbnailImage}
