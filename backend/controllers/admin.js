@@ -914,7 +914,7 @@ exports.getAllNotifications = async (req, res) => {
         // Combine both arrays and remove duplicates
         const allBulkIds = [...new Set([...distinctBulkIds, ...metadataBulkIds])];
 
-        // Get all admin notifications
+        // Get all admin notifications with populated user data
         const allNotifications = await Notification.find({
             $or: [
                 { 'metadata.sentByAdmin': true },
@@ -922,7 +922,8 @@ exports.getAllNotifications = async (req, res) => {
             ]
         })
         .sort({ createdAt: -1 })
-        .populate('sender', 'firstName lastName email');
+        .populate('sender', 'firstName lastName email')
+        .populate('recipient', 'firstName lastName email'); // Populate recipient details for specific notifications
 
         // Group notifications
         const groupedNotifications = new Map();
@@ -941,7 +942,19 @@ exports.getAllNotifications = async (req, res) => {
                     title: firstNotification.title,
                     message: firstNotification.message,
                     sender: firstNotification.sender,
-                    recipients: firstNotification.metadata?.recipients || firstNotification.recipientType || firstNotification.metadata?.recipientType || 'unknown',
+                    recipients: (() => {
+                        // For specific recipients, show actual email addresses
+                        if (firstNotification.metadata?.recipientType === 'Specific' || 
+                            firstNotification.recipientType === 'Specific') {
+                            const emails = bulkNotifications
+                                .filter(n => n.recipient && n.recipient.email)
+                                .map(n => n.recipient.email);
+                            return emails.length > 0 ? emails.join(', ') : 'Specific users';
+                        }
+                        // For bulk recipients (all, students, instructors, admins), show the type
+                        return firstNotification.metadata?.recipientType || 
+                               firstNotification.recipientType || 'unknown';
+                    })(),
                     relatedCourse: firstNotification.relatedCourse,
                     createdAt: firstNotification.createdAt,
                     recipientCount: bulkNotifications.length,
@@ -962,7 +975,7 @@ exports.getAllNotifications = async (req, res) => {
                     title: notification.title,
                     message: notification.message,
                     sender: notification.sender,
-                    recipients: notification.metadata?.recipients || notification.recipientType || 'unknown',
+                    recipients: notification.recipient?.email || notification.recipientType || 'unknown',
                     relatedCourse: notification.relatedCourse,
                     createdAt: notification.createdAt,
                     recipientCount: 1,
