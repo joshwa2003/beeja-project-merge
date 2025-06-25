@@ -173,7 +173,7 @@ exports.getStudentProgress = async (req, res) => {
           return acc;
         }, []) : [],
       certificateStatus: certificate ? {
-        issuedAt: certificate.issuedAt,
+        issuedDate: certificate.issuedDate,
         certificateId: certificate._id
       } : null
     };

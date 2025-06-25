@@ -1,14 +1,32 @@
 export const formatDate = (dateString) => {
+  if (!dateString) return 'Not available';
+  
+  const date = new Date(dateString);
+  
+  // Check if the date is valid
+  if (isNaN(date.getTime())) {
+    return 'Invalid date';
+  }
+  
   const options = { 
     year: 'numeric', 
     month: 'long', 
     day: 'numeric' 
   };
   
-  return new Date(dateString).toLocaleDateString('en-US', options);
+  return date.toLocaleDateString('en-US', options);
 };
 
 export const formatDateAndTime = (dateString) => {
+  if (!dateString) return 'Not available';
+  
+  const date = new Date(dateString);
+  
+  // Check if the date is valid
+  if (isNaN(date.getTime())) {
+    return 'Invalid date';
+  }
+  
   const options = { 
     year: 'numeric', 
     month: 'long', 
@@ -17,12 +35,20 @@ export const formatDateAndTime = (dateString) => {
     minute: '2-digit'
   };
   
-  return new Date(dateString).toLocaleDateString('en-US', options);
+  return date.toLocaleDateString('en-US', options);
 };
 
 export const getTimeAgo = (dateString) => {
-  const now = new Date();
+  if (!dateString) return 'Not available';
+  
   const date = new Date(dateString);
+  
+  // Check if the date is valid
+  if (isNaN(date.getTime())) {
+    return 'Invalid date';
+  }
+  
+  const now = new Date();
   const seconds = Math.floor((now - date) / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);

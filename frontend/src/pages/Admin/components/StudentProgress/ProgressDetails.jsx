@@ -197,7 +197,7 @@ const ProgressDetails = ({ courseId, studentId }) => {
                 Course Certificate
               </h4>
               <p className="text-sm text-richblack-300">
-                Issued: {formatDate(progress.certificateStatus.issuedAt)}
+                Issued: {progress.certificateStatus?.issuedDate ? formatDate(progress.certificateStatus.issuedDate) : 'Not available'}
               </p>
             </div>
             <div className="flex items-center space-x-4">

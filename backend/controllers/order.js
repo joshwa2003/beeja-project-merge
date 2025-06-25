@@ -160,7 +160,7 @@ exports.generateOrdersPDF = async (req, res) => {
         doc.fontSize(12)
            .font('Helvetica')
            .text(`Total Orders: ${orders.length}`)
-           .text(`Total Revenue: ₹${totalRevenue.toLocaleString('en-IN')}`)
+           .text(`Total Revenue: Rs. ${totalRevenue}`)
            .text(`Active Orders: ${activeOrders}`)
            .text(`Inactive Orders: ${orders.length - activeOrders}`);
         
@@ -178,79 +178,115 @@ exports.generateOrdersPDF = async (req, res) => {
                .font('Helvetica')
                .text('No orders found.', { align: 'center' });
         } else {
-            // Simple table layout
+            // Modern table layout
             const tableTop = doc.y;
             const tableLeft = 50;
             const colWidths = [40, 150, 120, 80, 60, 80];
-            let currentX = tableLeft;
+            const tableWidth = colWidths.reduce((sum, width) => sum + width, 0);
 
-            // Table headers
-            doc.fontSize(10)
-               .font('Helvetica-Bold');
-            
+            // Table headers with modern styling
+            doc.rect(tableLeft, tableTop, tableWidth, 30)
+               .fill('#2c3e50');
+
+            let xPos = tableLeft;
             const headers = ['S.No', 'User Details', 'Course', 'Amount', 'Status', 'Date'];
+            
+            // Header text
+            doc.fontSize(10)
+               .font('Helvetica-Bold')
+               .fill('#ffffff');
+            
             headers.forEach((header, i) => {
-                doc.text(header, currentX, tableTop, { width: colWidths[i], align: 'left' });
-                currentX += colWidths[i];
+                doc.text(header, xPos, tableTop + 10, {
+                    width: colWidths[i],
+                    align: i === 3 ? 'right' : 'center' // Right align Amount column
+                });
+                xPos += colWidths[i];
             });
 
-            // Header line
-            doc.moveTo(tableLeft, tableTop + 15)
-               .lineTo(tableLeft + colWidths.reduce((a, b) => a + b, 0), tableTop + 15)
-               .stroke();
-
-            let currentY = tableTop + 25;
+            let yPos = tableTop + 35;
+            doc.fill('#000000');
 
             // Add order data
-            doc.font('Helvetica')
-               .fontSize(9);
+            doc.font('Helvetica').fontSize(9);
 
             orders.forEach((order, index) => {
                 // Check if we need a new page
-                if (currentY > 700) {
+                if (yPos > 700) {
                     doc.addPage();
-                    currentY = 50;
+                    yPos = 50;
                     
-                    // Redraw headers
-                    currentX = tableLeft;
-                    doc.fontSize(10).font('Helvetica-Bold');
+                    // Redraw header on new page
+                    doc.rect(tableLeft, yPos - 5, tableWidth, 30)
+                       .fill('#2c3e50');
+                    
+                    xPos = tableLeft;
+                    doc.fontSize(10)
+                       .font('Helvetica-Bold')
+                       .fill('#ffffff');
+                    
                     headers.forEach((header, i) => {
-                        doc.text(header, currentX, currentY, { width: colWidths[i], align: 'left' });
-                        currentX += colWidths[i];
+                        doc.text(header, xPos, yPos, {
+                            width: colWidths[i],
+                            align: i === 3 ? 'right' : 'center'
+                        });
+                        xPos += colWidths[i];
                     });
                     
-                    doc.moveTo(tableLeft, currentY + 15)
-                       .lineTo(tableLeft + colWidths.reduce((a, b) => a + b, 0), currentY + 15)
-                       .stroke();
-                    
-                    currentY += 25;
-                    doc.fontSize(9).font('Helvetica');
+                    yPos += 35;
+                    doc.font('Helvetica').fontSize(9)
+                       .fill('#000000');
                 }
 
-                currentX = tableLeft;
+                // Draw row background
+                doc.rect(tableLeft, yPos - 5, tableWidth, 30)
+                   .fill(index % 2 === 0 ? '#ffffff' : '#f8f9fa')
+                   .stroke('#e5e7eb');
+
+                // Reset position for data
+                xPos = tableLeft;
                 
                 // S.No
-                doc.text((index + 1).toString(), currentX, currentY, { width: colWidths[0], align: 'center' });
-                currentX += colWidths[0];
+                doc.font('Helvetica')
+                   .fill('#000000')
+                   .text((index + 1).toString(), xPos + 5, yPos + 2, {
+                    width: colWidths[0] - 10,
+                    align: 'center'
+                });
+                xPos += colWidths[0];
                 
                 // User Details
                 const userName = order.user ? `${order.user.firstName || ''} ${order.user.lastName || ''}`.trim() : 'N/A';
                 const userEmail = order.user?.email || 'N/A';
-                doc.text(`${userName}\n${userEmail}`, currentX, currentY, { width: colWidths[1], align: 'left' });
-                currentX += colWidths[1];
+                doc.text(`${userName}\n${userEmail}`, xPos + 5, yPos + 2, {
+                    width: colWidths[1] - 10,
+                    align: 'left'
+                });
+                xPos += colWidths[1];
                 
                 // Course
                 const courseName = order.course?.courseName || 'N/A';
-                doc.text(courseName, currentX, currentY, { width: colWidths[2], align: 'left' });
-                currentX += colWidths[2];
+                doc.text(courseName, xPos + 5, yPos + 2, {
+                    width: colWidths[2] - 10,
+                    align: 'left'
+                });
+                xPos += colWidths[2];
                 
                 // Amount
-                doc.text(`₹${order.amount.toLocaleString('en-IN')}`, currentX, currentY, { width: colWidths[3], align: 'right' });
-                currentX += colWidths[3];
+                doc.font('Helvetica-Bold')
+                   .text(`Rs. ${order.amount}`, xPos + 5, yPos + 2, {
+                    width: colWidths[3] - 10,
+                    align: 'right'
+                });
+                xPos += colWidths[3];
                 
                 // Status
-                doc.text(order.status ? 'Active' : 'Inactive', currentX, currentY, { width: colWidths[4], align: 'center' });
-                currentX += colWidths[4];
+                doc.font('Helvetica')
+                   .text(order.status ? 'Active' : 'Inactive', xPos + 5, yPos + 2, {
+                    width: colWidths[4] - 10,
+                    align: 'center'
+                });
+                xPos += colWidths[4];
                 
                 // Date
                 const orderDate = new Date(order.purchaseDate).toLocaleDateString('en-IN', {
@@ -258,19 +294,18 @@ exports.generateOrdersPDF = async (req, res) => {
                     month: 'short',
                     year: 'numeric'
                 });
-                doc.text(orderDate, currentX, currentY, { width: colWidths[5], align: 'center' });
+                doc.text(orderDate, xPos + 5, yPos + 2, {
+                    width: colWidths[5] - 10,
+                    align: 'center'
+                });
                 
-                currentY += 30;
-                
-                // Row separator line
-                if (index < orders.length - 1) {
-                    doc.moveTo(tableLeft, currentY - 5)
-                       .lineTo(tableLeft + colWidths.reduce((a, b) => a + b, 0), currentY - 5)
-                       .strokeOpacity(0.3)
-                       .stroke()
-                       .strokeOpacity(1);
-                }
+                yPos += 30;
             });
+
+            // Draw table outer border
+            doc.rect(tableLeft, tableTop, tableWidth, yPos - tableTop)
+               .strokeColor('#2c3e50')
+               .stroke();
         }
 
         // Add footer

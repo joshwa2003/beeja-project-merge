@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { FiDownload, FiEye, FiSearch, FiTrash2 } from 'react-icons/fi'
-// Removed date-fns import - using native JS date formatting instead
-import ConfirmationModal from '../../../components/common/ConfirmationModal.jsx'
-import { toast } from 'react-hot-toast'
-import { getAllOrders, deleteOrder, updateOrderStatus, generateOrdersPDF } from '../../../services/operations/orderAPI'
+import { FiDownload, FiEye, FiSearch } from 'react-icons/fi'
+import { getAllOrders, updateOrderStatus, generateOrdersPDF } from '../../../services/operations/orderAPI'
 import OrderViewModal from './OrderViewModal'
 
 export default function Orders() {
@@ -13,7 +10,6 @@ export default function Orders() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [sortConfig, setSortConfig] = useState({ key: 'purchaseDate', direction: 'desc' })
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [showViewModal, setShowViewModal] = useState(false)
 
@@ -59,17 +55,6 @@ export default function Orders() {
       // Add more sorting logic for other columns if needed
       return 0
     })
-
-  // Handle delete order
-  const handleDeleteOrder = async () => {
-    if (!selectedOrder) return
-    const success = await deleteOrder(token, selectedOrder._id)
-    if (success) {
-      setOrders((prev) => prev.filter((order) => order._id !== selectedOrder._id))
-    }
-    setShowDeleteModal(false)
-    setSelectedOrder(null)
-  }
 
   // Handle status toggle
   const handleStatusToggle = async (orderId, newStatus) => {
@@ -285,16 +270,6 @@ export default function Orders() {
                       >
                         <FiEye size={18} />
                       </button>
-                      <button
-                        onClick={() => {
-                          setSelectedOrder(order)
-                          setShowDeleteModal(true)
-                        }}
-                        className="rounded-lg bg-gradient-to-r from-pink-600 to-pink-500 p-3 text-white shadow-lg transition-all duration-200 hover:scale-110 hover:shadow-pink-500/30 active:scale-95"
-                        title="Delete Order"
-                      >
-                        <FiTrash2 size={18} />
-                      </button>
                     </div>
                   </td>
                 </tr>
@@ -327,21 +302,6 @@ export default function Orders() {
           </div>
         )}
       </div>
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <ConfirmationModal
-          text1="Are you sure you want to delete this order?"
-          text2="This action cannot be undone."
-          btn1Text="Delete"
-          btn2Text="Cancel"
-          btn1Handler={handleDeleteOrder}
-          btn2Handler={() => {
-            setShowDeleteModal(false)
-            setSelectedOrder(null)
-          }}
-        />
-      )}
 
       {/* View Order Modal */}
       {showViewModal && selectedOrder && (

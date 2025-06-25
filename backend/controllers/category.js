@@ -180,8 +180,14 @@ exports.showAllCategories = async (req, res) => {
     try {
         console.log('Fetching all categories from database...');
         
-        // get all category from DB
-        const allCategories = await Category.find({}, { name: true, description: true, icon: true });
+        // get all category from DB with courses populated
+        const allCategories = await Category.find({})
+            .populate({
+                path: 'courses',
+                match: { status: 'Published', isVisible: true },
+                select: '_id courseName'
+            })
+            .select('name description icon courses');
         
         console.log(`Found ${allCategories.length} categories`);
 

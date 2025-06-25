@@ -1,9 +1,13 @@
-import { useState, useEffect } from 'react';
+  import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { createCoupon } from '../../../services/operations/couponAPI';
 import { toast } from 'react-hot-toast';
-import { FiTag, FiPercent, FiDollarSign, FiCalendar, FiUsers, FiShoppingCart, FiLink, FiEye } from 'react-icons/fi';
+import { FiTag, FiPercent, FiDollarSign, FiCalendar, FiUsers, FiShoppingCart, FiLink, FiEye, FiClock } from 'react-icons/fi';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
+import "../../../styles/datepicker.css";
+import CustomTimePicker from '../../../components/common/CustomTimePicker';
 
 export default function CouponForm({ onSuccess }) {
   const { token } = useSelector((state) => state.auth);
@@ -12,12 +16,19 @@ export default function CouponForm({ onSuccess }) {
   const [courses, setCourses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [showOnFront, setShowOnFront] = useState(false);
+  const [startDate, setStartDate] = useState(new Date());
+  const [expiryDate, setExpiryDate] = useState(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + 7); // Default expiry date is 7 days from now
+    return date;
+  });
 
   const {
     register,
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -38,9 +49,9 @@ export default function CouponForm({ onSuccess }) {
       // Handle dates properly to avoid timezone issues
       const formData = {
         ...data,
-        // Keep dates as they are - the backend will handle the conversion
-        startDate: data.startDate,
-        expiryDate: data.expiryDate,
+        // Use the state dates instead of form data
+        startDate: startDate,
+        expiryDate: expiryDate,
         // Convert string numbers to actual numbers
         discountValue: parseFloat(data.discountValue),
         minimumOrderAmount: parseFloat(data.minimumOrderAmount || 0),
@@ -57,6 +68,11 @@ export default function CouponForm({ onSuccess }) {
       if (result) {
         reset(); // Reset form after successful submission
         setShowOnFront(false);
+        const newStartDate = new Date();
+        const newExpiryDate = new Date();
+        newExpiryDate.setDate(newExpiryDate.getDate() + 7);
+        setStartDate(newStartDate);
+        setExpiryDate(newExpiryDate);
         // Call onSuccess callback if provided
         if (onSuccess) {
           onSuccess();
@@ -182,7 +198,8 @@ export default function CouponForm({ onSuccess }) {
                       message: "Percentage cannot exceed 100%"
                     } : undefined
                   })}
-                  className="w-full px-4 py-3.5 bg-richblack-600 border border-richblack-500 rounded-xl text-richblack-5 placeholder-richblack-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 hover:bg-richblack-500/80"
+                  className="w-full px-4 py-3.5 bg-richblack-600 border border-richblack-500 rounded-xl text-richblack-5 placeholder-richblack-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 hover:bg-richblack-500/80 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  onWheel={(e) => e.target.blur()}
                 />
                 {watchDiscountType && (
                   <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-richblack-400 text-sm">
@@ -210,7 +227,8 @@ export default function CouponForm({ onSuccess }) {
                         message: "Value must be positive"
                       }
                     })}
-                    className="w-full px-4 py-3.5 bg-richblack-600 border border-richblack-500 rounded-xl text-richblack-5 placeholder-richblack-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 hover:bg-richblack-500/80"
+                    className="w-full px-4 py-3.5 bg-richblack-600 border border-richblack-500 rounded-xl text-richblack-5 placeholder-richblack-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 hover:bg-richblack-500/80 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    onWheel={(e) => e.target.blur()}
                   />
                   <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-richblack-400 text-sm">₹</span>
                 </div>
@@ -235,7 +253,8 @@ export default function CouponForm({ onSuccess }) {
                       message: "Value must be positive"
                     }
                   })}
-                  className="w-full px-4 py-3.5 bg-richblack-600 border border-richblack-500 rounded-xl text-richblack-5 placeholder-richblack-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:bg-richblack-500/80"
+                  className="w-full px-4 py-3.5 bg-richblack-600 border border-richblack-500 rounded-xl text-richblack-5 placeholder-richblack-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:bg-richblack-500/80 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  onWheel={(e) => e.target.blur()}
                 />
                 <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-richblack-400 text-sm">₹</span>
               </div>
@@ -267,7 +286,8 @@ export default function CouponForm({ onSuccess }) {
                     message: "Value must be positive"
                   }
                 })}
-                className="w-full px-4 py-3.5 bg-richblack-600 border border-richblack-500 rounded-xl text-richblack-5 placeholder-richblack-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 hover:bg-richblack-500/80"
+                className="w-full px-4 py-3.5 bg-richblack-600 border border-richblack-500 rounded-xl text-richblack-5 placeholder-richblack-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 hover:bg-richblack-500/80 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                onWheel={(e) => e.target.blur()}
               />
               {errors.usageLimit && <span className="text-xs text-red-400">{errors.usageLimit.message}</span>}
               <p className="text-xs text-richblack-400">Maximum number of times this coupon can be used</p>
@@ -288,7 +308,8 @@ export default function CouponForm({ onSuccess }) {
                     message: "Value must be positive"
                   }
                 })}
-                className="w-full px-4 py-3.5 bg-richblack-600 border border-richblack-500 rounded-xl text-richblack-5 placeholder-richblack-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 hover:bg-richblack-500/80"
+                className="w-full px-4 py-3.5 bg-richblack-600 border border-richblack-500 rounded-xl text-richblack-5 placeholder-richblack-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 hover:bg-richblack-500/80 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                onWheel={(e) => e.target.blur()}
               />
               {errors.perUserLimit && <span className="text-xs text-red-400">{errors.perUserLimit.message}</span>}
               <p className="text-xs text-richblack-400">Maximum uses per individual user</p>
@@ -310,11 +331,56 @@ export default function CouponForm({ onSuccess }) {
                 <FiCalendar className="text-cyan-400 text-sm" />
                 Start Date & Time
               </label>
-              <input
-                type="datetime-local"
-                {...register("startDate", { required: "Start date is required" })}
-                className="w-full px-4 py-3.5 bg-richblack-600 border border-richblack-500 rounded-xl text-richblack-5 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300 hover:bg-richblack-500/80"
-              />
+              <div className="relative">
+                <div className="space-y-2">
+                  <DatePicker
+                    selected={startDate}
+                    onChange={(date) => {
+                      const newDate = new Date(date);
+                      newDate.setHours(startDate.getHours(), startDate.getMinutes(), 0, 0);
+                      setStartDate(newDate);
+                      setValue("startDate", newDate);
+                      // If expiry date is before the new start date, update it
+                      if (expiryDate < newDate) {
+                        const newExpiryDate = new Date(newDate);
+                        newExpiryDate.setDate(newDate.getDate() + 7);
+                        setExpiryDate(newExpiryDate);
+                        setValue("expiryDate", newExpiryDate);
+                      }
+                    }}
+                    showTimeSelect={false}
+                    dateFormat="MMMM d, yyyy"
+                    calendarStartDay={0}
+                    className="w-full px-4 py-3.5 bg-richblack-600 border border-richblack-500 rounded-xl text-richblack-5 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300 hover:bg-richblack-500/80"
+                    calendarClassName="bg-richblack-800 border border-richblack-700 rounded-xl shadow-xl text-richblack-5"
+                    popperClassName="react-datepicker-popper"
+                    withPortal
+                    portalId="start-date-picker-portal"
+                    customInput={
+                      <div className="relative w-full">
+                        <input
+                          type="text"
+                          className="w-full px-4 py-3.5 bg-richblack-600 border border-richblack-500 rounded-xl text-richblack-5 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300 hover:bg-richblack-500/80"
+                          value={startDate ? startDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : ''}
+                          readOnly
+                        />
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <FiCalendar className="text-cyan-400" />
+                        </div>
+                      </div>
+                    }
+                  />
+                  <CustomTimePicker
+                    selectedTime={startDate}
+                    onChange={(time) => {
+                      const newDate = new Date(startDate);
+                      newDate.setHours(time.getHours(), time.getMinutes(), 0, 0);
+                      setStartDate(newDate);
+                      setValue("startDate", newDate);
+                    }}
+                  />
+                </div>
+              </div>
               {errors.startDate && <span className="text-xs text-red-400">{errors.startDate.message}</span>}
             </div>
 
@@ -324,11 +390,50 @@ export default function CouponForm({ onSuccess }) {
                 <FiCalendar className="text-red-400 text-sm" />
                 Expiry Date & Time
               </label>
-              <input
-                type="datetime-local"
-                {...register("expiryDate", { required: "Expiry date is required" })}
-                className="w-full px-4 py-3.5 bg-richblack-600 border border-richblack-500 rounded-xl text-richblack-5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 hover:bg-richblack-500/80"
-              />
+              <div className="relative">
+                <div className="space-y-2">
+                  <DatePicker
+                    selected={expiryDate}
+                    onChange={(date) => {
+                      const newDate = new Date(date);
+                      newDate.setHours(expiryDate.getHours(), expiryDate.getMinutes(), 0, 0);
+                      setExpiryDate(newDate);
+                      setValue("expiryDate", newDate);
+                    }}
+                    showTimeSelect={false}
+                    dateFormat="MMMM d, yyyy"
+                    calendarStartDay={0}
+                    minDate={new Date(startDate.getTime() + 24 * 60 * 60 * 1000)} // At least 1 day after start date
+                    className="w-full px-4 py-3.5 bg-richblack-600 border border-richblack-500 rounded-xl text-richblack-5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 hover:bg-richblack-500/80"
+                    calendarClassName="bg-richblack-800 border border-richblack-700 rounded-xl shadow-xl text-richblack-5"
+                    popperClassName="react-datepicker-popper"
+                    withPortal
+                    portalId="expiry-date-picker-portal"
+                    customInput={
+                      <div className="relative w-full">
+                        <input
+                          type="text"
+                          className="w-full px-4 py-3.5 bg-richblack-600 border border-richblack-500 rounded-xl text-richblack-5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 hover:bg-richblack-500/80"
+                          value={expiryDate ? expiryDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : ''}
+                          readOnly
+                        />
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <FiCalendar className="text-red-400" />
+                        </div>
+                      </div>
+                    }
+                  />
+                  <CustomTimePicker
+                    selectedTime={expiryDate}
+                    onChange={(time) => {
+                      const newDate = new Date(expiryDate);
+                      newDate.setHours(time.getHours(), time.getMinutes(), 0, 0);
+                      setExpiryDate(newDate);
+                      setValue("expiryDate", newDate);
+                    }}
+                  />
+                </div>
+              </div>
               {errors.expiryDate && <span className="text-xs text-red-400">{errors.expiryDate.message}</span>}
             </div>
           </div>
