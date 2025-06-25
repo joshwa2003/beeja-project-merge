@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { motion } from 'framer-motion';
 
 import AdminSidebar from '../../components/core/Dashboard/Admin/AdminSidebar';
 import UserManagement from './components/UserManagement';
@@ -48,9 +47,9 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-richblack-900">
       <div className="flex">
-        {/* Modern Sidebar */}
+        {/* Sidebar */}
         <div className="sm:fixed sm:left-0 sm:top-16 h-[calc(100vh-4rem)] z-30 transition-all duration-300">
           <AdminSidebar activeTab={activeTab} onTabChange={handleTabChange} />
         </div>
@@ -61,27 +60,17 @@ const AdminDashboard = () => {
         } w-full px-4 sm:px-0`}>
           <div className="p-4 sm:p-6 overflow-x-hidden">
             {/* Header */}
-            <motion.div 
-              className="mb-4 sm:mb-8 bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 p-4 sm:p-6 rounded-xl sm:rounded-2xl"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <h1 className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+            <div className="mb-4 sm:mb-8 bg-richblack-800 border border-richblack-700 p-4 sm:p-6 rounded-xl shadow-md">
+              <h1 className="text-2xl sm:text-3xl font-bold text-richblack-5">
                 {showCreateCourse ? 'Create Course' : sidebarItems.find(item => item.id === activeTab)?.label}
               </h1>
-              <p className="text-slate-400 mt-2">
+              <p className="text-richblack-200 mt-2">
                 Manage your platform efficiently with these tools
               </p>
-            </motion.div>
+            </div>
 
             {/* Content */}
-            <motion.div 
-              className="bg-slate-800/30 backdrop-blur-xl border border-slate-700/50 rounded-xl sm:rounded-2xl p-4 sm:p-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-            >
+            <div className="bg-richblack-800 border border-richblack-700 rounded-xl p-4 sm:p-6 shadow-md">
               {showCreateCourse ? (
                 <CreateCourse onCancel={() => setShowCreateCourse(false)} />
               ) : (
@@ -99,7 +88,7 @@ const AdminDashboard = () => {
                   {activeTab === 'faqs' && <FaqManagement />}
                 </>
               )}
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>

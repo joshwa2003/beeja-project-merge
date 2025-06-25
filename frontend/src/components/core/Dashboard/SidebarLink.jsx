@@ -24,27 +24,24 @@ export default function SidebarLink({ link, iconName, isCollapsed }) {
       to={link.path}
       onClick={handleClick}
       className={({ isActive }) => `
-        group flex items-center ${isCollapsed ? 'justify-center px-1' : 'gap-2 px-3'} py-2 rounded-lg transition-all duration-300 relative
+        group flex items-center ${isCollapsed ? 'justify-center px-1' : 'gap-2 px-3'} py-2 rounded transition-colors duration-200 relative
         ${isActive 
-          ? 'bg-purple-500/10 text-purple-400' 
-          : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
+          ? 'bg-[#404040] text-white' 
+          : 'text-[#cccccc] hover:bg-[#404040] hover:text-white'
         }
       `}
       title={isCollapsed ? link.name : ""}
     >
-      {/* Icon with glow effect */}
+      {/* Icon */}
       <div className={`
-        relative flex items-center justify-center w-6 h-6 rounded-md
+        flex items-center justify-center w-6 h-6
         ${matchRoute(link.path)
-          ? 'bg-purple-500/10 text-purple-400'
-          : 'text-slate-400 group-hover:text-white'
+          ? 'text-white'
+          : 'text-[#cccccc] group-hover:text-white'
         }
-        transition-all duration-300
+        transition-colors duration-200
       `}>
         <Icon className="text-sm" />
-        {matchRoute(link.path) && (
-          <div className="absolute inset-0 rounded-lg bg-purple-500/20 animate-pulse" />
-        )}
       </div>
 
       {/* Link Text - Hidden when collapsed */}
@@ -54,12 +51,12 @@ export default function SidebarLink({ link, iconName, isCollapsed }) {
 
       {/* Active Indicator */}
       {matchRoute(link.path) && (
-        <div className="absolute left-0 w-0.5 h-6 bg-gradient-to-b from-purple-400 to-blue-500 rounded-r-full" />
+        <div className="absolute left-0 w-0.5 h-6 bg-[#666666] rounded-r-full" />
       )}
 
       {/* Tooltip for collapsed state */}
       {isCollapsed && (
-        <div className="absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+        <div className="absolute left-full ml-2 px-2 py-1 bg-[#404040] text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
           {link.name}
         </div>
       )}

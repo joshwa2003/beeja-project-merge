@@ -62,7 +62,7 @@ const FeaturedCourses = () => {
       {/* Show message if no featured courses */}
       {(!featuredCourses.popularPicks?.length && !featuredCourses.topEnrollments?.length) && (
         <div className="text-center py-8">
-          <p className="text-richblack-300">No featured courses available at the moment</p>
+          {/* <p className="text-richblack-300">No featured courses available at the moment</p> */}
         </div>
       )}
     </div>
