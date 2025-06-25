@@ -1,5 +1,6 @@
 import React from "react"
-
+import { motion } from 'framer-motion'
+import BackgroundEffect from "./BackgroundEffect"
 import FoundingStory from "../assets/Images/FoundingStory.png"
 import BannerImage1 from "../assets/Images/aboutus1.webp"
 import BannerImage2 from "../assets/Images/aboutus2.webp"
@@ -13,17 +14,26 @@ import Quote from "../components/core/AboutPage/Quote"
 import HighlightText from "../components/core/HomePage/HighlightText"
 import Img from "../components/common/Img"
 import ReviewSlider from './../components/common/ReviewSlider';
-
-import { motion } from 'framer-motion';
 import { fadeIn } from "../components/common/motionFrameVarients"
 import TeamCard from "./Card/components/TeamCard"
-import FAQSection from "../components/core/AboutPage/FAQSection"
+import FAQSection from "../components/core/AboutPage/Faqs"
 // import BenefitsForEmployers from "../components/core/AboutPage/BenefitsForEmployers"
 
 const About = () => {
   return (
-    <div>
-      <section className="bg-richblack-700">
+    <>
+      {/* Background with Gradient and Particles */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+        className="relative z-0"
+      >
+        <BackgroundEffect />
+      </motion.div>
+
+      <div className="relative z-10">
+      <section className="bg-richblack-700/50 backdrop-blur-sm">
         <div className="relative mx-auto flex w-11/12 max-w-maxContent flex-col justify-between gap-10 text-center text-white">
           <motion.header
             className="mx-auto py-20 text-4xl font-semibold lg:w-[70%]"
@@ -191,7 +201,8 @@ const About = () => {
 
       {/* footer */}
       <ImprovedFooter />
-    </div>
+      </div>
+    </>
   )
 }
 

@@ -8,6 +8,15 @@ export const axiosInstance = axios.create({
 });
 
 export const apiConnector = (method, url, bodyData, headers, params) => {
+    // Debug logging
+    console.log('API Request:', {
+        method,
+        url,
+        bodyData,
+        headers,
+        params
+    });
+
     // Determine if we're sending FormData (for file uploads)
     const isFormData = bodyData instanceof FormData;
     
@@ -17,18 +26,9 @@ export const apiConnector = (method, url, bodyData, headers, params) => {
         ...(headers?.Authorization ? { 'Authorization': headers.Authorization } : {})
     };
 
-    // Extract axios-specific options from params
-    const axiosOptions = {};
-    let queryParams = null;
-    
-    if (params) {
-        // If params contains responseType, it's an axios option
-        if (params.responseType) {
-            axiosOptions.responseType = params.responseType;
-        } else {
-            // Otherwise, it's query parameters
-            queryParams = params;
-        }
+    // Debug token
+    if (headers?.Authorization) {
+        console.log('Token being used:', headers.Authorization);
     }
 
     return axiosInstance({
@@ -39,8 +39,22 @@ export const apiConnector = (method, url, bodyData, headers, params) => {
             ...defaultHeaders,
             ...headers
         },
-        params: queryParams,
-        withCredentials: true,
-        ...axiosOptions
+        params: params ? params : null,
+        withCredentials: true
+    }).then(response => {
+        console.log('API Response:', {
+            url,
+            status: response.status,
+            data: response.data
+        });
+        return response;
+    }).catch(error => {
+        console.error('API Error:', {
+            url,
+            status: error.response?.status,
+            data: error.response?.data,
+            message: error.message
+        });
+        throw error;
     });
 }

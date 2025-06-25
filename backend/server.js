@@ -21,6 +21,10 @@ const studentProgressRoutes = require('./routes/admin/studentProgress');
 const courseAccessRoutes = require('./routes/courseAccess');
 const quizRoutes = require('./routes/quiz');
 const certificateRoutes = require('./routes/certificate');
+const notificationRoutes = require('./routes/notification');
+const contactMessageRoutes = require('./routes/contactMessage');
+const featuredCoursesRoutes = require('./routes/featuredCourses');
+const faqRoutes = require('./routes/faq.js');
 
 // middleware 
 app.use(cookieParser());
@@ -36,9 +40,15 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Body parser middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Body parser middleware with increased limits
+app.use(express.json({ limit: '500mb' }));
+app.use(express.urlencoded({ extended: true, limit: '500mb' }));
+
+// Increase timeout for large uploads
+app.use((req, res, next) => {
+    res.setTimeout(300000); // 5 minutes timeout
+    next();
+});
 
 // Log all incoming requests (after body parsing)
 app.use((req, res, next) => {
@@ -60,6 +70,11 @@ app.use('/api/v1/admin', studentProgressRoutes);
 app.use('/api/v1/course-access', courseAccessRoutes);
 app.use('/api/v1/quiz', quizRoutes);
 app.use('/api/v1/certificate', certificateRoutes);
+app.use('/api/v1/notification', notificationRoutes);
+app.use('/api/v1/contact', contactMessageRoutes);
+app.use('/api/v1/featured-courses', featuredCoursesRoutes);
+// FAQ Routes
+app.use('/api/v1/faqs', faqRoutes);
 
 // Default Route
 app.get('/', (req, res) => {
@@ -71,15 +86,24 @@ app.get('/', (req, res) => {
 
 // Error handling middleware for Multer errors and others
 app.use((err, req, res, next) => {
+    console.error('Global error handler caught:', err);
+    
     if (err.name === 'MulterError') {
         if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({ error: 'File size is too large. Maximum limit is 100MB.' });
+            return res.status(400).json({ error: 'File size is too large. Maximum limit is 500MB.' });
         }
         return res.status(400).json({ error: err.message });
     }
-    // Handle other errors
-    console.error(err);
-    res.status(500).json({ error: 'An internal server error occurred.' });
+    
+    // Only handle errors that haven't been handled by route controllers
+    if (!res.headersSent) {
+        console.error('Unhandled error:', err);
+        res.status(500).json({ 
+            error: 'An internal server error occurred.',
+            message: err.message,
+            stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        });
+    }
 });
 
 // connections

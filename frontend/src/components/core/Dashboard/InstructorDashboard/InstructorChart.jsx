@@ -5,82 +5,138 @@ import { Pie } from "react-chartjs-2"
 Chart.register(...registerables)
 
 export default function InstructorChart({ courses }) {
-  // State to keep track of the currently selected chart
   const [currChart, setCurrChart] = useState("students")
 
-  // Function to generate random colors for the chart
-  const generateRandomColors = (numColors) => {
-    const colors = []
-    for (let i = 0; i < numColors; i++) {
-      const color = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(
-        Math.random() * 256
-      )}, ${Math.floor(Math.random() * 256)})`
-      colors.push(color)
-    }
-    return colors
+  // Generate modern gradient colors
+  const generateModernColors = (numColors) => {
+    const colors = [
+      'rgba(139, 92, 246, 0.8)', // Purple
+      'rgba(59, 130, 246, 0.8)',  // Blue
+      'rgba(16, 185, 129, 0.8)',  // Green
+      'rgba(245, 158, 11, 0.8)',  // Amber
+      'rgba(239, 68, 68, 0.8)',   // Red
+      'rgba(236, 72, 153, 0.8)',  // Pink
+      'rgba(14, 165, 233, 0.8)',  // Sky
+      'rgba(168, 85, 247, 0.8)',  // Violet
+    ]
+    return colors.slice(0, numColors)
   }
 
-  // Data for the chart displaying student information
   const chartDataStudents = {
     labels: courses.map((course) => course.courseName),
     datasets: [
       {
         data: courses.map((course) => course.totalStudentsEnrolled),
-        backgroundColor: generateRandomColors(courses.length),
+        backgroundColor: generateModernColors(courses.length),
+        borderColor: generateModernColors(courses.length).map(color => color.replace('0.8', '1')),
+        borderWidth: 2,
       },
     ],
   }
 
-  // Data for the chart displaying income information
   const chartIncomeData = {
     labels: courses.map((course) => course.courseName),
     datasets: [
       {
         data: courses.map((course) => course.totalAmountGenerated),
-        backgroundColor: generateRandomColors(courses.length),
+        backgroundColor: generateModernColors(courses.length),
+        borderColor: generateModernColors(courses.length).map(color => color.replace('0.8', '1')),
+        borderWidth: 2,
       },
     ],
   }
 
-  // Options for the chart
   const options = {
     maintainAspectRatio: false,
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          padding: 20,
+          usePointStyle: true,
+          font: {
+            size: 12,
+            family: 'Inter, system-ui, sans-serif'
+          },
+          color: '#e2e8f0'
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+        titleColor: '#e2e8f0',
+        bodyColor: '#e2e8f0',
+        borderColor: 'rgba(139, 92, 246, 0.5)',
+        borderWidth: 1,
+        cornerRadius: 8,
+        displayColors: true,
+        callbacks: {
+          label: function(context) {
+            const label = context.label || '';
+            const value = context.parsed;
+            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+            const percentage = ((value / total) * 100).toFixed(1);
+            return `${label}: ${currChart === 'income' ? '₹' : ''}${value} (${percentage}%)`;
+          }
+        }
+      }
+    }
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-y-4 rounded-md bg-richblack-800 p-6">
-      <p className="text-lg font-bold text-richblack-5">Visualize</p>
-
-      <div className="space-x-4 font-semibold">
-        {/* Button to switch to the "students" chart */}
-        <button
-          onClick={() => setCurrChart("students")}
-          className={`rounded-sm p-1 px-3 transition-all duration-200 ${currChart === "students"
-            ? "bg-richblack-700 text-yellow-50"
-            : "text-yellow-400"
+    <div className="bg-slate-900/50 rounded-xl p-6 border border-slate-800/50">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-semibold text-white">Performance Analytics</h3>
+        
+        <div className="flex gap-2">
+          <button
+            onClick={() => setCurrChart("students")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+              currChart === "students"
+                ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                : "text-slate-400 hover:text-white hover:bg-slate-800/50"
             }`}
-        >
-          Students
-        </button>
-
-        {/* Button to switch to the "income" chart */}
-        <button
-          onClick={() => setCurrChart("income")}
-          className={`rounded-sm p-1 px-3 transition-all duration-200 ${currChart === "income"
-            ? "bg-richblack-700 text-yellow-50"
-            : "text-yellow-400"
+          >
+            Students
+          </button>
+          
+          <button
+            onClick={() => setCurrChart("income")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+              currChart === "income"
+                ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                : "text-slate-400 hover:text-white hover:bg-slate-800/50"
             }`}
-        >
-          Income
-        </button>
+          >
+            Income
+          </button>
+        </div>
       </div>
 
-      <div className="relative mx-auto aspect-square h-full w-full">
-        {/* Render the Pie chart based on the selected chart */}
-        <Pie
-          data={currChart === "students" ? chartDataStudents : chartIncomeData}
-          options={options}
-        />
+      <div className="flex items-center justify-center">
+        <div className="w-full max-w-[350px] h-[350px] relative">
+          <Pie
+            data={currChart === "students" ? chartDataStudents : chartIncomeData}
+            options={options}
+          />
+        </div>
+      </div>
+
+      {/* Summary Stats */}
+      <div className="mt-6 grid grid-cols-2 gap-4">
+        <div className="text-center p-3 bg-slate-800/50 rounded-lg">
+          <p className="text-sm text-slate-400">Total {currChart === 'students' ? 'Students' : 'Revenue'}</p>
+          <p className="text-lg font-semibold text-white">
+            {currChart === 'students' 
+              ? courses.reduce((acc, course) => acc + course.totalStudentsEnrolled, 0)
+              : `₹${courses.reduce((acc, course) => acc + course.totalAmountGenerated, 0)}`
+            }
+          </p>
+        </div>
+        <div className="text-center p-3 bg-slate-800/50 rounded-lg">
+          <p className="text-sm text-slate-400">Active Courses</p>
+          <p className="text-lg font-semibold text-white">{courses.length}</p>
+        </div>
       </div>
     </div>
   )

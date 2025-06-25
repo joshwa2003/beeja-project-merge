@@ -112,7 +112,8 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
     }
 
     setLoading(true)
-    const toastId = toast.loading("Uploading lecture... This may take a few minutes.")
+    
+    const toastId = toast.loading("Adding lecture...")
     
     try {
       const formData = new FormData()
@@ -126,33 +127,37 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), timeoutDuration)
 
-      const subsectionResult = await Promise.race([
-        createSubSection(formData, token),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Upload timeout')), timeoutDuration)
-        )
-      ])
+      try {
+        const subsectionResult = await Promise.race([
+          createSubSection(formData, token),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Upload timeout')), timeoutDuration)
+          )
+        ])
 
-      clearTimeout(timeoutId)
-      
-      if (subsectionResult) {
-        // Update course structure
-        const updatedCourseContent = course.courseContent.map((section) =>
-          section._id === modalData ? subsectionResult : section
-        )
-        const updatedCourse = { ...course, courseContent: updatedCourseContent }
-        dispatch(setCourse(updatedCourse))
-        toast.success("Lecture added successfully")
-        setModalData(null)
-      } else {
-        throw new Error("Failed to create lecture")
-      }
-    } catch (error) {
-      console.error("Error creating subsection:", error)
-      if (error.message === 'Upload timeout') {
-        toast.error("Upload timed out. Please try again with a smaller video file.")
-      } else {
-        toast.error("Failed to add lecture. Please try again.")
+        clearTimeout(timeoutId)
+        
+        if (subsectionResult) {
+          // Update course structure
+          const updatedCourseContent = course.courseContent.map((section) =>
+            section._id === modalData ? subsectionResult : section
+          )
+          const updatedCourse = { ...course, courseContent: updatedCourseContent }
+          dispatch(setCourse(updatedCourse))
+          toast.success("Lecture added successfully")
+          setModalData(null)
+        }
+      } catch (error) {
+        console.error("Error creating subsection:", error)
+        if (error?.response?.status === 401) {
+          toast.error("Session expired. Please login again.")
+          // You might want to redirect to login or refresh token here
+        } else if (error.message === 'Upload timeout') {
+          toast.error("Upload timed out. Please try again with a smaller video file.")
+        } else {
+          toast.error(error?.response?.data?.message || "Failed to add lecture. Please try again.")
+        }
+        throw error
       }
     } finally {
       setLoading(false)
@@ -161,10 +166,10 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
   }
 
   return (
-    <div className="fixed inset-0 z-[1000] !mt-0 grid h-screen w-screen place-items-center overflow-auto bg-white bg-opacity-10 backdrop-blur-sm">
-      <div className="my-10 w-11/12 max-w-[700px] rounded-lg border border-richblack-400 bg-richblack-800">
+    <div className="fixed inset-0 z-[1000] !mt-0 grid place-items-center overflow-auto bg-white bg-opacity-10 backdrop-blur-sm">
+      <div className="my-4 w-11/12 max-w-[700px] rounded-lg border border-richblack-400 bg-richblack-800">
         {/* Modal Header */}
-        <div className="flex items-center justify-between rounded-t-lg bg-richblack-700 p-5">
+        <div className="sticky top-0 z-10 flex items-center justify-between rounded-t-lg bg-richblack-700 p-4 md:p-5">
           <p className="text-xl font-semibold text-richblack-5">
             {view && "Viewing"} {add && "Adding"} {edit && "Editing"} Lecture
           </p>
@@ -172,6 +177,7 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
             <RxCross2 className="text-2xl text-richblack-5" />
           </button>
         </div>
+        
         {/* Modal Form */}
         <form
           onSubmit={handleSubmit(onSubmit)}
@@ -188,6 +194,7 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
             viewData={view ? modalData.videoUrl : null}
             editData={edit ? modalData.videoUrl : null}
           />
+          
           {/* Lecture Title */}
           <div className="flex flex-col space-y-2">
             <label className="text-sm text-richblack-5" htmlFor="lectureTitle">

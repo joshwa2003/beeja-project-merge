@@ -37,7 +37,7 @@ export const courseEndpoints = {
   CREATE_SUBSECTION_API: BASE_URL + "/api/v1/course/addSubSection",
   UPDATE_SECTION_API: BASE_URL + "/api/v1/course/updateSection",
   UPDATE_SUBSECTION_API: BASE_URL + "/api/v1/course/updateSubSection",
-  GET_ALL_INSTRUCTOR_COURSES_API: BASE_URL + "/api/v1/course/getInstructorCourses",
+  GET_ALL_INSTRUCTOR_COURSES_API: BASE_URL + "/api/v1/course/getInstructorCoursesForInstructor",
   COURSE_PURCHASE_HISTORY_API: BASE_URL + "/api/v1/payment/purchaseHistory",
   DELETE_SECTION_API: BASE_URL + "/api/v1/course/deleteSection",
   DELETE_SUBSECTION_API: BASE_URL + "/api/v1/course/deleteSubSection",
@@ -66,7 +66,15 @@ export const catalogData = {
 }
 // CONTACT-US API
 export const contactusEndpoint = {
-  CONTACT_US_API: BASE_URL + "/api/v1/reach/contact",
+  CONTACT_US_API: BASE_URL + "/api/v1/contact/submit",
+}
+
+// CONTACT MESSAGE ENDPOINTS (Admin)
+export const contactMessageEndpoints = {
+  GET_ALL_MESSAGES_API: BASE_URL + "/api/v1/contact/messages",
+  MARK_MESSAGE_READ_API: BASE_URL + "/api/v1/contact/messages/:messageId/mark-read",
+  DELETE_MESSAGE_API: BASE_URL + "/api/v1/contact/messages/:messageId",
+  GET_MESSAGE_STATS_API: BASE_URL + "/api/v1/contact/stats",
 }
 
 // SETTINGS PAGE API
@@ -75,6 +83,12 @@ export const settingsEndpoints = {
   UPDATE_PROFILE_API: BASE_URL + "/api/v1/profile/updateProfile",
   CHANGE_PASSWORD_API: BASE_URL + "/api/v1/auth/changepassword",
   DELETE_PROFILE_API: BASE_URL + "/api/v1/profile/deleteProfile",
+}
+
+// FEATURED COURSES ENDPOINTS
+export const featuredCoursesEndpoints = {
+  GET_FEATURED_COURSES_API: BASE_URL + "/api/v1/featured-courses",
+  UPDATE_FEATURED_COURSES_API: BASE_URL + "/api/v1/featured-courses/update",
 }
 
 // ADMIN ENDPOINTS
@@ -100,7 +114,7 @@ export const adminEndpoints = {
   GET_ALL_COURSES_API: BASE_URL + "/api/v1/admin/courses",
   CREATE_COURSE_AS_ADMIN_API: BASE_URL + "/api/v1/admin/courses/create",
   APPROVE_COURSE_API: BASE_URL + "/api/v1/admin/courses/:courseId/approve",
-  DELETE_COURSE_API: BASE_URL + "/api/v1/admin/courses/:courseId",
+  ADMIN_DELETE_COURSE_API: BASE_URL + "/api/v1/admin/courses/:courseId",
   TOGGLE_COURSE_VISIBILITY_API: BASE_URL + "/api/v1/admin/courses/:courseId/toggle-visibility",
   SET_COURSE_TYPE_API: BASE_URL + "/api/v1/admin/courses/:courseId/set-type",
 
@@ -116,6 +130,10 @@ export const adminEndpoints = {
   DELETE_ORDER_API: BASE_URL + "/api/v1/admin/orders/:orderId",
   UPDATE_ORDER_STATUS_API: BASE_URL + "/api/v1/admin/orders/:orderId/status",
   GENERATE_ORDERS_PDF_API: BASE_URL + "/api/v1/admin/orders/export-pdf",
+  // Notification Management
+  SEND_NOTIFICATION_API: BASE_URL + "/api/v1/admin/notifications/send",
+  GET_ALL_NOTIFICATIONS_API: BASE_URL + "/api/v1/admin/notifications",
+  DELETE_NOTIFICATION_API: BASE_URL + "/api/v1/admin/notifications/:notificationId",
 }
 
 // COURSE ACCESS ENDPOINTS
@@ -152,4 +170,21 @@ export const certificateEndpoints = {
   GENERATE_CERTIFICATE_API: BASE_URL + "/api/v1/certificate/generate",
   VERIFY_CERTIFICATE_API: BASE_URL + "/api/v1/certificate/verify/:certificateId",
   GET_USER_CERTIFICATES_API: BASE_URL + "/api/v1/certificate/user-certificates",
+}
+// NOTIFICATION ENDPOINTS
+export const notificationEndpoints = {
+  GET_NOTIFICATIONS_API: BASE_URL + "/api/v1/notification/get-notifications",
+  MARK_AS_READ_API: BASE_URL + "/api/v1/notification/mark-as-read",
+  MARK_ALL_READ_API: BASE_URL + "/api/v1/notification/mark-all-as-read",
+  DELETE_NOTIFICATION_API: BASE_URL + "/api/v1/notification/delete",
+}
+
+// FAQ ENDPOINTS
+export const faqEndpoints = {
+  SUBMIT_QUESTION_API: BASE_URL + "/api/v1/faqs/ask",
+  GET_ALL_FAQS_API: BASE_URL + "/api/v1/faqs/all",
+  GET_PUBLISHED_FAQS_API: BASE_URL + "/api/v1/faqs/published",
+  ANSWER_FAQ_API: BASE_URL + "/api/v1/faqs/answer/:id",
+  TOGGLE_FAQ_PUBLISH_API: BASE_URL + "/api/v1/faqs/toggle-publish/:id",
+  DELETE_FAQ_API: BASE_URL + "/api/v1/faqs/delete/:id",
 }

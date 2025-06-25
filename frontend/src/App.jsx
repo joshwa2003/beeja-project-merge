@@ -2,6 +2,12 @@ import { useEffect, useState } from "react";
 import { Route, Routes, useLocation, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 
+import Toast from "./components/common/Toast";
+import CourseCategories from "./components/core/Dashboard/AddCategory/CourseCategories";
+import BundleAccessRequests from "./pages/Admin/components/BundleAccessRequests";
+import Coupons from "./pages/Admin/Coupons";
+import Orders from "./pages/Admin/components/Orders";
+import StudentProgress from "./pages/Admin/components/StudentProgress/StudentProgress";
 import Home from "./pages/Home"
 import Login from "./pages/Login"
 import Signup from "./pages/Signup"
@@ -12,16 +18,29 @@ import VerifyCertificate from "./pages/VerifyCertificate";
 
 import AdminRoutes from "./routes/AdminRoutes";
 import AdminDashboard from "./pages/Admin/Dashboard";
+import EnhancedAnalytics from "./pages/Admin/components/EnhancedAnalytics";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Terms from "./pages/Terms";
+import Faqs from "./pages/Faqs";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Support from "./pages/Support";
+import Courses from "./pages/Courses";
+import Careers from "./pages/Careers";
+import Resources from "./pages/Resources";
+import Testimonials from "./pages/Testimonials";
+import Partnership from "./pages/Partnership";
+import Business from "./pages/Business";
+import PressHours from "./pages/PressHours";
 import PageNotFound from "./pages/PageNotFound";
+import TestAnalytics from "./pages/TestAnalytics";
 import CourseDetails from './pages/CourseDetails';
 import Catalog from './pages/Catalog';
 import InstituteService from "./pages/InstituteService";
 import StudentService from "./pages/StudentService";
 import FreeCourses from './components/core/Catalog/FreeCourses';
 
-import Navbar from "./components/common/Navbar"
+import ModernNavbar from "./components/common/Navbar"
 
 import OpenRoute from "./components/core/Auth/OpenRoute"
 import ProtectedRoute from "./components/core/Auth/ProtectedRoute";
@@ -51,6 +70,7 @@ import QuizView from './components/core/ViewCourse/QuizView';
 import { ACCOUNT_TYPE } from './utils/constants';
 
 import { HiArrowNarrowUp } from "react-icons/hi"
+import FaqButton from "./components/common/FaqButton"
 
 
 function App() {
@@ -88,9 +108,9 @@ function App() {
   }, [showArrow]);
 
   return (
-    <AuthChecker>
-      <div className="w-screen min-h-screen bg-richblack-900 flex flex-col font-inter">
-        <Navbar />
+    <div className="w-screen min-h-screen bg-richblack-900 flex flex-col font-inter pt-24">
+      <ModernNavbar />
+      <Toast />
 
       {/* go upward arrow */}
       <button
@@ -102,10 +122,26 @@ function App() {
         <HiArrowNarrowUp />
       </button>
 
+      {/* FAQ Button */}
+      <FaqButton />
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<About />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/faqs" element={<Faqs />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/support" element={<Support />} />
+        <Route path="/courses" element={<Courses />} />
+        <Route path="/careers" element={<Careers />} />
+        <Route path="/resources" element={<Resources />} />
+        <Route path="/testimonials" element={<Testimonials />} />
+        <Route path="/partnership" element={<Partnership />} />
+        <Route path="/business" element={<Business />} />
+        <Route path="/press-hours" element={<PressHours />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/community-courses" element={<Courses />} />
         <Route path="/services/institute" element={<InstituteService />} />
         <Route path="/services/student" element={<StudentService />} />
         <Route path="catalog/:catalogName" element={<Catalog />} />
@@ -191,6 +227,18 @@ function App() {
               <Route path="dashboard/edit-course/:courseId" element={<EditCourse />} />
             </>
           )}
+
+          {/* Route only for Admin */}
+          {user?.accountType === ACCOUNT_TYPE.ADMIN && (
+            <>
+              <Route path="dashboard/admin/analytics" element={<EnhancedAnalytics />} />
+              <Route path="dashboard/admin/categories" element={<CourseCategories />} />
+              <Route path="dashboard/admin/bundle-requests" element={<BundleAccessRequests />} />
+              <Route path="dashboard/admin/coupons" element={<Coupons />} />
+              <Route path="dashboard/admin/orders" element={<Orders />} />
+              <Route path="dashboard/admin/student-progress" element={<StudentProgress />} />
+            </>
+          )}
         </Route>
 
         {/* Admin routes protected */}
@@ -223,13 +271,16 @@ function App() {
 
 
 
+        {/* Test Route for Analytics */}
+        <Route path="/test-analytics" element={<TestAnalytics />} />
+
         {/* Page Not Found (404 Page ) */}
         <Route path="*" element={<PageNotFound />} />
 
         </Routes>
 
-      </div>
-    </AuthChecker>
+      <AuthChecker />
+    </div>
   );
 }
 

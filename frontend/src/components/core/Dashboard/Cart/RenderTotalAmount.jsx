@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom"
 
 import IconBtn from "../../../common/IconBtn"
 import CouponInput from "./CouponInput"
+import { FiCreditCard, FiShield, FiZap, FiGift } from "react-icons/fi"
 import { buyCourse } from "../../../../services/operations/studentFeaturesAPI"
 
 export default function RenderTotalAmount() {
@@ -32,6 +33,9 @@ export default function RenderTotalAmount() {
     const courses = cart.map((course) => course._id)
     await buyCourse(token, courses, user, navigate, dispatch)
   }
+
+  const savings = Math.round(total * 0.3)
+  const originalPrice = total + savings
 
   return (
     <div className="min-w-[280px] rounded-md border-[1px] border-richblack-700 bg-richblack-800 p-6">

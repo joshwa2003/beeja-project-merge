@@ -6,30 +6,14 @@ const mongoose = require('mongoose');
 // ================ Create Rating ================
 exports.createRating = async (req, res) => {
     try {
-        console.log('CreateRating called with:', {
-            body: req.body,
-            user: req.user,
-            headers: req.headers.authorization
-        });
-
         // get data
         const { rating, review, courseId } = req.body;
 
-        const userId = req.user?.id;
-
-        // Check if user exists in request
-        if (!req.user || !userId) {
-            console.log('User not found in request');
-            return res.status(401).json({
-                success: false,
-                message: "User authentication failed"
-            });
-        }
+        const userId = req.user.id;
 
         // validation
         if (!rating || !review || !courseId) {
-            console.log('Missing required fields:', { rating, review, courseId });
-            return res.status(400).json({
+            return res.status(401).json({
                 success: false,
                 message: "All fields are required"
             });
@@ -43,29 +27,17 @@ exports.createRating = async (req, res) => {
             });
         }
 
-        // Get user details to check role
-        const userDetails = await User.findById(userId);
-        if (!userDetails) {
+        // check user is enrollded in course ?
+        const courseDetails = await Course.findOne({ 
+            _id: courseId,
+            studentsEnrolled: { $in: [userId] }
+        });
+
+        if (!courseDetails) {
             return res.status(404).json({
                 success: false,
-                message: 'User not found'
+                message: 'Student is not enrolled in the course'
             });
-        }
-
-        // Allow admin to review without enrollment
-        if (userDetails.accountType !== 'Admin') {
-            // For non-admin users, check if enrolled in course
-            const courseDetails = await Course.findOne({ 
-                _id: courseId,
-                studentsEnrolled: { $in: [userId] }
-            });
-
-            if (!courseDetails) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'You must be enrolled in the course to review it'
-                });
-            }
         }
 
 
@@ -75,9 +47,9 @@ exports.createRating = async (req, res) => {
         );
 
         if (alreadyReviewd) {
-            return res.status(400).json({
+            return res.status(403).json({
                 success: false,
-                message: 'You have already reviewed this course'
+                message: 'Course is already reviewed by the user'
             });
         }
 

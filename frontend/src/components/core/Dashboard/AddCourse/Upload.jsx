@@ -64,11 +64,12 @@ export default function Upload({ name, label, register, setValue, errors, video 
       </label>
 
       <div
-        className={`${isDragActive ? "bg-richblack-600" : "bg-richblack-700"}
-         flex min-h-[250px] cursor-pointer items-center justify-center rounded-md border-2 border-dotted border-richblack-500`}
+        className={`${
+          isDragActive ? "border-yellow-50 bg-richblack-600" : "border-richblack-500 bg-richblack-700"
+        } relative flex min-h-[200px] cursor-pointer items-center justify-center rounded-md border-2 border-dashed transition-all duration-200 hover:border-yellow-50`}
       >
         {previewSource ? (
-          <div className="flex w-full flex-col p-6">
+          <div className="flex w-full flex-col p-4 md:p-6">
             {!video ? (
               <img
                 src={previewSource}
@@ -76,14 +77,21 @@ export default function Upload({ name, label, register, setValue, errors, video 
                 className="h-full w-full rounded-md object-cover"
               />
             ) : (
-              <video 
-                className="w-full aspect-video" 
-                controls
-                playsInline 
-                src={previewSource}
-              >
-                Your browser does not support the video tag.
-              </video>
+              <div className="relative aspect-video w-full">
+                <video 
+                  className="h-full w-full rounded-md object-cover" 
+                  controls
+                  playsInline 
+                  src={previewSource}
+                >
+                  Your browser does not support the video tag.
+                </video>
+                {selectedFile && (
+                  <div className="absolute bottom-2 right-2 rounded bg-richblack-800 px-2 py-1 text-xs text-richblack-50">
+                    {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                  </div>
+                )}
+              </div>
             )}
 
             {!viewData && (
@@ -94,36 +102,53 @@ export default function Upload({ name, label, register, setValue, errors, video 
                   setSelectedFile(null)
                   setValue(name, null)
                 }}
-                className="mt-3 text-richblack-400 underline"
+                className="mt-3 text-sm font-medium text-richblack-400 underline hover:text-yellow-50"
               >
-                Cancel
+                Remove {video ? "Video" : "Image"}
               </button>
             )}
           </div>
         ) : (
           <div
-            className="flex w-full flex-col items-center p-6"
+            className="flex w-full flex-col items-center p-4 md:p-6"
             {...getRootProps()}
           >
             <input {...getInputProps()} ref={inputRef} />
-            <div className="grid aspect-square w-14 place-items-center rounded-full bg-pure-greys-800">
+            <div className="grid aspect-square w-14 place-items-center rounded-full bg-richblack-800 transition-all duration-200 hover:bg-richblack-700">
               <FiUploadCloud className="text-2xl text-yellow-50" />
             </div>
             <p className="mt-2 max-w-[200px] text-center text-sm text-richblack-200">
-              Drag and drop an {!video ? "image" : "video"}, or click to{" "}
-              <span className="font-semibold text-yellow-50">Browse</span> a
-              file
+              Drag and drop {!video ? "an image" : "a video"}, or{" "}
+              <span className="font-semibold text-yellow-50 cursor-pointer">browse</span>
             </p>
-            <ul className="mt-10 flex list-disc justify-between space-x-12 text-center  text-xs text-richblack-200">
-              <li>Aspect ratio 16:9</li>
-              <li>Recommended size 1024x576</li>
+            <ul className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-richblack-200">
+              {video ? (
+                <>
+                  <li className="flex items-center gap-1">
+                    <span>•</span> Max size: 100MB
+                  </li>
+                  <li className="flex items-center gap-1">
+                    <span>•</span> Format: MP4
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li className="flex items-center gap-1">
+                    <span>•</span> Aspect ratio 16:9
+                  </li>
+                  <li className="flex items-center gap-1">
+                    <span>•</span> Recommended: 1024x576
+                  </li>
+                </>
+              )}
             </ul>
           </div>
         )}
       </div>
 
       {errors[name] && (
-        <span className="ml-2 text-xs tracking-wide text-pink-200">
+        <span className="flex items-center text-xs text-pink-200">
+          <span className="mr-1">⚠️</span>
           {label} is required
         </span>
       )}

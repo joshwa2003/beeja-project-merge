@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const quizController = require('../controllers/quiz');
 
-// Import controllers
+// Import middleware
 const { auth, isInstructor, isStudent, isAdmin } = require('../middleware/auth');
 const {
   createQuiz,

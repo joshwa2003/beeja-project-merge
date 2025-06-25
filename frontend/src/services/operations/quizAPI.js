@@ -101,12 +101,24 @@ export const submitQuiz = async (data, token) => {
   let result = null
   const toastId = toast.loading(data.timerExpired ? "Time's up! Submitting Quiz..." : "Submitting Quiz...")
   try {
+    if (!token) {
+      throw new Error("No authentication token found")
+    }
+
+    if (!data || !data.quizId) {
+      throw new Error("Quiz submission data is required")
+    }
+
     const response = await apiConnector("POST", SUBMIT_QUIZ_API, data, {
       Authorization: `Bearer ${token}`,
     })
     
     if (!response?.data?.success) {
-      throw new Error("Could Not Submit Quiz")
+      throw new Error(response?.data?.message || "Could Not Submit Quiz")
+    }
+
+    if (!response?.data?.data) {
+      throw new Error("No submission data received in response")
     }
     result = response?.data?.data
     
@@ -127,6 +139,14 @@ export const submitQuiz = async (data, token) => {
 export const getQuizResults = async (quizId, token) => {
   let result = null
   try {
+    if (!token) {
+      throw new Error("No authentication token found")
+    }
+
+    if (!quizId) {
+      throw new Error("Quiz ID is required")
+    }
+
     const response = await apiConnector("GET", GET_QUIZ_RESULTS_API.replace(":quizId", quizId), null, {
       Authorization: `Bearer ${token}`,
     })

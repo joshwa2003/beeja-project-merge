@@ -1,7 +1,9 @@
 const Section = require('../models/section');
 const SubSection = require('../models/subSection');
+const Course = require('../models/course');
 const Quiz = require('../models/quiz');
 const { uploadImageToCloudinary } = require('../utils/imageUploader');
+const { createNewContentNotification } = require('./notification');
 
 // ================ Update SubSection ================
 exports.updateSubSection = async (req, res) => {
@@ -89,18 +91,15 @@ exports.updateSubSection = async (req, res) => {
 // ================ create SubSection ================
 exports.createSubSection = async (req, res) => {
     try {
-        console.log('Creating SubSection - Request body:', req.body);
-        console.log('Creating SubSection - File:', req.file);
-
         // extract data
         const { title, description, sectionId, questions } = req.body;
 
         // extract video file
         const videoFile = req.file;
+        console.log('req.file:', req.file);
 
         // validation
         if (!title || !description || !sectionId) {
-            console.log('Validation failed: Missing required fields');
             return res.status(400).json({
                 success: false,
                 message: 'Title, description, and sectionId are required'
@@ -157,18 +156,13 @@ exports.createSubSection = async (req, res) => {
             videoUrl 
         });
 
-        console.log('SubSection created in DB:', SubSectionDetails._id);
-
         // Handle quiz attachment
-        if (req.body.quiz && req.body.quiz !== '') {
-            console.log('Attaching quiz:', req.body.quiz);
+        if (req.body.quiz) {
             const quizExists = await Quiz.findById(req.body.quiz);
             if (quizExists) {
                 SubSectionDetails.quiz = req.body.quiz;
                 await SubSectionDetails.save();
-                console.log('Quiz attached successfully');
             } else {
-                console.log('Quiz not found:', req.body.quiz);
                 return res.status(400).json({
                     success: false,
                     message: 'Quiz not found'
@@ -177,22 +171,26 @@ exports.createSubSection = async (req, res) => {
         }
 
         // link subsection id to section
-        console.log('Updating section with new subsection...');
+        // Update the corresponding section with the newly created sub-section
         const updatedSection = await Section.findByIdAndUpdate(
             { _id: sectionId },
             { $push: { subSection: SubSectionDetails._id } },
             { new: true }
         ).populate("subSection");
 
-        if (!updatedSection) {
-            console.log('Section not found:', sectionId);
-            return res.status(404).json({
-                success: false,
-                message: 'Section not found'
-            });
-        }
+        // Find the course that contains this section to notify students
+        const course = await Course.findOne({
+            courseContent: sectionId
+        });
 
-        console.log('SubSection created successfully');
+        if (course) {
+            // Notify enrolled students about new content
+            await createNewContentNotification(
+                course._id,
+                sectionId,
+                SubSectionDetails._id
+            );
+        }
 
         // return response
         res.status(200).json({
@@ -202,8 +200,8 @@ exports.createSubSection = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Error while creating SubSection:', error);
-        console.error('Error stack:', error.stack);
+        console.log('Error while creating SubSection');
+        console.log(error);
         res.status(500).json({
             success: false,
             error: error.message,

@@ -131,37 +131,68 @@ export function login(email, password, navigate) {
 // ================ get Password Reset Token ================
 export function getPasswordResetToken(email, setEmailSent) {
   return async (dispatch) => {
-
-    const toastId = toast.loading("Loading...")
+    const toastId = toast.loading("Sending reset email...")
     dispatch(setLoading(true))
+    
     try {
       const response = await apiConnector("POST", RESETPASSTOKEN_API, {
-        email,
+        email: email.toLowerCase().trim(),
       })
 
-      console.log("RESET PASS TOKEN RESPONSE............", response)
+      console.log("RESET PASS TOKEN RESPONSE:", response)
 
       if (!response.data.success) {
         throw new Error(response.data.message)
       }
 
-      toast.success("Reset Email Sent")
+      toast.success(response.data.message || "Reset email sent successfully!")
       setEmailSent(true)
+      
     } catch (error) {
-      console.log("RESET PASS TOKEN ERROR............", error)
-      toast.error(error.response?.data?.message)
-      // toast.error("Failed To Send Reset Email")
+      console.error("RESET PASS TOKEN ERROR:", error)
+      
+      // Handle different types of errors
+      if (error.response?.status === 429) {
+        toast.error("Too many attempts. Please wait before trying again.")
+      } else if (error.response?.status === 400) {
+        toast.error(error.response.data?.message || "Invalid email address")
+      } else if (error.response?.status === 500) {
+        toast.error("Server error. Please try again later.")
+      } else {
+        toast.error(error.response?.data?.message || "Failed to send reset email")
+      }
+    } finally {
+      toast.dismiss(toastId)
+      dispatch(setLoading(false))
     }
-    toast.dismiss(toastId)
-    dispatch(setLoading(false))
   }
 }
 
+// ================ verify Reset Token ================
+export function verifyResetToken(token) {
+  return async () => {
+    try {
+      const response = await apiConnector("GET", `${RESETPASSTOKEN_API.replace('reset-password-token', 'verify-reset-token')}/${token}`)
+      
+      if (!response.data.success) {
+        throw new Error(response.data.message)
+      }
+      
+      return { success: true, data: response.data.data }
+    } catch (error) {
+      console.error("VERIFY TOKEN ERROR:", error)
+      return { 
+        success: false, 
+        message: error.response?.data?.message || "Invalid or expired reset token" 
+      }
+    }
+  }
+}
 
 // ================ reset Password ================
 export function resetPassword(password, confirmPassword, token, navigate) {
   return async (dispatch) => {
-    const toastId = toast.loading("Loading...")
+    const toastId = toast.loading("Resetting password...")
     dispatch(setLoading(true))
 
     try {
@@ -171,21 +202,47 @@ export function resetPassword(password, confirmPassword, token, navigate) {
         token,
       })
 
-      console.log("RESETPASSWORD RESPONSE............", response)
+      console.log("RESETPASSWORD RESPONSE:", response)
 
       if (!response.data.success) {
         throw new Error(response.data.message)
       }
 
-      toast.success("Password Reset Successfully")
-      navigate("/login")
+      toast.success(response.data.message || "Password reset successfully!")
+      
+      // Clear any stored auth data
+      localStorage.removeItem("token")
+      localStorage.removeItem("user")
+      
+      // Navigate to login after a short delay
+      setTimeout(() => {
+        navigate("/login")
+      }, 1500)
+      
     } catch (error) {
-      console.log("RESETPASSWORD ERROR............", error)
-      toast.error(error.response?.data?.message)
-      // toast.error("Failed To Reset Password");
+      console.error("RESETPASSWORD ERROR:", error)
+      
+      // Handle different types of errors
+      if (error.response?.status === 400) {
+        const errorData = error.response.data
+        if (errorData.errors && Array.isArray(errorData.errors)) {
+          // Show password requirement errors
+          errorData.errors.forEach(err => toast.error(err))
+        } else {
+          toast.error(errorData.message || "Invalid password requirements")
+        }
+      } else if (error.response?.status === 401) {
+        toast.error("Reset token has expired. Please request a new password reset.")
+        setTimeout(() => {
+          navigate("/forgot-password")
+        }, 2000)
+      } else {
+        toast.error(error.response?.data?.message || "Failed to reset password")
+      }
+    } finally {
+      toast.dismiss(toastId)
+      dispatch(setLoading(false))
     }
-    toast.dismiss(toastId)
-    dispatch(setLoading(false))
   }
 }
 

@@ -181,21 +181,25 @@ export const createSubSection = async (data, token) => {
     console.log("CREATE SUB-SECTION API RESPONSE............", response)
 
     if (!response?.data?.success) {
-      throw new Error("Could Not Add Lecture")
+      throw new Error(response?.data?.message || "Could Not Add Lecture")
     }
 
     result = response?.data?.data
     toast.success("Lecture Added")
-    } catch (error) {
-      console.log("CREATE SUB-SECTION API ERROR............", error)
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || "Failed to create subsection"
-      toast.error(errorMessage)
-      console.error("Full error details:", {
-        response: error.response?.data,
-        status: error.response?.status,
-        message: error.message
-      })
+  } catch (error) {
+    console.log("CREATE SUB-SECTION API ERROR............", error)
+    
+    // Handle specific error cases
+    if (error.response?.status === 401) {
+      toast.error("Authentication failed. Please login again.")
+    } else if (error.response?.status === 403) {
+      toast.error("You don't have permission to add lectures to this course.")
+    } else if (error.response?.data?.message) {
+      toast.error(error.response.data.message)
+    } else {
+      toast.error(error.message || "Could Not Add Lecture")
     }
+  }
   toast.dismiss(toastId)
   return result
 }
@@ -240,14 +244,24 @@ export const updateSubSection = async (data, token) => {
     console.log("UPDATE SUB-SECTION API RESPONSE............", response)
 
     if (!response?.data?.success) {
-      throw new Error("Could Not Update Lecture")
+      throw new Error(response?.data?.message || "Could Not Update Lecture")
     }
 
     result = response?.data?.data
     toast.success("Lecture Updated")
   } catch (error) {
     console.log("UPDATE SUB-SECTION API ERROR............", error)
-    toast.error(error.message)
+    
+    // Handle specific error cases
+    if (error.response?.status === 401) {
+      toast.error("Authentication failed. Please login again.")
+    } else if (error.response?.status === 403) {
+      toast.error("You don't have permission to update this lecture.")
+    } else if (error.response?.data?.message) {
+      toast.error(error.response.data.message)
+    } else {
+      toast.error(error.message || "Could Not Update Lecture")
+    }
   }
   toast.dismiss(toastId)
   return result
@@ -290,13 +304,23 @@ export const deleteSubSection = async (data, token) => {
     })
     console.log("DELETE SUB-SECTION API RESPONSE............", response)
     if (!response?.data?.success) {
-      throw new Error("Could Not Delete Lecture")
+      throw new Error(response?.data?.message || "Could Not Delete Lecture")
     }
     result = response?.data?.data
     toast.success("Lecture Deleted")
   } catch (error) {
     console.log("DELETE SUB-SECTION API ERROR............", error)
-    toast.error(error.message)
+    
+    // Handle specific error cases
+    if (error.response?.status === 401) {
+      toast.error("Authentication failed. Please login again.")
+    } else if (error.response?.status === 403) {
+      toast.error("You don't have permission to delete this lecture.")
+    } else if (error.response?.data?.message) {
+      toast.error(error.response.data.message)
+    } else {
+      toast.error(error.message || "Could Not Delete Lecture")
+    }
   }
   toast.dismiss(toastId)
   return result
@@ -319,7 +343,9 @@ export const fetchInstructorCourses = async (token, userRole) => {
     if (!response?.data?.success) {
       throw new Error("Could Not Fetch Instructor Courses")
     }
-    result = response?.data?.data
+    
+    // Use the totalDuration calculated by the backend
+    result = response?.data?.data || []
   } catch (error) {
     console.log("INSTRUCTOR COURSES API ERROR............", error)
     toast.error(error.message)
@@ -336,10 +362,10 @@ export const deleteCourse = async (data, token) => {
       Authorization: `Bearer ${token}`,
     })
     console.log("DELETE COURSE API RESPONSE............", response)
-    if (!response?.data?.success) {
+     if (!response?.data?.success) {
       throw new Error("Could Not Delete Course")
     }
-    toast.success("Course Deleted")
+    
   } catch (error) {
     console.log("DELETE COURSE API ERROR............", error)
     toast.error(error.message)

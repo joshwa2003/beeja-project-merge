@@ -1,108 +1,127 @@
 import { useEffect } from "react"
 import { useSelector } from "react-redux"
-import { formatDate } from "../../../utils/dateFormatter"
+import { formatDate, formatDateShort } from "../../../utils/dateFormatter"
 import Img from './../../common/Img';
 
 export default function MyProfile() {
   const { user } = useSelector((state) => state.profile)
 
-  // Scroll to the top of the page when the component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [])
 
   return (
-    <>
-      <h1 className="mb-14 text-4xl font-medium text-richblack-5 font-boogaloo text-center sm:text-left"> My Profile</h1>
+    <div className="animate-fade-in-up space-y-6">
+      {/* Header Section */}
+      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-6 border border-slate-700/50">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+          My Profile
+        </h1>
+        <p className="text-slate-400 mt-2">
+          Manage your personal information
+        </p>
+      </div>
 
-      <div className="flex items-center justify-between rounded-2xl border-[1px] border-richblack-700 bg-richblack-800 p-8 px-3 sm:px-12">
-        <div className="flex items-center gap-x-4">
-          <Img
-            src={user?.image}
-            alt={`profile-${user?.firstName}`}
-            className="aspect-square w-[78px] rounded-full object-cover"
-          />
-          <div className="space-y-1">
-            <p className="text-lg font-semibold text-richblack-5 capitalize">
+      {/* Profile Card */}
+      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-8 border border-slate-700/50">
+        <div className="flex flex-col sm:flex-row items-center gap-8">
+          <div className="relative group">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl blur opacity-30 group-hover:opacity-70 transition duration-1000"></div>
+            <div className="relative">
+              <Img
+                src={user?.image}
+                alt={`profile-${user?.firstName}`}
+                className="w-28 h-28 rounded-2xl object-cover ring-2 ring-purple-500/20"
+              />
+            </div>
+          </div>
+          <div className="text-center sm:text-left flex-1">
+            <h2 className="text-2xl font-bold text-white capitalize">
               {user?.firstName + " " + user?.lastName}
-            </p>
-            <p className="text-sm text-richblack-300">{user?.email}</p>
+            </h2>
+            <p className="text-slate-400 mt-2">{user?.email}</p>
           </div>
         </div>
       </div>
 
-      <div className="my-10 flex flex-col gap-y-10 rounded-2xl border-[1px] border-richblack-700 bg-richblack-800 p-8 px-7 sm:px-12">
-        <div className="flex w-full items-center justify-between">
-          <p className="text-lg font-semibold text-richblack-5">About</p>
+      {/* About Section */}
+      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-8 border border-slate-700/50">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="h-8 w-1 bg-gradient-to-b from-purple-500 to-blue-500 rounded-full"></div>
+          <h3 className="text-xl font-semibold text-white">About</h3>
         </div>
-
-        <p
-          className={`${user?.additionalDetails?.about
-            ? "text-richblack-5"
-            : "text-richblack-400"
-            } text-sm font-medium`}
-        >
+        <p className={`${user?.additionalDetails?.about ? "text-slate-300" : "text-slate-500"} text-sm leading-relaxed`}>
           {user?.additionalDetails?.about ?? "Write Something About Yourself"}
         </p>
       </div>
 
-      <div className="my-10 flex flex-col gap-y-10 rounded-2xl border-[1px] border-richblack-700 bg-richblack-800 p-8 px-7 sm:px-12">
-        <div className="flex w-full items-center justify-between">
-          <p className="text-lg font-semibold text-richblack-5">
-            Personal Details
-          </p>
+      {/* Personal Details */}
+      <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-8 border border-slate-700/50">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="h-8 w-1 bg-gradient-to-b from-purple-500 to-blue-500 rounded-full"></div>
+          <h3 className="text-xl font-semibold text-white">Personal Details</h3>
         </div>
 
-        <div className="flex max-w-[500px] justify-between ">
-          <div className="flex flex-col gap-y-5">
-            <div>
-              <p className="mb-2 text-sm text-richblack-600">First Name</p>
-              <p className="text-sm font-semibold text-richblack-5 capitalize">
-                {user?.firstName}
-              </p>
-            </div>
-            <div>
-              <p className="mb-2 text-sm text-richblack-600">Account Type</p>
-              <p className="text-sm font-semibold text-richblack-5 capitalize">
-                {user?.accountType}
-              </p>
-            </div>
-            <div>
-              <p className="mb-2 text-sm text-richblack-600">Email</p>
-              <p className="text-sm font-semibold text-richblack-5">
-                {user?.email}
-              </p>
-            </div>
-            <div>
-              <p className="mb-2 text-sm text-richblack-600">Gender</p>
-              <p className="text-sm font-semibold text-richblack-5">
-                {user?.additionalDetails?.gender ?? "Add Gender"}
-              </p>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Left Column */}
+          <div className="space-y-6">
+            <DetailCard 
+              label="First Name"
+              value={user?.firstName}
+              icon="👤"
+            />
+            <DetailCard 
+              label="Account Type"
+              value={user?.accountType}
+              icon="🎓"
+            />
+            <DetailCard 
+              label="Email"
+              value={user?.email}
+              icon="📧"
+            />
+            <DetailCard 
+              label="Gender"
+              value={user?.additionalDetails?.gender ?? "Add Gender"}
+              icon="⚥"
+            />
           </div>
 
-          <div className="flex flex-col gap-y-5">
-            <div>
-              <p className="mb-2 text-sm text-richblack-600">Last Name</p>
-              <p className="text-sm font-semibold text-richblack-5 capitalize">
-                {user?.lastName}
-              </p>
-            </div>
-            <div>
-              <p className="mb-2 text-sm text-richblack-600">Phone Number</p>
-              <p className="text-sm font-semibold text-richblack-5">
-                {user?.additionalDetails?.contactNumber ?? "Add Contact Number"}
-              </p>
-            </div>
-            <div>
-              <p className="mb-2 text-sm text-richblack-600">Date Of Birth</p>
-              <p className="text-sm font-semibold text-richblack-5">
-                {formatDate(user?.additionalDetails?.dateOfBirth) ?? "Add Date Of Birth"}
-              </p>
-            </div>
+          {/* Right Column */}
+          <div className="space-y-6">
+            <DetailCard 
+              label="Last Name"
+              value={user?.lastName}
+              icon="👤"
+            />
+            <DetailCard 
+              label="Phone Number"
+              value={user?.additionalDetails?.contactNumber ?? "Add Contact Number"}
+              icon="📱"
+            />
+            <DetailCard 
+              label="Date Of Birth"
+              value={formatDateShort(user?.additionalDetails?.dateOfBirth) ?? "Add Date Of Birth"}
+              icon="🎂"
+            />
           </div>
         </div>
       </div>
-    </>
+    </div>
+  )
+}
+
+// Helper Component for Detail Cards
+function DetailCard({ label, value, icon }) {
+  return (
+    <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-800/50 hover:border-slate-700/50 transition-colors duration-300">
+      <div className="flex items-center gap-3 mb-2">
+        <span className="text-lg">{icon}</span>
+        <p className="text-sm text-slate-400">{label}</p>
+      </div>
+      <p className="text-base font-medium text-white capitalize pl-8">
+        {value}
+      </p>
+    </div>
   )
 }

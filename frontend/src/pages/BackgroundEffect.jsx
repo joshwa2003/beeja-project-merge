@@ -1,105 +1,104 @@
-
-import React, { useEffect, useRef } from 'react';
-
-
-import './css style/backgroundeffect.css'
-
+import React, { useEffect, useRef } from 'react'
+import '../pages/css style/backgroundeffect.css'
 
 const BackgroundEffect = () => {
-  const particlesRef = useRef(null);
+  const particlesRef = useRef(null)
 
   useEffect(() => {
-    const particlesContainer = particlesRef.current;
-    const particleCount = 80;
+    const createParticle = () => {
+      if (!particlesRef.current) return
 
-    function createParticle() {
-      const particle = document.createElement('div');
-      particle.className = 'particle';
-      const size = Math.random() * 3 + 1;
-      particle.style.width = `${size}px`;
-      particle.style.height = `${size}px`;
-      resetParticle(particle);
-      particlesContainer.appendChild(particle);
-      animateParticle(particle);
+      const particle = document.createElement('div')
+      particle.className = 'particle'
+      
+      // Random size between 2-6px
+      const size = Math.random() * 4 + 2
+      particle.style.width = `${size}px`
+      particle.style.height = `${size}px`
+      
+      // Random starting position
+      particle.style.left = `${Math.random() * 100}%`
+      particle.style.top = `${Math.random() * 100}%`
+      
+      // Random animation duration between 15-25 seconds
+      const duration = Math.random() * 10 + 15
+      
+      // Random colors from the gradient palette
+      const colors = [
+        'rgba(0, 255, 255, 0.6)',
+        'rgba(255, 102, 0, 0.6)',
+        'rgba(119, 0, 255, 0.6)',
+        'rgba(0, 183, 255, 0.6)',
+        'rgba(169, 89, 255, 0.6)',
+        'rgba(98, 216, 249, 0.6)',
+        'rgba(72, 0, 255, 0.6)'
+      ]
+      particle.style.background = colors[Math.floor(Math.random() * colors.length)]
+      
+      // Animation keyframes with transform3d for GPU acceleration
+      const keyframes = [
+        {
+          transform: 'translate3d(0, 0, 0) scale3d(0, 0, 1)',
+          opacity: 0
+        },
+        {
+          transform: `translate3d(${(Math.random() - 0.5) * 200}px, ${(Math.random() - 0.5) * 200}px, 0) scale3d(1, 1, 1)`,
+          opacity: 0.6,
+          offset: 0.1
+        },
+        {
+          transform: `translate3d(${(Math.random() - 0.5) * 400}px, ${(Math.random() - 0.5) * 400}px, 0) scale3d(0.5, 0.5, 1)`,
+          opacity: 0.3,
+          offset: 0.9
+        },
+        {
+          transform: `translate3d(${(Math.random() - 0.5) * 500}px, ${(Math.random() - 0.5) * 500}px, 0) scale3d(0, 0, 1)`,
+          opacity: 0
+        }
+      ]
+      
+      const animation = particle.animate(keyframes, {
+        duration: duration * 1000,
+        easing: 'ease-in-out'
+      })
+      
+      particlesRef.current.appendChild(particle)
+      
+      // Remove particle after animation
+      animation.onfinish = () => {
+        if (particle.parentNode) {
+          particle.parentNode.removeChild(particle)
+        }
+      }
     }
 
-    function resetParticle(particle) {
-      const posX = Math.random() * 100;
-      const posY = Math.random() * 100;
-      particle.style.left = `${posX}%`;
-      particle.style.top = `${posY}%`;
-      particle.style.opacity = '0';
-      return { x: posX, y: posY };
+    // Create fewer initial particles
+    for (let i = 0; i < 8; i++) {
+      setTimeout(() => createParticle(), i * 300)
     }
 
-    function animateParticle(particle) {
-      const pos = resetParticle(particle);
-      const duration = Math.random() * 10 + 10;
-      const delay = Math.random() * 5;
+    // Reduce particle creation frequency
+    const interval = setInterval(createParticle, 3000)
 
-      setTimeout(() => {
-        particle.style.transition = `all ${duration}s linear`;
-        particle.style.opacity = Math.random() * 0.3 + 0.1;
-        const moveX = pos.x + (Math.random() * 20 - 10);
-        const moveY = pos.y - Math.random() * 30;
-        particle.style.left = `${moveX}%`;
-        particle.style.top = `${moveY}%`;
-
-        setTimeout(() => {
-          animateParticle(particle);
-        }, duration * 1000);
-      }, delay * 1000);
+    return () => {
+      clearInterval(interval)
+      if (particlesRef.current) {
+        particlesRef.current.innerHTML = ''
+      }
     }
-
-    for (let i = 0; i < particleCount; i++) {
-      createParticle();
-    }
-
-    const handleMouseMove = (e) => {
-      const mouseX = (e.clientX / window.innerWidth) * 100;
-      const mouseY = (e.clientY / window.innerHeight) * 100;
-
-      const particle = document.createElement('div');
-      particle.className = 'particle';
-      const size = Math.random() * 4 + 2;
-      particle.style.width = `${size}px`;
-      particle.style.height = `${size}px`;
-      particle.style.left = `${mouseX}%`;
-      particle.style.top = `${mouseY}%`;
-      particle.style.opacity = '0.6';
-
-      particlesContainer.appendChild(particle);
-
-      setTimeout(() => {
-        particle.style.transition = 'all 2s ease-out';
-        particle.style.left = `${mouseX + (Math.random() * 10 - 5)}%`;
-        particle.style.top = `${mouseY + (Math.random() * 10 - 5)}%`;
-        particle.style.opacity = '0';
-
-        setTimeout(() => {
-          particle.remove();
-        }, 2000);
-      }, 10);
-
-      const spheres = particlesContainer.parentElement.querySelectorAll('.gradient-sphere');
-      const moveX = (e.clientX / window.innerWidth - 0.5) * 5;
-      const moveY = (e.clientY / window.innerHeight - 0.5) * 5;
-
-      spheres.forEach((sphere) => {
-        sphere.style.transform = `translate(${moveX}px, ${moveY}px)`;
-      });
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    return () => document.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  }, [])
 
   return (
     <div className="gradient-background">
+      {/* Gradient Spheres */}
       <div className="gradient-sphere sphere-1"></div>
       <div className="gradient-sphere sphere-2"></div>
       <div className="gradient-sphere sphere-3"></div>
+      
+      {/* Central Glow */}
       <div className="glow"></div>
+      
+      {/* Particles Container */}
       <div className="particles-container" ref={particlesRef}></div>
     </div>
   );

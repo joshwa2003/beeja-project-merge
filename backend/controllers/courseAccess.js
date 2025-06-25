@@ -61,7 +61,6 @@ exports.requestCourseAccess = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: 'Course access request submitted successfully',
             data: populatedRequest
         });
 

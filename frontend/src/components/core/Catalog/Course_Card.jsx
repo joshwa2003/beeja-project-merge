@@ -1,55 +1,121 @@
 import React from "react"
 import { Link } from "react-router-dom"
+import { motion } from "framer-motion"
+import { HiUsers } from "react-icons/hi"
+import { FaRupeeSign, FaClock } from "react-icons/fa"
 
 import RatingStars from "../../common/RatingStars"
 import Img from './../../common/Img';
 
-
-
 function Course_Card({ course, Height }) {
+  // Return null if no course data is provided
+  if (!course) {
+    return null;
+  }
+
   // Use the averageRating from backend instead of calculating it on frontend
   const avgRating = course?.averageRating || 0
   const totalRatings = course?.totalRatings || 0
 
   return (
-    <div className='hover:scale-[1.03] transition-all duration-200 z-50 '>
-      <Link to={`/courses/${course._id}`}>
-        <div className="">
-          <div className="rounded-lg">
-            <Img
-              src={course?.thumbnail}
-              alt="course thumnail"
-              className={`${Height} w-full rounded-xl object-cover `}
-            />
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      whileHover={{ 
+        scale: 1.02,
+        transition: { duration: 0.2 }
+      }}
+      className='z-50 group transform hover:-translate-y-2 transition-all duration-300 w-[330px] h-[420px]'
+    >
+      <Link to={course._id ? `/courses/${course._id}` : "#"}>
+        <div className="bg-richblack-800 rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:shadow-yellow-50/10 
+          transition-all duration-300 h-full flex flex-col border border-transparent hover:border-yellow-50/10">
+          {/* Thumbnail Section - Fixed Height */}
+          <div className="relative overflow-hidden h-44 flex-shrink-0 group">
+            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-all duration-300 z-10"></div>
+            {course?.thumbnail ? (
+              <Img
+                src={course?.thumbnail}
+                alt="course thumbnail"
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              />
+            ) : (
+              <div className="w-full h-full bg-richblack-700 flex items-center justify-center">
+                <span className="text-richblack-400 text-sm">No Image</span>
+              </div>
+            )}
+            {/* Course Type Badge */}
+            <div className={`absolute top-4 right-4 z-20 px-3 py-1.5 rounded-full font-bold text-xs
+              ${course?.courseType === 'Free' || course?.adminSetFree
+                ? "bg-gradient-to-r from-caribbeangreen-300 to-caribbeangreen-200 text-caribbeangreen-800" 
+                : "bg-gradient-to-r from-blue-600 to-blue-500 text-white"} 
+              backdrop-blur-sm shadow-md`}>
+              {course?.courseType === 'Free' || course?.adminSetFree ? "FREE" : "PREMIUM"}
+            </div>
+
           </div>
-          <div className="flex flex-col gap-2 px-1 py-3">
-            <p className="text-xl text-richblack-5">{course?.courseName}</p>
-            <p className="text-sm text-richblack-50">
-              {course?.instructor?.firstName} {course?.instructor?.lastName}
+          
+          {/* Content Section - Flexible Height */}
+          <div className="flex flex-col gap-2 sm:gap-3 p-4 sm:p-5 flex-grow bg-gradient-to-b from-richblack-800 to-richblack-900">
+            <h3 className="text-base sm:text-lg font-semibold text-richblack-5 line-clamp-2 group-hover:text-yellow-50 transition-colors duration-200 leading-tight">
+              {course?.courseName}
+            </h3>
+            
+            <p className="text-xs sm:text-sm text-richblack-200">
+              By <span className="text-yellow-50 font-medium">
+                {course?.instructor?.firstName} {course?.instructor?.lastName}
+              </span>
             </p>
-            <div className="flex items-center gap-2">
-              <span className="text-yellow-5">{avgRating}</span>
+
+            {/* Stats Row */}
+            <div className="flex items-center gap-4 text-xs text-richblack-400">
+              <div className="flex items-center gap-1">
+                <HiUsers className="text-sm" />
+                <span>{course?.studentsEnrolled?.length || 0} students</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <FaClock className="text-sm" />
+                <span>12 hours</span>
+              </div>
+            </div>
+            
+            {/* Rating Row */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-yellow-50 text-sm font-medium">{avgRating.toFixed(1)}</span>
               <RatingStars Review_Count={avgRating} />
-              <span className="text-richblack-400">
-                {totalRatings} Ratings
+              <span className="text-richblack-400 text-xs sm:text-sm">
+                ({totalRatings} {totalRatings === 1 ? 'Rating' : 'Ratings'})
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              {course?.courseType === 'Free' ? (
-                <p className="text-xl text-caribbeangreen-100">Free</p>
-              ) : (
-                <p className="text-xl text-richblack-5">Rs. {course?.price}</p>
-              )}
-              {course?.courseType === 'Free' && course?.originalPrice && (
-                <span className="text-sm text-richblack-300 line-through">
-                  Rs. {course?.originalPrice}
-                </span>
-              )}
+            
+            {/* Price Row */}
+            <div className="flex items-center gap-2 pt-3 mt-auto border-t border-richblack-700/50">
+                {course?.courseType === 'Free' || course?.adminSetFree ? (
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg font-bold bg-gradient-to-r from-caribbeangreen-300 to-caribbeangreen-200 bg-clip-text text-transparent">FREE</span>
+                    <span className="text-sm text-richblack-400 line-through">
+                      ₹{course?.price || course?.originalPrice }
+                    </span>
+                  </div>
+                ) : (
+                  <>
+                    {course?.originalPrice && course?.originalPrice !== course?.price && (
+                      <span className="text-sm text-richblack-400 line-through">
+                        ₹{course.originalPrice}
+                      </span>
+                    )}
+                    <div className="flex items-center text-yellow-50 font-bold">
+                      <FaRupeeSign className="text-sm" />
+                      <span className="text-lg">{course?.price}</span>
+                    </div>
+                  </>
+                )}
             </div>
           </div>
         </div>
       </Link>
-    </div>
+    </motion.div>
   )
 }
 

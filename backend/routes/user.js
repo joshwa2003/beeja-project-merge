@@ -13,6 +13,7 @@ const {
 const {
     resetPasswordToken,
     resetPassword,
+    verifyResetToken,
 } = require('../controllers/resetPassword');
 
 
@@ -49,6 +50,9 @@ router.post('/reset-password-token', resetPasswordToken);
 
 // Route for resetting user's password after verification
 router.post("/reset-password", resetPassword)
+
+// Route for verifying reset token
+router.get("/verify-reset-token/:token", verifyResetToken)
 
 
 module.exports = router

@@ -1,27 +1,13 @@
 const multer = require('multer');
-
-// Configure disk storage
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'tmp/uploads')  // Use relative path
-    },
-    filename: function (req, file, cb) {
-        cb(null, file.fieldname + '-' + Date.now() + '.' + file.originalname.split('.').pop());
-    }
-});
-
-// Create uploads directory if it doesn't exist
-const fs = require('fs');
 const path = require('path');
-const uploadDir = path.join(__dirname, '..', 'tmp', 'uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
+
+// Configure memory storage for direct streaming to Cloudinary
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
     storage: storage,
     limits: {
-        fileSize: 100 * 1024 * 1024, // 100MB limit
+        fileSize: 500 * 1024 * 1024, // Increased to 500MB limit
     },
     fileFilter: function (req, file, cb) {
         // Accept video files and images

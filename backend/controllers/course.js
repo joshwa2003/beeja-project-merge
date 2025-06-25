@@ -11,6 +11,14 @@ const { convertSecondsToDuration } = require("../utils/secToDuration")
 const { cleanupCourseFiles } = require('../utils/fileCleanup');
 const mongoose = require('mongoose');
 
+// Import notification helpers
+const {
+    createNewCourseCreationNotification,
+    createCourseModificationNotification,
+    createCourseStatusChangeNotification,
+    createNewCourseAnnouncementToAll
+} = require('./notification');
+
 // Helper function to calculate average rating
 const calculateAverageRating = async (courseId) => {
     try {
@@ -189,6 +197,17 @@ exports.createCourse = async (req, res) => {
             { new: true }
         );
 
+        // Always create notification for admins about new course creation
+        await createNewCourseCreationNotification(newCourse._id, instructorId);
+
+        // Create notification for all students and instructors only if course is published
+        if (status === "Published") {
+            await createNewCourseAnnouncementToAll(newCourse._id, instructorId);
+            console.log("Public notifications sent for new published course:", newCourse.courseName);
+        } else {
+            console.log("Course created in draft state - only admin notified");
+        }
+
         // return response
         res.status(200).json({
             success: true,
@@ -213,11 +232,11 @@ exports.createCourse = async (req, res) => {
 // ================ show all courses ================
 exports.getAllCourses = async (req, res) => {
     try {
-        const allCourses = await Course.find({},
+const allCourses = await Course.find({},
             {
                 courseName: true, courseDescription: true, price: true, thumbnail: true, instructor: true,
                 ratingAndReviews: true, studentsEnrolled: true, courseType: true, originalPrice: true,
-                adminSetFree: true
+                adminSetFree: true, status: true, createdAt: true
             })
             .populate({
                 path: 'instructor',
@@ -304,8 +323,10 @@ exports.getCourseDetails = async (req, res) => {
         let totalDurationInSeconds = 0
         courseDetails.courseContent.forEach((content) => {
             content.subSection.forEach((subSection) => {
-                const timeDurationInSeconds = parseInt(subSection.timeDuration)
-                totalDurationInSeconds += timeDurationInSeconds
+                const timeDurationInSeconds = parseFloat(subSection.timeDuration)
+                if (!isNaN(timeDurationInSeconds) && timeDurationInSeconds > 0) {
+                    totalDurationInSeconds += timeDurationInSeconds
+                }
             })
         })
 
@@ -438,8 +459,10 @@ exports.getFullCourseDetails = async (req, res) => {
         let totalDurationInSeconds = 0
         courseDetails.courseContent.forEach((content) => {
             content.subSection.forEach((subSection) => {
-                const timeDurationInSeconds = parseInt(subSection.timeDuration)
-                totalDurationInSeconds += timeDurationInSeconds
+                const timeDurationInSeconds = parseFloat(subSection.timeDuration)
+                if (!isNaN(timeDurationInSeconds) && timeDurationInSeconds > 0) {
+                    totalDurationInSeconds += timeDurationInSeconds
+                }
             })
         })
 
@@ -479,6 +502,14 @@ exports.editCourse = async (req, res) => {
 
         if (!course) {
             return res.status(404).json({ error: "Course not found" })
+        }
+
+        // Check if user is instructor and owns the course, or is admin
+        if (req.user.accountType === 'Instructor' && course.instructor.toString() !== req.user.id) {
+            return res.status(403).json({ 
+                success: false,
+                message: "You don't have permission to edit this course" 
+            })
         }
 
         // If Thumbnail Image is found, update it
@@ -536,6 +567,31 @@ exports.editCourse = async (req, res) => {
             })
             .exec()
 
+        // Create notification for course modification
+        const modificationType = updates.status ? 'status' : 'content';
+        if (updates.status && updates.status !== course.status) {
+            // If status changed, notify instructor
+            await createCourseStatusChangeNotification(
+                course.instructor,
+                courseId,
+                course.status,
+                updates.status
+            );
+            
+            // If course is being published for the first time, notify all users
+            if (updates.status === "Published" && course.status === "Draft") {
+                await createNewCourseAnnouncementToAll(courseId, course.instructor);
+                console.log("Course published - notifications sent to all users");
+            }
+        }
+        
+        // Notify admins about course modification
+        await createCourseModificationNotification(
+            courseId,
+            req.user.id,
+            modificationType
+        );
+
         // success response
         res.status(200).json({
             success: true,
@@ -561,14 +617,38 @@ exports.getInstructorCourses = async (req, res) => {
         const instructorId = req.user.id
 
         // Find all courses belonging to the instructor
-        const instructorCourses = await Course.find({ instructor: instructorId, }).sort({ createdAt: -1 })
+        const instructorCourses = await Course.find({ instructor: instructorId })
+            .populate({
+                path: "courseContent",
+                populate: {
+                    path: "subSection",
+                    select: "title timeDuration"
+                }
+            })
+            .sort({ createdAt: -1 })
 
 
-        // Return the instructor's courses
+        // Calculate total duration for each course
+        const coursesWithDuration = instructorCourses.map(course => {
+            let totalDurationInSeconds = 0
+            course.courseContent.forEach((content) => {
+                content.subSection.forEach((subSection) => {
+                    const timeDurationInSeconds = parseFloat(subSection.timeDuration)
+                    if (!isNaN(timeDurationInSeconds) && timeDurationInSeconds > 0) {
+                        totalDurationInSeconds += timeDurationInSeconds
+                    }
+                })
+            })
+            return {
+                ...course.toObject(),
+                totalDuration: convertSecondsToDuration(totalDurationInSeconds)
+            }
+        })
+
+        // Return the instructor's courses with duration
         res.status(200).json({
             success: true,
-            data: instructorCourses,
-            // totalDurationInSeconds:totalDurationInSeconds,
+            data: coursesWithDuration,
             message: 'Courses made by Instructor fetched successfully'
         })
     } catch (error) {
@@ -592,6 +672,14 @@ exports.deleteCourse = async (req, res) => {
         const course = await Course.findById(courseId)
         if (!course) {
             return res.status(404).json({ message: "Course not found" })
+        }
+
+        // Check if user is instructor and owns the course, or is admin
+        if (req.user.accountType === 'Instructor' && course.instructor.toString() !== req.user.id) {
+            return res.status(403).json({ 
+                success: false,
+                message: "You don't have permission to delete this course" 
+            })
         }
 
         // Unenroll students from the course
@@ -669,7 +757,6 @@ exports.deleteCourse = async (req, res) => {
         })
     }
 }
-
 
 
 

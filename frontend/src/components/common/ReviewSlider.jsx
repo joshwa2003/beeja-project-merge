@@ -4,7 +4,6 @@ import Img from './Img';
 
 // Import Swiper React components
 import { Swiper, SwiperSlide } from "swiper/react"
-// import SwiperCore, { Autoplay, FreeMode, Pagination } from 'swiper/core';
 // Import Swiper styles
 import "swiper/css"
 import "swiper/css/free-mode"
@@ -17,14 +16,8 @@ import { FaStar } from "react-icons/fa"
 import { apiConnector } from "../../services/apiConnector";
 import { ratingsEndpoints } from "../../services/apis"
 
-
-
-
-
-
 function ReviewSlider() {
   const [reviews, setReviews] = useState(null)
-  const truncateWords = 15
 
   useEffect(() => {
     ; (async () => {
@@ -38,90 +31,99 @@ function ReviewSlider() {
     })()
   }, [])
 
-  
-  // console.log('reviews= ', reviews)
   if(!reviews) return;
 
-
   return (
-    <div className="text-white">
-      <div className="my-[50px] h-[184px] max-w-maxContentTab lg:max-w-maxContent">
+    <div className="text-white ">
+      <div className="my-[30px] h-[140px] max-w-maxContentTab lg:max-w-maxContent px-2 "  >
         <Swiper
-          // slidesPerView={4}
-          // slidesPerView={1}
           breakpoints={{
-            // Configure the number of slides per view for different screen sizes
+            320: {
+              slidesPerView: 1.2,
+              spaceBetween: 10,
+            },
+            480: {
+              slidesPerView: 2.2,
+              spaceBetween: 12,
+            },
             640: {
-              slidesPerView: 1, // Show 1 slide at a time on smaller screens
+              slidesPerView: 2.5,
+              spaceBetween: 15,
             },
             768: {
-              slidesPerView: 2, // Show 2 slides at a time on screens wider than 768px
+              slidesPerView: 3.2,
+              spaceBetween: 18,
             },
             1024: {
-              slidesPerView: 4, // Show 4 slides at a time on screens wider than 1024px
+              slidesPerView: 4.5,
+              spaceBetween: 20,
+            },
+            1280: {
+              slidesPerView: 5.5,
+              spaceBetween: 22,
             },
           }}
-          spaceBetween={25}
           loop={true}
           freeMode={true}
           autoplay={{
             delay: 2500,
             disableOnInteraction: false,
           }}
-          // modules={[FreeMode, Pagination, Autoplay]}
-          className="w-full "
+          className="w-full"
         >
           {reviews.map((review, i) => {
             return (
               <SwiperSlide key={i}>
-                <div className="flex flex-col gap-3 bg-richblack-800 p-3 text-[14px] text-richblack-25 min-h-[180px] max-h-[180px] glass-bg">
-                  <div className="flex items-center gap-4">
-                    <Img
-                      src={
-                        review?.user?.image
-                          ? review?.user?.image
-                          : `https://api.dicebear.com/5.x/initials/svg?seed=${review?.user?.firstName} ${review?.user?.lastName}`
-                      }
-                      alt=""
-                      className="h-9 w-9 rounded-full object-cover"
-                    />
-                    <div className="flex flex-col">
-                      <h1 className="font-semibold text-richblack-5 capitalize">{`${review?.user?.firstName} ${review?.user?.lastName}`}</h1>
-                      <h2 className="text-[12px] font-medium text-richblack-500">
+                <div className="flex flex-col gap-2 bg-gradient-to-br from-blue-900/30 to-purple-900/30 p-3 text-[11px] h-[120px] rounded-lg border border-blue-500/20 hover:border-yellow-50/50 transition-all duration-200 group backdrop-blur-sm">
+                  {/* Header with user info */}
+                  <div className="flex items-start gap-2">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-7 h-7 rounded-md overflow-hidden border border-richblack-600">
+                        <Img
+                          src={
+                            review?.user?.image
+                              ? review?.user?.image
+                              : `https://api.dicebear.com/5.x/initials/svg?seed=${review?.user?.firstName} ${review?.user?.lastName}`
+                          }
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h1 className="font-semibold text-[11px] text-white capitalize truncate pr-1">{`${review?.user?.firstName} ${review?.user?.lastName}`}</h1>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <span className="text-yellow-100 text-[9px] font-medium">{review.rating}</span>
+                          <ReactStars
+                            count={5}
+                            value={parseInt(review.rating)}
+                            size={8}
+                            edit={false}
+                            activeColor="#FFD700"
+                            emptyIcon={<FaStar />}
+                            fullIcon={<FaStar />}
+                          />
+                        </div>
+                      </div>
+                      <h2 className="text-[9px] font-medium text-richblack-300 truncate">
                         {review?.course?.courseName}
                       </h2>
                     </div>
                   </div>
 
-                  <p className="font-medium text-richblack-25">
-                    {review?.review.split(" ").length > truncateWords
-                      ? `${review?.review
-                        .split(" ")
-                        .slice(0, truncateWords)
-                        .join(" ")} ...`
-                      : `${review?.review}`}
-                  </p>
-
-                  <div className="flex items-center gap-2 ">
-                    <h3 className="font-semibold text-yellow-100">
-                      {/* {isNaN(review.rating) ? "N/A" : review.rating.toFixed(1)} */}
-                      {review.rating}
-                    </h3>
-                    <ReactStars
-                      count={5}
-                      value={parseInt(review.rating)} // Convert to a number
-                      size={20}
-                      edit={false}
-                      activeColor="#ffd700"
-                      emptyIcon={<FaStar />}
-                      fullIcon={<FaStar />}
-                    />
+                  {/* Review text */}
+                  <div className="flex-1 overflow-hidden">
+                    <p className="text-[10px] text-richblack-100 leading-relaxed line-clamp-4">
+                      {review?.review.length > 80 
+                        ? `${review?.review.substring(0, 80)}...`
+                        : review?.review}
+                    </p>
                   </div>
                 </div>
               </SwiperSlide>
             )
           })}
-          {/* <SwiperSlide>Slide 1</SwiperSlide> */}
         </Swiper>
       </div>
     </div>

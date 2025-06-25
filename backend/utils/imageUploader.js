@@ -6,30 +6,52 @@ exports.uploadImageToCloudinary = async (file, folder, height, quality) => {
         if (height) options.height = height;
         if (quality) options.quality = quality;
 
-        options.resource_type = 'auto';
-        
-        // Handle file upload to Cloudinary
-        if (file.buffer) {
-            // If file is in memory (buffer)
-            return await cloudinary.uploader.upload(
-                `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
-                options
-            );
-        } else if (file.path) {
-            // If file is stored on disk
-            return await cloudinary.uploader.upload(file.path, options);
+        // Set resource type and options for video uploads
+        if (file.mimetype && file.mimetype.startsWith('video/')) {
+            options.resource_type = 'video';
+            options.chunk_size = 6000000; // 6MB chunks for better upload handling
+            options.eager = [{ format: 'mp4' }];
+            options.eager_async = false; // Wait for eager transformation
+            options.video_metadata = true; // Request video metadata including duration
         } else {
-            throw new Error('Invalid file format');
+            options.resource_type = 'auto';
+            options.chunk_size = 6000000;
         }
+        
+        // Create a promise to handle the upload
+        return new Promise((resolve, reject) => {
+            // Create upload stream
+            const uploadStream = cloudinary.uploader.upload_stream(
+                options,
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                }
+            );
+
+            // If file is in memory (Buffer)
+            if (file.buffer) {
+                uploadStream.end(file.buffer);
+            } 
+            // If file is on disk
+            else if (file.path) {
+                const fs = require('fs');
+                fs.createReadStream(file.path)
+                    .pipe(uploadStream)
+                    .on('error', (error) => {
+                        reject(error);
+                    });
+            } else {
+                reject(new Error('Invalid file format'));
+            }
+        });
     }
     catch (error) {
-        console.log("Error while uploading image");
+        console.log("Error while uploading file to Cloudinary");
         console.log(error);
         throw error;
     }
 }
-
-
 
 // Function to delete a resource by public ID
 exports.deleteResourceFromCloudinary = async (url) => {
@@ -62,7 +84,6 @@ exports.deleteResourceFromCloudinary = async (url) => {
 
         const result = await cloudinary.uploader.destroy(publicId);
         console.log(`Deleted resource with public ID: ${publicId}`);
-        console.log('Delete Resource result = ', result);
         return result;
     } catch (error) {
         console.error(`Error deleting resource with URL ${url}:`, error);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import IconBtn from './IconBtn';
 
 export default function ConfirmationModal({
