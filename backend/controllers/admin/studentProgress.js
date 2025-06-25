@@ -2,6 +2,7 @@ const Course = require('../../models/course');
 const User = require('../../models/user');
 const CourseProgress = require('../../models/courseProgress');
 const Certificate = require('../../models/certificate');
+const Order = require('../../models/order');
 
 // Get all students enrolled in a course
 exports.getStudentsByCourse = async (req, res) => {
@@ -47,8 +48,14 @@ exports.getStudentsByCourse = async (req, res) => {
           }
         }
 
-        // Get enrollment date from course progress or fallback to user creation date
-        const enrollmentDate = progress?.createdAt || student.createdAt;
+        // Get enrollment date from order purchase date, then course progress creation, then user creation date
+        const order = await Order.findOne({
+          user: student._id,
+          course: courseId,
+          status: true
+        }).sort({ purchaseDate: 1 }); // Get the earliest purchase if multiple exist
+        
+        const enrollmentDate = order?.purchaseDate || progress?.createdAt || student.createdAt;
         
         return {
           ...student.toObject(),

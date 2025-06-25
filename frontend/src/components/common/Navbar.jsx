@@ -24,6 +24,10 @@ const ModernNavbar = () => {
   const [subLinks, setSubLinks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showNavbar, setShowNavbar] = useState("top");
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   const fetchSublinks = useCallback(async () => {
     try {
@@ -57,9 +61,6 @@ const ModernNavbar = () => {
     return matchPath({ path: route }, location.pathname);
   };
 
-  const [showNavbar, setShowNavbar] = useState("top");
-  const [lastScrollY, setLastScrollY] = useState(0);
-
   const controlNavbar = useCallback(() => {
     if (window.scrollY > 200) {
       if (window.scrollY > lastScrollY) setShowNavbar("hide");
@@ -75,7 +76,19 @@ const ModernNavbar = () => {
     };
   }, [controlNavbar]);
 
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileDropdownOpen && !event.target.closest('.profile-dropdown-container')) {
+        setProfileDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [profileDropdownOpen]);
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen((prev) => !prev);
@@ -380,19 +393,29 @@ const ModernNavbar = () => {
               transition={{ duration: 0.3, delay: 0.6 }}
             >
               <NotificationPanel />
-              <div className="group">
+              <div className="relative profile-dropdown-container">
                 <motion.img
                   src={user.image}
                   alt={`${user.firstName} ${user.lastName}`}
                   className="h-8 w-8 rounded-full object-cover cursor-pointer border-2 border-transparent hover:border-emerald-400 transition-all duration-300"
                   title={`${user.firstName} ${user.lastName}`}
                   whileHover={{ scale: 1.1, borderColor: "#34d399" }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMobileMenuOpen(false);
+                    setProfileDropdownOpen(!profileDropdownOpen);
+                  }}
                 />
                 {/* Dropdown Menu */}
                 <motion.div 
-                  className="invisible absolute right-0 top-[120%] z-[91] flex w-[180px] flex-col rounded-lg bg-white/95 backdrop-blur-xl p-3 text-richblack-900 opacity-0 transition-all duration-300 group-hover:visible group-hover:opacity-100 shadow-[0_8px_32px_rgba(0,0,0,0.2)]"
+                  className={`absolute right-0 top-[120%] z-[91] flex w-[180px] flex-col rounded-lg bg-white/95 backdrop-blur-xl p-3 text-richblack-900 shadow-[0_8px_32px_rgba(0,0,0,0.2)] transition-all duration-300 ${
+                    profileDropdownOpen ? 'visible opacity-100' : 'invisible opacity-0'
+                  }`}
                   initial={{ scale: 0.8, opacity: 0 }}
-                  whileInView={{ scale: 1, opacity: 1 }}
+                  animate={{ 
+                    scale: profileDropdownOpen ? 1 : 0.8, 
+                    opacity: profileDropdownOpen ? 1 : 0 
+                  }}
                   transition={{ duration: 0.2 }}
                 >
                   <div className="absolute right-4 top-0 h-3 w-3 rotate-45 translate-y-[-50%] select-none rounded bg-white/95"></div>
@@ -412,6 +435,7 @@ const ModernNavbar = () => {
                     onClick={() => {
                       dispatch(logout(navigate));
                       setMobileMenuOpen(false);
+                      setProfileDropdownOpen(false);
                     }} 
                     className="rounded-lg py-2 px-3 hover:bg-richblack-50 text-left text-sm font-medium transition-all duration-200"
                     whileHover={{ x: 5, backgroundColor: "rgba(0,0,0,0.05)" }}

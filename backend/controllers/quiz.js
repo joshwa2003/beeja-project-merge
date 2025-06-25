@@ -489,6 +489,7 @@ exports.submitQuiz = async (req, res) => {
                 
                 if (isAnswered) {
                     const correctNum = Number(question.correctAnswer);
+                    const answerNum = Number(answer);
                     isCorrect = answerNum === correctNum;
                 }
             } else {
