@@ -26,13 +26,13 @@ function Course_Card({ course, Height }) {
         scale: 1.02,
         transition: { duration: 0.2 }
       }}
-      className='z-50 group transform hover:-translate-y-2 transition-all duration-300 w-[330px] h-[420px]'
+      className='z-50 group transform hover:-translate-y-2 transition-all duration-300 w-full xs:w-[280px] sm:w-[330px] h-[380px] xs:h-[400px] sm:h-[420px]'
     >
       <Link to={course._id ? `/courses/${course._id}` : "#"}>
         <div className="bg-richblack-800 rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:shadow-yellow-50/10 
           transition-all duration-300 h-full flex flex-col border border-transparent hover:border-yellow-50/10">
           {/* Thumbnail Section - Fixed Height */}
-          <div className="relative overflow-hidden h-44 flex-shrink-0 group">
+          <div className="relative overflow-hidden h-36 xs:h-40 sm:h-44 flex-shrink-0 group">
             <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-all duration-300 z-10"></div>
             {course?.thumbnail ? (
               <Img
@@ -46,7 +46,7 @@ function Course_Card({ course, Height }) {
               </div>
             )}
             {/* Course Type Badge */}
-            <div className={`absolute top-4 right-4 z-20 px-3 py-1.5 rounded-full font-bold text-xs
+            <div className={`absolute top-2 xs:top-3 sm:top-4 right-2 xs:right-3 sm:right-4 z-20 px-2 xs:px-3 py-1 xs:py-1.5 rounded-full font-bold text-[10px] xs:text-xs
               ${course?.courseType === 'Free' || course?.adminSetFree
                 ? "bg-gradient-to-r from-caribbeangreen-300 to-caribbeangreen-200 text-caribbeangreen-800" 
                 : "bg-gradient-to-r from-blue-600 to-blue-500 text-white"} 
@@ -57,57 +57,54 @@ function Course_Card({ course, Height }) {
           </div>
           
           {/* Content Section - Flexible Height */}
-          <div className="flex flex-col gap-2 sm:gap-3 p-4 sm:p-5 flex-grow bg-gradient-to-b from-richblack-800 to-richblack-900">
-            <h3 className="text-base sm:text-lg font-semibold text-richblack-5 line-clamp-2 group-hover:text-yellow-50 transition-colors duration-200 leading-tight">
+          <div className="flex flex-col gap-1.5 xs:gap-2 sm:gap-3 p-3 xs:p-4 sm:p-5 flex-grow bg-gradient-to-b from-richblack-800 to-richblack-900">
+            <h3 className="text-sm xs:text-base sm:text-lg font-semibold text-richblack-5 line-clamp-2 group-hover:text-yellow-50 transition-colors duration-200 leading-tight">
               {course?.courseName}
             </h3>
             
-            <p className="text-xs sm:text-sm text-richblack-200">
+            <p className="text-[10px] xs:text-xs sm:text-sm text-richblack-200">
               By <span className="text-yellow-50 font-medium">
                 {course?.instructor?.firstName} {course?.instructor?.lastName}
               </span>
             </p>
 
             {/* Stats Row */}
-            <div className="flex items-center gap-4 text-xs text-richblack-400">
+            <div className="flex items-center gap-2 xs:gap-3 sm:gap-4 text-[10px] xs:text-xs text-richblack-400">
               <div className="flex items-center gap-1">
                 <HiUsers className="text-sm" />
                 <span>{course?.studentsEnrolled?.length || 0} students</span>
               </div>
-              <div className="flex items-center gap-1">
-                <FaClock className="text-sm" />
-                <span>12 hours</span>
-              </div>
+
             </div>
             
             {/* Rating Row */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-yellow-50 text-sm font-medium">{avgRating.toFixed(1)}</span>
+            <div className="flex items-center gap-1.5 xs:gap-2 flex-wrap">
+              <span className="text-yellow-50 text-xs xs:text-sm font-medium">{avgRating.toFixed(1)}</span>
               <RatingStars Review_Count={avgRating} />
-              <span className="text-richblack-400 text-xs sm:text-sm">
+              <span className="text-richblack-400 text-[10px] xs:text-xs sm:text-sm">
                 ({totalRatings} {totalRatings === 1 ? 'Rating' : 'Ratings'})
               </span>
             </div>
             
             {/* Price Row */}
-            <div className="flex items-center gap-2 pt-3 mt-auto border-t border-richblack-700/50">
+            <div className="flex items-center gap-1.5 xs:gap-2 pt-2 xs:pt-3 mt-auto border-t border-richblack-700/50">
                 {course?.courseType === 'Free' || course?.adminSetFree ? (
                   <div className="flex items-center gap-3">
-                    <span className="text-lg font-bold bg-gradient-to-r from-caribbeangreen-300 to-caribbeangreen-200 bg-clip-text text-transparent">FREE</span>
-                    <span className="text-sm text-richblack-400 line-through">
+                    <span className="text-base xs:text-lg font-bold bg-gradient-to-r from-caribbeangreen-300 to-caribbeangreen-200 bg-clip-text text-transparent">FREE</span>
+                    <span className="text-xs xs:text-sm text-richblack-400 line-through">
                       ₹{course?.price || course?.originalPrice }
                     </span>
                   </div>
                 ) : (
                   <>
                     {course?.originalPrice && course?.originalPrice !== course?.price && (
-                      <span className="text-sm text-richblack-400 line-through">
+                      <span className="text-xs xs:text-sm text-richblack-400 line-through">
                         ₹{course.originalPrice}
                       </span>
                     )}
                     <div className="flex items-center text-yellow-50 font-bold">
                       <FaRupeeSign className="text-sm" />
-                      <span className="text-lg">{course?.price}</span>
+                      <span className="text-base xs:text-lg">{course?.price}</span>
                     </div>
                   </>
                 )}

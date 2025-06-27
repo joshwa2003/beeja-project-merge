@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useSelector } from "react-redux"
 import { motion, AnimatePresence } from "framer-motion"
-import BundleCourseCard from "./BundleCourseCard"
+import Course_Card from "./Course_Card"
 import { FiShoppingCart, FiArrowRight, FiX, FiPackage } from "react-icons/fi"
 import { getUserEnrolledCourses } from "../../../services/operations/profileAPI"
 
@@ -94,11 +94,25 @@ function BundleCourseSection({ courses }) {
     <div className="mx-auto box-content w-full max-w-maxContentTab px-4 py-16 lg:max-w-maxContent">
       {/* Header Section */}
       <div className="text-center mb-12">
-        <div className="flex items-center justify-center gap-3 mb-4">
+        <div 
+          className="flex items-center justify-center gap-3 mb-4"
+          style={{ opacity: 1, visibility: 'visible', transform: 'none', transition: 'none' }}
+          data-course-component="true"
+        >
           <FiPackage className="text-yellow-50 text-3xl" />
-          <h2 className="text-4xl font-bold text-richblack-5">Bundle Courses</h2>
+          <h2 
+            className="text-2xl xs:text-3xl sm:text-4xl font-bold text-richblack-5"
+            style={{ opacity: 1, visibility: 'visible', transform: 'none', transition: 'none' }}
+            data-course-component="true"
+          >
+            Bundle Courses
+          </h2>
         </div>
-        <p className="text-lg text-richblack-200 max-w-3xl mx-auto leading-relaxed">
+        <p 
+          className="text-base xs:text-lg text-richblack-200 max-w-3xl mx-auto leading-relaxed"
+          style={{ opacity: 1, visibility: 'visible', transform: 'none', transition: 'none' }}
+          data-course-component="true"
+        >
           Create your perfect learning path! Select multiple courses and save with our bundle pricing. 
           The more you learn, the more you save.
         </p>
@@ -115,31 +129,50 @@ function BundleCourseSection({ courses }) {
       </div>
       
       {/* Course Grid */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 md:grid-cols-2 xl:grid-cols-4">
-        {availableCourses.length === 0 ? (
-          <div className="col-span-full text-center text-richblack-300 py-8">
-            {token ? 
-              "You are already enrolled in all available courses in this category." :
-              "Please log in to view available courses for bundle purchase."
-            }
-          </div>
-        ) : (
-          availableCourses.map((course, index) => (
-            <motion.div
-              key={course._id || index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <BundleCourseCard
-                course={course}
-                isSelected={selectedCourses.some(c => c._id === course._id)}
-                onSelect={handleCourseSelect}
-                Height="h-[220px]"
-              />
-            </motion.div>
-          ))
-        )}
+      <div className="w-full">
+        <div className="flex flex-wrap justify-center gap-8 lg:gap-12">
+          {availableCourses.length === 0 ? (
+            <div className="col-span-full text-center text-richblack-300 py-8">
+              {token ? 
+                "You are already enrolled in all available courses in this category." :
+                "Please log in to view available courses for bundle purchase."
+              }
+            </div>
+          ) : (
+            availableCourses.map((course, index) => (
+              <div
+                key={course._id || index}
+                className="w-full xs:w-auto"
+              >
+                <div 
+                  onClick={() => handleCourseSelect(course)}
+                  className={`relative cursor-pointer ${
+                    selectedCourses.some(c => c._id === course._id) 
+                      ? 'ring-2 ring-yellow-50 ring-offset-2 ring-offset-richblack-900' 
+                      : ''
+                  }`}
+                >
+                  <Course_Card 
+                    course={course} 
+                    Height={"h-[420px]"} 
+                  />
+                  {/* Selection Indicator */}
+                  {selectedCourses.some(c => c._id === course._id) && (
+                    <div className="absolute top-3 right-3 bg-yellow-50 text-richblack-900 rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm z-[60] shadow-lg">
+                      ✓
+                    </div>
+                  )}
+                  {/* Selection Overlay */}
+                  <div className="absolute inset-0 bg-yellow-50/10 rounded-xl opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-[55]">
+                    <div className="bg-richblack-900/80 text-white px-4 py-2 rounded-lg font-medium">
+                      {selectedCourses.some(c => c._id === course._id) ? 'Selected' : 'Click to Select'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       {/* Selected Courses Summary */}

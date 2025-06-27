@@ -52,12 +52,12 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile Menu Toggle */}
-      <div className="sm:hidden fixed top-20 left-4 z-[60]">
+      <div className="sm:hidden fixed top-16 left-2 z-[60]">
         <button 
           onClick={() => dispatch(setOpenSideMenu(!openSideMenu))}
-          className="p-3 rounded bg-[#2d2d2d] border border-[#404040] text-white hover:bg-[#404040] transition-colors duration-200"
+          className="p-2 rounded-lg bg-[#2d2d2d] border border-[#404040] text-white hover:bg-[#404040] transition-colors duration-200 shadow-lg"
         >
-          {openSideMenu ? <IoMdClose size={20} /> : <HiMenuAlt1 size={20} />}
+          {openSideMenu ? <IoMdClose size={18} /> : <HiMenuAlt1 size={18} />}
         </button>
       </div>
 
@@ -73,8 +73,8 @@ export default function Sidebar() {
           )}
           
           <div className={`fixed sm:relative h-[100vh] ${
-            isCollapsed ? 'w-[56px]' : 'w-[240px] sm:w-[200px]'
-          } flex flex-col bg-[#2d2d2d] border-r border-[#404040] transition-all duration-300 z-50`}>
+            isCollapsed ? 'w-[56px]' : 'w-[280px] xs:w-[260px] sm:w-[200px]'
+          } flex flex-col bg-[#2d2d2d] border-r border-[#404040] transition-all duration-300 z-50 shadow-xl`}>
             {/* Collapse/Expand Button - Desktop Only */}
             {screenSize > 640 && (
               <div className="absolute -right-2 top-20 z-[1001]">
@@ -88,16 +88,16 @@ export default function Sidebar() {
             )}
 
             {/* Top Spacer */}
-            <div className="h-20 sm:h-0 flex-shrink-0"></div>
+            <div className="h-16 sm:h-0 flex-shrink-0"></div>
 
             {/* User Profile Section */}
-            <div className={`${isCollapsed ? 'p-2' : 'p-3'} border-b border-[#404040] transition-all duration-300 flex-shrink-0`}>
+            <div className={`${isCollapsed ? 'p-2' : 'px-3 py-2'} border-b border-[#404040] transition-all duration-300 flex-shrink-0`}>
               <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
                 <div className="relative">
                   <img
                     src={user?.image || `https://api.dicebear.com/5.x/initials/svg?seed=${user?.firstName} ${user?.lastName}`}
                     alt="Profile"
-                    className="w-8 h-8 rounded-lg object-cover ring-2 ring-[#666666]"
+                    className="w-8 h-8 rounded-lg object-cover ring-2 ring-[#666666] xs:w-7 xs:h-7"
                   />
                   <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-[#2d2d2d]"></div>
                 </div>
@@ -116,7 +116,7 @@ export default function Sidebar() {
 
             {/* Navigation Links - Scrollable Container */}
             <div className="flex-1 overflow-hidden">
-              <div className={`h-full py-3 ${isCollapsed ? 'px-1' : 'px-2'} overflow-y-scroll scrollbar-thin scrollbar-track-[#2d2d2d] scrollbar-thumb-[#404040] hover:scrollbar-thumb-[#4d4d4d] scrollbar-thumb-rounded-full scrollbar-track-rounded-full`}>
+              <div className={`h-full py-2 ${isCollapsed ? 'px-1' : 'px-2'} overflow-y-auto scrollbar-thin scrollbar-track-[#2d2d2d] scrollbar-thumb-[#404040] hover:scrollbar-thumb-[#4d4d4d] scrollbar-thumb-rounded-full scrollbar-track-rounded-full`}>
                 <nav className="space-y-1">
                   {sidebarLinks.map((link) => {
                     if (link.type && user?.accountType !== link.type) return null

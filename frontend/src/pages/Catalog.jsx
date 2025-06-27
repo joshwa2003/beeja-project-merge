@@ -107,16 +107,25 @@ function Catalog() {
 
             {/* Section 1 */}
             <div className="mx-auto box-content w-full max-w-maxContentTab px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12 lg:max-w-maxContent">
-                <div className="section_heading text-2xl sm:text-3xl font-bold text-richblack-5 mb-6">
+                <div 
+                    className="section_heading text-xl xs:text-2xl sm:text-3xl font-bold text-richblack-5 mb-6"
+                    style={{ opacity: 1, visibility: 'visible', transform: 'none', transition: 'none' }}
+                    data-course-component="true"
+                >
                     Courses to get you started
                 </div>
-                <div className="my-4 flex border-b border-b-richblack-600 text-sm overflow-x-auto">
+                <div 
+                    className="my-4 flex border-b border-b-richblack-600 text-sm overflow-x-auto"
+                    style={{ opacity: 1, visibility: 'visible', transform: 'none', transition: 'none' }}
+                    data-course-component="true"
+                >
                     <p
                         className={`px-3 sm:px-4 py-2 whitespace-nowrap ${active === 1
                             ? "border-b border-b-yellow-25 text-yellow-25"
                             : "text-richblack-50"
-                            } cursor-pointer hover:text-yellow-50 transition-colors`}
+                            } cursor-pointer hover:text-yellow-50`}
                         onClick={() => setActive(1)}
+                        style={{ opacity: 1, visibility: 'visible', transform: 'none', transition: 'color 0.2s ease' }}
                     >
                         Most Popular
                     </p>
@@ -124,8 +133,9 @@ function Catalog() {
                         className={`px-3 sm:px-4 py-2 whitespace-nowrap ${active === 2
                             ? "border-b border-b-yellow-25 text-yellow-25"
                             : "text-richblack-50"
-                            } cursor-pointer hover:text-yellow-50 transition-colors`}
+                            } cursor-pointer hover:text-yellow-50`}
                         onClick={() => setActive(2)}
+                        style={{ opacity: 1, visibility: 'visible', transform: 'none', transition: 'color 0.2s ease' }}
                     >
                         New
                     </p>
@@ -139,7 +149,11 @@ function Catalog() {
 
             {/* Section 2 */}
             <div className="mx-auto box-content w-full max-w-maxContentTab px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12 lg:max-w-maxContent">
-                <div className="section_heading text-2xl sm:text-3xl font-bold text-richblack-5 mb-6">
+                <div 
+                    className="section_heading text-xl xs:text-2xl sm:text-3xl font-bold text-richblack-5 mb-6"
+                    style={{ opacity: 1, visibility: 'visible', transform: 'none', transition: 'none' }}
+                    data-course-component="true"
+                >
                     Top courses in {catalogPageData?.differentCategory?.name}
                 </div>
                 <div>
@@ -151,19 +165,24 @@ function Catalog() {
 
             {/* Section 3 */}
             <div className="mx-auto box-content w-full max-w-maxContentTab px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12 lg:max-w-maxContent">
-                <div className="section_heading text-2xl sm:text-3xl font-bold text-richblack-5 mb-6">
+                <div 
+                    className="section_heading text-xl xs:text-2xl sm:text-3xl font-bold text-richblack-5 mb-6"
+                    style={{ opacity: 1, visibility: 'visible', transform: 'none', transition: 'none' }}
+                    data-course-component="true"
+                >
                     Frequently Bought
                 </div>
                 <div className="py-6 sm:py-8">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+                    <div className="grid grid-cols-1 xs:grid-cols-1 sm:grid-cols-2 gap-3 xs:gap-4 sm:gap-6 lg:gap-8">
                         {catalogPageData?.mostSellingCourses
                             ?.slice(0, 4)   
                             .map((course, i) => (
-                                <Course_Card 
-                                    course={course} 
-                                    key={i} 
-                                    Height={"h-[250px] sm:h-[280px] lg:h-[300px]"} 
-                                />
+                                <div key={i} className="flex justify-center w-full">
+                                    <Course_Card 
+                                        course={course} 
+                                        Height={"h-[250px] sm:h-[280px] lg:h-[300px]"} 
+                                    />
+                                </div>
                             ))}
                     </div>
                 </div>

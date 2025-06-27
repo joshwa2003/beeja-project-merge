@@ -429,8 +429,8 @@ const UserManagement = () => {
   };
 
   return (
-    <div className="text-richblack-5">
-      <div className="space-y-6 mb-6">
+    <div className="text-richblack-5 h-full flex flex-col overflow-hidden">
+      <div className="space-y-6 mb-6 flex-shrink-0">
         {/* Header and Stats */}
         <div className="space-y-4">
           <div className="flex justify-between items-center">
@@ -492,7 +492,7 @@ const UserManagement = () => {
         {/* Export Options and Search */}
         <div className="space-y-4">
           {/* Export Buttons */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 overflow-x-auto pb-2">
             <button
               onClick={handleCopy}
               className="flex items-center gap-2 px-3 py-2 text-sm bg-richblack-700 hover:bg-richblack-600 text-richblack-50 rounded-lg transition-all duration-200"
@@ -702,8 +702,9 @@ const UserManagement = () => {
         </div>
       )}
       {!loading && !error && (
-        <div className="bg-richblack-800 rounded-xl overflow-hidden shadow-xl">
-          <div className="overflow-x-auto">
+        <div className="flex-1 bg-richblack-800 rounded-xl overflow-hidden shadow-xl min-h-0">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-richblack-700 border-b border-richblack-600">
@@ -824,51 +825,75 @@ const UserManagement = () => {
           </div>
 
           {/* Mobile Card View */}
-          <div className="md:hidden space-y-4">
-            {users.length === 0 ? (
+          <div className="md:hidden space-y-4 p-4 max-h-full overflow-y-auto">
+            {filteredUsers.length === 0 ? (
               <div className="text-center p-6 bg-richblack-700 rounded-lg">
-                <p>No users found.</p>
+                <p>{searchTerm ? 'No users found matching your search.' : 'No users found.'}</p>
               </div>
             ) : (
-              users.map((user) => (
-                <div key={user._id} className="bg-richblack-700 rounded-lg p-4 space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h5 className="font-semibold text-white">{user.firstName} {user.lastName}</h5>
-                      <p className="text-sm text-richblack-300">{user.email}</p>
+              filteredUsers.map((user) => (
+                <div key={user._id} className="bg-richblack-700 rounded-lg p-3 space-y-3 overflow-hidden">
+                  <div className="flex items-start gap-3">
+                    <div className="relative flex-shrink-0">
+                      {getProfilePicture(user) ? (
+                        <img
+                          src={getProfilePicture(user)}
+                          alt={`${user.firstName} ${user.lastName}`}
+                          className="w-10 h-10 rounded-full object-cover border-2 border-richblack-600"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm border-2 border-richblack-600">
+                          {getInitials(user.firstName, user.lastName)}
+                        </div>
+                      )}
                     </div>
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      user.accountType === 'Admin' ? 'bg-red-500/20 text-red-400' :
-                      user.accountType === 'Instructor' ? 'bg-purple-500/20 text-purple-400' :
-                      'bg-blue-500/20 text-blue-400'
-                    }`}>
-                      {user.accountType}
-                    </span>
+                    <div className="flex-1 min-w-0 pr-2">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div className="flex-1 min-w-0">
+                          <h5 className="font-semibold text-white text-sm truncate">{user.firstName} {user.lastName}</h5>
+                          <p className="text-xs text-richblack-300 truncate">{user.email}</p>
+                          <p className="text-xs text-richblack-400">ID: {user._id.slice(-6)}</p>
+                        </div>
+                        <div className="flex-shrink-0">
+                          <span className={`px-2 py-1 rounded text-xs font-medium whitespace-nowrap ${getAccountTypeColor(user.accountType)}`}>
+                            {user.accountType}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   
-                  <div className="text-sm text-richblack-300">
+                  <div className="text-xs text-richblack-300 space-y-1">
                     <p><span className="font-medium">Contact:</span> {user.additionalDetails?.contactNumber || 'N/A'}</p>
+                    <p className="flex items-center gap-2">
+                      <span className="font-medium">Status:</span> 
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        user.active ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'
+                      }`}>
+                        {user.active ? 'Active' : 'Inactive'}
+                      </span>
+                    </p>
                   </div>
                   
-                  <div className="flex justify-end gap-3 pt-2 border-t border-richblack-600">
+                  <div className="flex justify-center gap-4 pt-2 border-t border-richblack-600">
                     <button
                       onClick={() => handleToggleUserStatus(user._id)}
-                      className={`p-2 rounded ${user.active ? 'text-green-500' : 'text-gray-500'} hover:bg-richblack-600`}
+                      className={`p-2 rounded-full ${user.active ? 'text-green-500 bg-green-500/10' : 'text-gray-500 bg-gray-500/10'} hover:bg-opacity-20 transition-colors`}
                       disabled={togglingUserId === user._id}
                       title={user.active ? 'Deactivate User' : 'Activate User'}
                     >
                       {togglingUserId === user._id ? (
                         <div className="w-4 h-4 animate-spin rounded-full border-b-2 border-green-500"/>
                       ) : (
-                        user.active ? <FaEye size={16} /> : <FaEyeSlash size={16} />
+                        user.active ? <FaEye size={14} /> : <FaEyeSlash size={14} />
                       )}
                     </button>
                     <button
                       onClick={() => handleEditClick(user)}
-                      className="p-2 rounded text-yellow-50 hover:bg-richblack-600"
+                      className="p-2 rounded-full text-yellow-50 bg-yellow-50/10 hover:bg-yellow-50/20 transition-colors"
                       title="Edit User"
                     >
-                      <FaEdit size={16} />
+                      <FaEdit size={14} />
                     </button>
                     <button
                       onClick={() => {
@@ -882,7 +907,7 @@ const UserManagement = () => {
                         })
                       }}
                       disabled={deletingUserId === user._id}
-                      className={`p-2 rounded text-red-500 hover:bg-richblack-600 ${
+                      className={`p-2 rounded-full text-red-500 bg-red-500/10 hover:bg-red-500/20 transition-colors ${
                         deletingUserId === user._id ? 'opacity-50 cursor-not-allowed' : ''
                       }`}
                       title="Delete User"
@@ -890,7 +915,7 @@ const UserManagement = () => {
                       {deletingUserId === user._id ? (
                         <div className="w-4 h-4 animate-spin rounded-full border-b-2 border-red-500"/>
                       ) : (
-                        <FaTrash size={16} />
+                        <FaTrash size={14} />
                       )}
                     </button>
                   </div>

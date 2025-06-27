@@ -180,6 +180,14 @@ module.exports = {
         900: "#141414",
       },
     },
+    screens: {
+      'xs': '320px',
+      'sm': '640px',
+      'md': '768px',
+      'lg': '1024px',
+      'xl': '1280px',
+      '2xl': '1536px',
+    },
     extend: {
       colors: {
         customPalette: {

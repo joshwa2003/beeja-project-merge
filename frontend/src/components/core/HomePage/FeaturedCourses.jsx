@@ -38,11 +38,11 @@ const FeaturedCourses = () => {
   }
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-12 px-2 xs:px-4 sm:px-0">
       {/* Popular Picks Section */}
       {featuredCourses.popularPicks?.length > 0 && (
         <div>
-          <h2 className="text-white mb-6 text-2xl font-semibold">
+          <h2 className="text-white mb-6 text-xl xs:text-2xl font-semibold">
             Popular Picks for You
           </h2>
           <Course_Slider Courses={featuredCourses.popularPicks} />
@@ -52,7 +52,7 @@ const FeaturedCourses = () => {
       {/* Top Enrollments Section */}
       {featuredCourses.topEnrollments?.length > 0 && (
         <div>
-          <h2 className="text-white mb-6 text-2xl font-semibold">
+          <h2 className="text-white mb-6 text-xl xs:text-2xl font-semibold">
             Top Enrollments Today
           </h2>
           <Course_Slider Courses={featuredCourses.topEnrollments} />

@@ -63,10 +63,7 @@ export default function RenderCartCourses() {
 
                   {/* Course Stats */}
                   <div className="flex flex-wrap items-center gap-4 text-sm text-slate-400">
-                    <div className="flex items-center gap-2">
-                      <FiClock className="w-4 h-4 text-blue-400" />
-                      <span>12 hours</span>
-                    </div>
+ 
                     <div className="flex items-center gap-2">
                       <FiUsers className="w-4 h-4 text-green-400" />
                       <span>2.5k students</span>

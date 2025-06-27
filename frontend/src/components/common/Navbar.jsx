@@ -124,7 +124,7 @@ const ModernNavbar = () => {
       }`}
     >
       <motion.div 
-        className="w-[95%] lg:w-[90%] max-w-[1000px] mx-auto rounded-xl lg:rounded-[20px] bg-gradient-to-r from-blue-500/20 via-violet-500/20 to-fuchsia-500/20 backdrop-blur-2xl shadow-2xl flex items-center justify-between px-3 lg:px-6 py-3 text-white"
+        className="w-[98%] xs:w-[95%] lg:w-[90%] max-w-[1000px] mx-auto rounded-lg xs:rounded-xl lg:rounded-[20px] bg-gradient-to-r from-blue-500/20 via-violet-500/20 to-fuchsia-500/20 backdrop-blur-2xl shadow-2xl flex items-center justify-between px-2 xs:px-3 lg:px-6 py-2 xs:py-3 text-white"
         style={{
           background: 'linear-gradient(135deg, rgba(59,130,246,0.2) 0%, rgba(139,92,246,0.2) 50%, rgba(217,70,239,0.2) 100%)',
           backdropFilter: 'blur(16px) saturate(180%)',
@@ -152,13 +152,13 @@ const ModernNavbar = () => {
               height={22}
               loading="lazy"
               alt="StudyNotion Logo"
-              className="w-[85px] lg:w-[90px] h-auto transition-all duration-300 hover:brightness-110"
+              className="w-[70px] xs:w-[80px] sm:w-[85px] lg:w-[90px] h-auto transition-all duration-300 hover:brightness-110"
             />
           </Link>
         </motion.div>
 
         {/* Mobile Right Section - Profile + Menu */}
-        <div className="lg:hidden flex items-center gap-3">
+        <div className="lg:hidden flex items-center gap-1 xs:gap-2">
           {/* Mobile Profile Picture */}
           {token && user && (
             <motion.div 
@@ -171,7 +171,7 @@ const ModernNavbar = () => {
               <motion.img
                 src={user.image}
                 alt={`${user.firstName} ${user.lastName}`}
-                className="h-6 w-6 rounded-full object-cover cursor-pointer border border-transparent hover:border-emerald-400 transition-all duration-300"
+                className="h-5 w-5 xs:h-6 xs:w-6 rounded-full object-cover cursor-pointer border border-transparent hover:border-emerald-400 transition-all duration-300"
                 title={`${user.firstName} ${user.lastName}`}
                 whileHover={{ scale: 1.1, borderColor: "#34d399" }}
                 onClick={toggleMobileMenu}
@@ -184,7 +184,7 @@ const ModernNavbar = () => {
             onClick={toggleMobileMenu}
             aria-label="Toggle menu"
             aria-expanded={mobileMenuOpen}
-            className="flex flex-col h-5 w-5 justify-between items-center group relative"
+            className="flex flex-col h-4 w-4 xs:h-5 xs:w-5 justify-between items-center group relative"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -192,7 +192,7 @@ const ModernNavbar = () => {
               className="h-0.5 w-full bg-white rounded-lg origin-center"
               animate={{
                 rotate: mobileMenuOpen ? 45 : 0,
-                y: mobileMenuOpen ? 6 : 0,
+                y: mobileMenuOpen ? 5 : 0,
               }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
             />
@@ -207,7 +207,7 @@ const ModernNavbar = () => {
               className="h-0.5 w-full bg-white rounded-lg origin-center"
               animate={{
                 rotate: mobileMenuOpen ? -45 : 0,
-                y: mobileMenuOpen ? -6 : 0,
+                y: mobileMenuOpen ? -5 : 0,
               }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
             />
@@ -476,13 +476,13 @@ const ModernNavbar = () => {
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div 
-              className="absolute top-full left-0 right-0 z-[91] mx-2 mt-2 rounded-lg bg-richblack-900/95 backdrop-blur-xl p-3 lg:hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-white/10"
+              className="absolute top-full left-0 right-0 z-[91] mx-1 xs:mx-2 mt-1 xs:mt-2 rounded-lg bg-richblack-900/95 backdrop-blur-xl p-2 xs:p-3 lg:hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-white/10"
               initial={{ opacity: 0, y: -20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -20, scale: 0.95 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
             >
-              <ul className="flex flex-col gap-2 text-white">
+              <ul className="flex flex-col gap-1 xs:gap-2 text-white">
                 {NavbarLinks.map((link, index) => (
                   <motion.li 
                     key={index}
@@ -492,7 +492,7 @@ const ModernNavbar = () => {
                   >
                     {link.title === "Catalog" ? (
                       <details>
-                        <summary className="cursor-pointer rounded-lg p-2 hover:bg-white/10 text-sm font-medium transition-all duration-300">
+                        <summary className="cursor-pointer rounded-lg p-1.5 xs:p-2 hover:bg-white/10 text-xs xs:text-sm font-medium transition-all duration-300">
                           Catalog
                         </summary>
                         <div className="mt-1 flex flex-col gap-1 pl-3">
@@ -510,7 +510,7 @@ const ModernNavbar = () => {
                                     .split(" ")
                                     .join("-")
                                     .toLowerCase()}`}
-                                  className="rounded-lg py-1.5 px-2 hover:bg-white/10 block text-sm transition-all duration-200"
+                                  className="rounded-lg py-1 xs:py-1.5 px-2 hover:bg-white/10 block text-xs xs:text-sm transition-all duration-200"
                                   onClick={() => setMobileMenuOpen(false)}
                                 >
                                   {subLink.name}
@@ -527,7 +527,7 @@ const ModernNavbar = () => {
                         <Link
                           to={link?.path}
                           onClick={() => setMobileMenuOpen(false)}
-                          className="block rounded-lg p-2 hover:bg-white/10 text-sm font-medium transition-all duration-300"
+                          className="block rounded-lg p-1.5 xs:p-2 hover:bg-white/10 text-xs xs:text-sm font-medium transition-all duration-300"
                         >
                           {link.title}
                         </Link>
@@ -546,7 +546,7 @@ const ModernNavbar = () => {
                     <Link
                       to="/free-courses"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="block rounded-lg p-2 hover:bg-white/10 text-sm font-medium transition-all duration-300"
+                      className="block rounded-lg p-1.5 xs:p-2 hover:bg-white/10 text-xs xs:text-sm font-medium transition-all duration-300"
                     >
                       Free Courses
                     </Link>
@@ -560,14 +560,14 @@ const ModernNavbar = () => {
                   transition={{ duration: 0.3, delay: 0.5 }}
                 >
                   <details>
-                    <summary className="cursor-pointer rounded-lg p-2 hover:bg-white/10 text-sm font-medium transition-all duration-300">
+                    <summary className="cursor-pointer rounded-lg p-1.5 xs:p-2 hover:bg-white/10 text-xs xs:text-sm font-medium transition-all duration-300">
                       Services
                     </summary>
                     <div className="mt-1 flex flex-col gap-1 pl-3">
                       <motion.div whileHover={{ x: 5 }}>
                         <Link
                           to="/services/institute"
-                          className="rounded-lg py-1.5 px-2 hover:bg-white/10 block text-sm transition-all duration-200"
+                          className="rounded-lg py-1 xs:py-1.5 px-2 hover:bg-white/10 block text-xs xs:text-sm transition-all duration-200"
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           For Institute
@@ -576,7 +576,7 @@ const ModernNavbar = () => {
                       <motion.div whileHover={{ x: 5 }}>
                         <Link
                           to="/services/student"
-                          className="rounded-lg py-1.5 px-2 hover:bg-white/10 block text-sm transition-all duration-200"
+                          className="rounded-lg py-1 xs:py-1.5 px-2 hover:bg-white/10 block text-xs xs:text-sm transition-all duration-200"
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           For Student
@@ -598,7 +598,7 @@ const ModernNavbar = () => {
                         <Link
                           to="/dashboard/my-profile"
                           onClick={() => setMobileMenuOpen(false)}
-                          className="block rounded-lg p-2 hover:bg-white/10 text-sm font-medium transition-all duration-300"
+                          className="block rounded-lg p-1.5 xs:p-2 hover:bg-white/10 text-xs xs:text-sm font-medium transition-all duration-300"
                         >
                           Dashboard
                         </Link>
@@ -614,7 +614,7 @@ const ModernNavbar = () => {
                           <Link
                             to="/admin"
                             onClick={() => setMobileMenuOpen(false)}
-                            className="block rounded-lg p-2 hover:bg-white/10 text-sm font-medium transition-all duration-300"
+                            className="block rounded-lg p-1.5 xs:p-2 hover:bg-white/10 text-xs xs:text-sm font-medium transition-all duration-300"
                           >
                             Admin Dashboard
                           </Link>
@@ -631,7 +631,7 @@ const ModernNavbar = () => {
                           dispatch(logout(navigate));
                           setMobileMenuOpen(false);
                         }}
-                        className="w-full text-left block rounded-lg p-2 hover:bg-white/10 text-sm font-medium transition-all duration-300"
+                        className="w-full text-left block rounded-lg p-1.5 xs:p-2 hover:bg-white/10 text-xs xs:text-sm font-medium transition-all duration-300"
                         whileHover={{ x: 5 }}
                       >
                         Logout
@@ -650,7 +650,7 @@ const ModernNavbar = () => {
                     >
                       <motion.button
                         onClick={handleLogin}
-                        className="w-full text-left block rounded-lg p-2 hover:bg-white/10 text-sm font-medium transition-all duration-300"
+                        className="w-full text-left block rounded-lg p-1.5 xs:p-2 hover:bg-white/10 text-xs xs:text-sm font-medium transition-all duration-300"
                         whileHover={{ x: 5 }}
                       >
                         Log in
@@ -663,7 +663,7 @@ const ModernNavbar = () => {
                     >
                       <motion.button
                         onClick={handleSignup}
-                        className="w-full text-left block rounded-lg p-2 hover:bg-white/10 text-sm font-medium transition-all duration-300"
+                        className="w-full text-left block rounded-lg p-1.5 xs:p-2 hover:bg-white/10 text-xs xs:text-sm font-medium transition-all duration-300"
                         whileHover={{ x: 5 }}
                       >
                         Sign up

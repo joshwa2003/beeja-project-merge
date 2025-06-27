@@ -96,10 +96,7 @@ export default function CourseCard({ course, Height = "h-auto" }) {
             <HiUsers className="text-sm" />
             <span>{course?.studentsEnrolled?.length || 0} students</span>
           </div>
-          <div className="flex items-center gap-1">
-            <FaClock className="text-sm" />
-            <span>12 hours</span>
-          </div>
+
         </div>
 
         {/* Rating and Price Row */}
