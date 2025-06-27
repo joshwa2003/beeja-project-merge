@@ -22,20 +22,16 @@ export default function Sidebar() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  // to keep track of confirmation modal
   const [confirmationModal, setConfirmationModal] = useState(null)
-
   const { openSideMenu, screenSize, isCollapsed } = useSelector((state) => state.sidebar)
 
   useEffect(() => {
     const handleResize = () => dispatch(setScreenSize(window.innerWidth))
-
     window.addEventListener('resize', handleResize)
     handleResize()
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // If screen size is small then close the side bar
   useEffect(() => {
     if (screenSize <= 640) {
       dispatch(setOpenSideMenu(false))
@@ -76,7 +72,7 @@ export default function Sidebar() {
             />
           )}
           
-          <div className={`fixed sm:relative min-h-screen ${
+          <div className={`fixed sm:relative h-[100vh] ${
             isCollapsed ? 'w-[56px]' : 'w-[240px] sm:w-[200px]'
           } flex flex-col bg-[#2d2d2d] border-r border-[#404040] transition-all duration-300 z-50`}>
             {/* Collapse/Expand Button - Desktop Only */}
@@ -91,11 +87,11 @@ export default function Sidebar() {
               </div>
             )}
 
-            {/* Top Spacer to push content below navbar */}
-            <div className="h-20 sm:h-0"></div>
+            {/* Top Spacer */}
+            <div className="h-20 sm:h-0 flex-shrink-0"></div>
 
             {/* User Profile Section */}
-            <div className={`${isCollapsed ? 'p-2' : 'p-3'} border-b border-[#404040] transition-all duration-300`}>
+            <div className={`${isCollapsed ? 'p-2' : 'p-3'} border-b border-[#404040] transition-all duration-300 flex-shrink-0`}>
               <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
                 <div className="relative">
                   <img
@@ -118,58 +114,60 @@ export default function Sidebar() {
               </div>
             </div>
 
-            {/* Navigation Links */}
-            <div className={`flex-1 py-3 ${isCollapsed ? 'px-1' : 'px-2'} overflow-y-auto transition-all duration-300`}>
-              <nav className="space-y-1">
-                {sidebarLinks.map((link) => {
-                  if (link.type && user?.accountType !== link.type) return null
-                  return (
-                    <SidebarLink key={link.id} link={link} iconName={link.icon} isCollapsed={isCollapsed} />
-                  )
-                })}
-              </nav>
+            {/* Navigation Links - Scrollable Container */}
+            <div className="flex-1 overflow-hidden">
+              <div className={`h-full py-3 ${isCollapsed ? 'px-1' : 'px-2'} overflow-y-scroll scrollbar-thin scrollbar-track-[#2d2d2d] scrollbar-thumb-[#404040] hover:scrollbar-thumb-[#4d4d4d] scrollbar-thumb-rounded-full scrollbar-track-rounded-full`}>
+                <nav className="space-y-1">
+                  {sidebarLinks.map((link) => {
+                    if (link.type && user?.accountType !== link.type) return null
+                    return (
+                      <SidebarLink key={link.id} link={link} iconName={link.icon} isCollapsed={isCollapsed} />
+                    )
+                  })}
+                </nav>
 
-              {/* Divider */}
-              <div className="my-3 h-px bg-[#404040]" />
+                {/* Divider */}
+                <div className="my-3 h-px bg-[#404040]" />
 
-              {/* Settings & Logout */}
-              <div className="space-y-1">
-                <SidebarLink
-                  link={{ name: "Settings", path: "/dashboard/settings" }}
-                  iconName={"VscSettingsGear"}
-                  isCollapsed={isCollapsed}
-                />
+                {/* Settings & Logout */}
+                <div className="space-y-1">
+                  <SidebarLink
+                    link={{ name: "Settings", path: "/dashboard/settings" }}
+                    iconName={"VscSettingsGear"}
+                    isCollapsed={isCollapsed}
+                  />
 
-                <button
-                  onClick={() =>
-                    setConfirmationModal({
-                      text1: "Are you sure?",
-                      text2: "You will be logged out of your account.",
-                      btn1Text: "Logout",
-                      btn2Text: "Cancel",
-                      btn1Handler: () => dispatch(logout(navigate)),
-                      btn2Handler: () => setConfirmationModal(null),
-                    })
-                  }
-                  className={`w-full flex items-center ${isCollapsed ? 'justify-center px-1' : 'gap-2 px-3'} py-2 text-[#cccccc] hover:text-white hover:bg-[#404040] rounded transition-colors duration-200 group`}
-                  title={isCollapsed ? "Logout" : ""}
-                >
-                  <VscSignOut className="text-sm group-hover:text-red-400 transition-colors duration-200" />
-                  {!isCollapsed && <span className="font-medium text-sm">Logout</span>}
-                </button>
+                  <button
+                    onClick={() =>
+                      setConfirmationModal({
+                        text1: "Are you sure?",
+                        text2: "You will be logged out of your account.",
+                        btn1Text: "Logout",
+                        btn2Text: "Cancel",
+                        btn1Handler: () => dispatch(logout(navigate)),
+                        btn2Handler: () => setConfirmationModal(null),
+                      })
+                    }
+                    className={`w-full flex items-center ${isCollapsed ? 'justify-center px-1' : 'gap-2 px-3'} py-2 text-[#cccccc] hover:text-white hover:bg-[#404040] rounded transition-colors duration-200 group`}
+                    title={isCollapsed ? "Logout" : ""}
+                  >
+                    <VscSignOut className="text-sm group-hover:text-red-400 transition-colors duration-200" />
+                    {!isCollapsed && <span className="font-medium text-sm">Logout</span>}
+                  </button>
+                </div>
+
+                {/* Footer */}
+                {!isCollapsed && (
+                  <div className="mt-4 pt-2 border-t border-[#404040]">
+                    <div className="text-center">
+                      <p className="text-xs text-[#999999]">
+                        © 2024 Beeja
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-
-            {/* Footer */}
-            {!isCollapsed && (
-              <div className="p-2 border-t border-[#404040]">
-                <div className="text-center">
-                  <p className="text-xs text-[#999999]">
-                    © 2024 Beeja
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
         </>
       )}

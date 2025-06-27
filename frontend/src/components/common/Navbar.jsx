@@ -28,6 +28,8 @@ const ModernNavbar = () => {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [catalogDropdownOpen, setCatalogDropdownOpen] = useState(false);
+  const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
 
   const fetchSublinks = useCallback(async () => {
     try {
@@ -82,13 +84,19 @@ const ModernNavbar = () => {
       if (profileDropdownOpen && !event.target.closest('.profile-dropdown-container')) {
         setProfileDropdownOpen(false);
       }
+      if (catalogDropdownOpen && !event.target.closest('.catalog-dropdown-container')) {
+        setCatalogDropdownOpen(false);
+      }
+      if (servicesDropdownOpen && !event.target.closest('.services-dropdown-container')) {
+        setServicesDropdownOpen(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [profileDropdownOpen]);
+  }, [profileDropdownOpen, catalogDropdownOpen, servicesDropdownOpen]);
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen((prev) => !prev);
@@ -222,46 +230,54 @@ const ModernNavbar = () => {
             >
               {link.title === "Catalog" ? (
                 <div
-                  className={`group relative flex cursor-pointer items-center gap-1 transition-all duration-300 hover:scale-105 ${
+                  className={`relative flex cursor-pointer items-center gap-1 transition-all duration-300 hover:scale-105 catalog-dropdown-container ${
                     matchRoute("/catalog/:catalogName")
                       ? "bg-gradient-to-r from-teal-400 to-emerald-400 text-white rounded-lg p-1.5 px-3 shadow-[0_4px_20px_rgba(20,184,166,0.3)]"
                       : "text-richblack-25 rounded-lg p-1.5 px-3 hover:bg-white/10 hover:backdrop-blur-sm"
                   }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCatalogDropdownOpen(!catalogDropdownOpen);
+                  }}
                 >
                   <p className="text-sm font-medium">{link.title}</p>
                   <motion.div
-                    animate={{ rotate: 0 }}
-                    whileHover={{ rotate: 180 }}
+                    animate={{ rotate: catalogDropdownOpen ? 180 : 0 }}
                     transition={{ duration: 0.3 }}
                   >
                     <MdKeyboardArrowDown size={14} />
                   </motion.div>
                   <motion.div
-                    className="invisible absolute left-0 top-full z-[91] flex w-[180px] mt-2
-                    flex-col rounded-lg bg-white/95 backdrop-blur-xl p-3 text-richblack-900 opacity-0 transition-all duration-300 group-hover:visible 
-                    group-hover:opacity-100 lg:w-[250px] shadow-[0_8px_32px_rgba(0,0,0,0.2)]"
+                    className={`absolute left-0 top-full z-[91] flex w-[180px] mt-2 flex-col rounded-lg bg-white/95 backdrop-blur-xl p-3 text-richblack-900 lg:w-[250px] shadow-[0_8px_32px_rgba(0,0,0,0.2)] transition-all duration-300 ${
+                      catalogDropdownOpen ? 'visible opacity-100' : 'invisible opacity-0'
+                    }`}
                     initial={{ scale: 0.8, opacity: 0 }}
-                    whileInView={{ scale: 1, opacity: 1 }}
+                    animate={{ 
+                      scale: catalogDropdownOpen ? 1 : 0.8, 
+                      opacity: catalogDropdownOpen ? 1 : 0 
+                    }}
                     transition={{ duration: 0.2 }}
+                    onMouseEnter={() => setCatalogDropdownOpen(true)}
+                    onMouseLeave={() => setCatalogDropdownOpen(false)}
                   >
                     <div className="absolute left-4 top-0 z-[100] h-3 w-3 translate-y-[-50%] rotate-45 select-none rounded bg-white/95"></div>
                     {loading ? (<p className="text-center text-sm">Loading...</p>)
                       : subLinks.length ? (
                         <>
                           {subLinks?.map((subLink, i) => (
-                            <Link
-                              to={`/catalog/${subLink.name.split(" ").join("-").toLowerCase()}`}
-                              className="rounded-lg bg-transparent py-4 pl-4 hover:bg-richblack-50 flex items-center gap-3"
-                              key={i}
-                              whileHover={{ x: 5, backgroundColor: "rgba(0,0,0,0.05)" }}
-                              transition={{ duration: 0.2 }}
-                            >
-                              {subLink.icon && Icons[subLink.icon] ? 
-                                React.createElement(Icons[subLink.icon], { className: "w-5 h-5" })
-                                : <Icons.FaBook className="w-5 h-5" />
-                              }
-                              <p>{subLink.name}</p>
-                            </Link>
+                            <motion.div key={i} whileHover={{ x: 5, backgroundColor: "rgba(0,0,0,0.05)" }}>
+                              <Link
+                                to={`/catalog/${subLink.name.split(" ").join("-").toLowerCase()}`}
+                                className="rounded-lg bg-transparent py-4 pl-4 hover:bg-richblack-50 flex items-center gap-3"
+                                transition={{ duration: 0.2 }}
+                              >
+                                {subLink.icon && Icons[subLink.icon] ? 
+                                  React.createElement(Icons[subLink.icon], { className: "w-5 h-5" })
+                                  : <Icons.FaBook className="w-5 h-5" />
+                                }
+                                <p>{subLink.name}</p>
+                              </Link>
+                            </motion.div>
                           ))}
                         </>
                       ) : (
@@ -310,24 +326,32 @@ const ModernNavbar = () => {
 
           {/* Services Dropdown */}
           <motion.li 
-            className="relative group flex cursor-pointer items-center gap-1 rounded-lg p-1.5 px-3 text-richblack-25 hover:bg-white/10 hover:backdrop-blur-sm transition-all duration-300"
+            className="relative flex cursor-pointer items-center gap-1 rounded-lg p-1.5 px-3 text-richblack-25 hover:bg-white/10 hover:backdrop-blur-sm transition-all duration-300 services-dropdown-container"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.5 }}
             whileHover={{ scale: 1.05 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setServicesDropdownOpen(!servicesDropdownOpen);
+            }}
           >
             <span className="text-sm font-medium">Services</span>
             <motion.div
-              animate={{ rotate: 0 }}
-              whileHover={{ rotate: 180 }}
+              animate={{ rotate: servicesDropdownOpen ? 180 : 0 }}
               transition={{ duration: 0.3 }}
             >
               <MdKeyboardArrowDown size={14} />
             </motion.div>
             <motion.div 
-              className="invisible absolute left-0 top-full z-[91] flex w-[180px] mt-2 flex-col rounded-lg bg-white/95 backdrop-blur-xl p-3 text-richblack-900 opacity-0 transition-all duration-300 group-hover:visible group-hover:opacity-100 lg:w-[220px] shadow-[0_8px_32px_rgba(0,0,0,0.2)]"
+              className={`absolute left-0 top-full z-[91] flex w-[180px] mt-2 flex-col rounded-lg bg-white/95 backdrop-blur-xl p-3 text-richblack-900 lg:w-[220px] shadow-[0_8px_32px_rgba(0,0,0,0.2)] transition-all duration-300 ${
+                servicesDropdownOpen ? 'visible opacity-100' : 'invisible opacity-0'
+              }`}
               initial={{ scale: 0.8, opacity: 0 }}
-              whileInView={{ scale: 1, opacity: 1 }}
+              animate={{ 
+                scale: servicesDropdownOpen ? 1 : 0.8, 
+                opacity: servicesDropdownOpen ? 1 : 0 
+              }}
               transition={{ duration: 0.2 }}
             >
               <div className="absolute left-4 top-0 z-[100] h-3 w-3 translate-y-[-50%] rotate-45 select-none rounded bg-white/95"></div>

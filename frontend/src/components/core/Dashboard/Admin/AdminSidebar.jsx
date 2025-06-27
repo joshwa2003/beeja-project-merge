@@ -87,7 +87,7 @@ const AdminSidebar = ({ activeTab, onTabChange }) => {
             />
           )}
           
-          <div className={`fixed sm:relative min-h-screen ${
+          <div className={`fixed sm:relative h-[100vh] ${
             isCollapsed ? 'w-[56px]' : 'w-[240px] sm:w-[200px]'
           } flex flex-col bg-richblack-800 border-r border-richblack-700 transition-all duration-300 z-50`}>
             {/* Collapse/Expand Button - Desktop Only */}
@@ -102,11 +102,11 @@ const AdminSidebar = ({ activeTab, onTabChange }) => {
               </div>
             )}
 
-            {/* Top Spacer to push content below navbar */}
-            <div className="h-20 sm:h-0"></div>
+            {/* Top Spacer */}
+            <div className="h-20 sm:h-0 flex-shrink-0"></div>
 
             {/* User Profile Section */}
-            <div className={`${isCollapsed ? 'p-2' : 'p-3'} border-b border-richblack-700 transition-all duration-300`}>
+            <div className={`${isCollapsed ? 'p-2' : 'p-3'} border-b border-richblack-700 transition-all duration-300 flex-shrink-0`}>
               <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
                 <div className="relative">
                   <img
@@ -129,63 +129,72 @@ const AdminSidebar = ({ activeTab, onTabChange }) => {
               </div>
             </div>
 
-            {/* Navigation Links */}
-            <div className={`flex-1 py-3 ${isCollapsed ? 'px-1' : 'px-2'} overflow-y-auto transition-all duration-300`}>
-              <nav className="space-y-1">
-                {sidebarItems.map((item) => (
+            {/* Navigation Links - Scrollable Container */}
+            <div className="flex-1 overflow-hidden">
+              <div className={`h-full py-3 ${isCollapsed ? 'px-1' : 'px-2'} overflow-y-scroll scrollbar-thin scrollbar-track-richblack-800 scrollbar-thumb-richblack-700 hover:scrollbar-thumb-richblack-600 scrollbar-thumb-rounded-full scrollbar-track-rounded-full`}>
+                <nav className="space-y-1">
+                  {sidebarItems.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => onTabChange(item.id)}
+                      className={`w-full flex items-center ${
+                        isCollapsed ? 'justify-center px-1' : 'gap-2 px-3'
+                      } py-2 rounded-lg transition-colors duration-200 group relative ${
+                        activeTab === item.id
+                          ? 'bg-richblack-700 text-yellow-50'
+                          : 'text-richblack-200 hover:text-yellow-50 hover:bg-richblack-700'
+                      }`}
+                      title={isCollapsed ? item.label : ""}
+                    >
+                      <span className="text-sm">{item.icon}</span>
+                      {!isCollapsed && <span className="font-medium text-sm">{item.label}</span>}
+                      
+                      {/* Tooltip for collapsed state */}
+                      {isCollapsed && (
+                        <div className="absolute left-full ml-2 px-2 py-1 bg-richblack-700 text-yellow-50 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                          {item.label}
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </nav>
+
+                {/* Divider */}
+                <div className="my-3 h-px bg-richblack-700" />
+
+                {/* Logout */}
+                <div className="space-y-1">
                   <button
-                    key={item.id}
-                    onClick={() => onTabChange(item.id)}
-                    className={`w-full flex items-center ${
-                      isCollapsed ? 'justify-center px-1' : 'gap-2 px-3'
-                    } py-2 rounded-lg transition-colors duration-200 group relative ${
-                      activeTab === item.id
-                        ? 'bg-richblack-700 text-yellow-50'
-                        : 'text-richblack-200 hover:text-yellow-50 hover:bg-richblack-700'
-                    }`}
-                    title={isCollapsed ? item.label : ""}
+                    onClick={() =>
+                      setConfirmationModal({
+                        text1: "Are you sure?",
+                        text2: "You will be logged out of your account.",
+                        btn1Text: "Logout",
+                        btn2Text: "Cancel",
+                        btn1Handler: () => dispatch(logout(navigate)),
+                        btn2Handler: () => setConfirmationModal(null),
+                      })
+                    }
+                    className={`w-full flex items-center ${isCollapsed ? 'justify-center px-1' : 'gap-2 px-3'} py-2 text-richblack-200 hover:text-yellow-50 hover:bg-richblack-700 rounded-lg transition-colors duration-200 group`}
+                    title={isCollapsed ? "Logout" : ""}
                   >
-                    <span className="text-sm">{item.icon}</span>
-                    {!isCollapsed && <span className="font-medium text-sm">{item.label}</span>}
+                    <VscSignOut className="text-sm group-hover:text-red-400 transition-colors duration-200" />
+                    {!isCollapsed && <span className="font-medium text-sm">Logout</span>}
                   </button>
-                ))}
-              </nav>
+                </div>
 
-              {/* Divider */}
-              <div className="my-3 h-px bg-richblack-700" />
-
-              {/* Logout */}
-              <div className="space-y-1">
-                <button
-                  onClick={() =>
-                    setConfirmationModal({
-                      text1: "Are you sure?",
-                      text2: "You will be logged out of your account.",
-                      btn1Text: "Logout",
-                      btn2Text: "Cancel",
-                      btn1Handler: () => dispatch(logout(navigate)),
-                      btn2Handler: () => setConfirmationModal(null),
-                    })
-                  }
-                  className={`w-full flex items-center ${isCollapsed ? 'justify-center px-1' : 'gap-2 px-3'} py-2 text-richblack-200 hover:text-yellow-50 hover:bg-richblack-700 rounded-lg transition-colors duration-200 group`}
-                  title={isCollapsed ? "Logout" : ""}
-                >
-                  <VscSignOut className="text-sm group-hover:text-red-400 transition-colors duration-200" />
-                  {!isCollapsed && <span className="font-medium text-sm">Logout</span>}
-                </button>
+                {/* Footer */}
+                {!isCollapsed && (
+                  <div className="mt-4 pt-2 border-t border-richblack-700">
+                    <div className="text-center">
+                      <p className="text-xs text-richblack-400">
+                        © 2024 Beeja
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-
-            {/* Footer */}
-            {!isCollapsed && (
-              <div className="p-2 border-t border-richblack-700">
-                <div className="text-center">
-                  <p className="text-xs text-richblack-400">
-                    © 2024 Beeja
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
         </>
       )}
