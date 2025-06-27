@@ -2,9 +2,17 @@ const mongoose = require('mongoose');
 const Course = require('../models/course');
 const User = require('../models/user');
 
+require('dotenv').config();
+
+if (!process.env.MONGODB_URL) {
+    console.error('Error: MONGODB_URL environment variable is required');
+    process.exit(1);
+}
+
 async function updateCoursesInstructor() {
   try {
-    await mongoose.connect('mongodb://localhost:27017/learnhub', {
+    const MONGO_URI = process.env.MONGODB_URL;
+    await mongoose.connect(MONGO_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });

@@ -4,8 +4,15 @@ const Course = require('../models/course');
 const User = require('../models/user');
 const Profile = require('../models/profile');
 
+require('dotenv').config();
+
+if (!process.env.MONGODB_URL) {
+    console.error('Error: MONGODB_URL environment variable is required');
+    process.exit(1);
+}
+
 // MongoDB connection
-const MONGO_URI = "mongodb://127.0.0.1:27017/learnhub";
+const MONGO_URI = process.env.MONGODB_URL;
 
 const clearDatabase = async () => {
     try {

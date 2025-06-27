@@ -1,8 +1,15 @@
 const mongoose = require('mongoose');
 const Category = require('../models/category');
 
+require('dotenv').config();
+
+if (!process.env.MONGODB_URL) {
+    console.error('Error: MONGODB_URL environment variable is required');
+    process.exit(1);
+}
+
 // MongoDB connection
-const MONGO_URI = "mongodb://127.0.0.1:27017/learnhub";
+const MONGO_URI = process.env.MONGODB_URL;
 
 const categories = [
     {

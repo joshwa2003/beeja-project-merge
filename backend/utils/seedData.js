@@ -4,8 +4,56 @@ const Course = require('../models/course');
 const User = require('../models/user');
 const Profile = require('../models/profile');
 
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+
+if (!process.env.MONGODB_URL) {
+    console.error('Error: MONGODB_URL environment variable is required');
+    process.exit(1);
+}
+
+// MongoDB Atlas URI validation and normalization
+const validateMongoAtlasURI = (uri) => {
+    if (!uri) {
+        throw new Error('MONGODB_URL environment variable is required');
+    }
+
+    try {
+        uri = uri.trim();
+        if (!uri.includes('mongodb+srv')) {
+            throw new Error('Only MongoDB Atlas URIs (mongodb+srv://) are supported');
+        }
+
+        const url = new URL(uri);
+        if (url.protocol !== 'mongodb+srv:') {
+            url.protocol = 'mongodb+srv:';
+        }
+        if (!url.pathname || url.pathname === '/') {
+            url.pathname = '/learnhub';
+        }
+        return url.toString();
+    } catch (error) {
+        if (error instanceof TypeError) {
+            let normalizedUri = uri;
+            if (!normalizedUri.startsWith('mongodb+srv://')) {
+                normalizedUri = normalizedUri.replace(/^mongodb\+srv:?\/?\/?\/?/, 'mongodb+srv://');
+            }
+            if (!normalizedUri.includes('/learnhub')) {
+                const queryIndex = normalizedUri.indexOf('?');
+                if (queryIndex !== -1) {
+                    normalizedUri = normalizedUri.slice(0, queryIndex) + '/learnhub' + normalizedUri.slice(queryIndex);
+                } else {
+                    normalizedUri += '/learnhub';
+                }
+            }
+            return normalizedUri;
+        }
+        throw error;
+    }
+};
+
 // MongoDB connection
-const MONGO_URI = "mongodb://127.0.0.1:27017/learnhub";
+const MONGO_URI = validateMongoAtlasURI(process.env.MONGODB_URL);
 
 // Sample Categories
 const categories = [
