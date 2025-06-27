@@ -26,8 +26,17 @@ async function checkSubSectionData() {
 
         // Check total count
         const totalCount = await SubSection.countDocuments({});
-        const withDuration = await SubSection.countDocuments({ timeDuration: { $gt: 0 } });
-        const withoutDuration = await SubSection.countDocuments({ $or: [{ timeDuration: 0 }, { timeDuration: null }, { timeDuration: { $exists: false } }] });
+        const withDuration = await SubSection.countDocuments({ 
+            timeDuration: { $exists: true, $ne: null, $ne: 0, $ne: "" } 
+        });
+        const withoutDuration = await SubSection.countDocuments({ 
+            $or: [
+                { timeDuration: { $exists: false } }, 
+                { timeDuration: null }, 
+                { timeDuration: 0 }, 
+                { timeDuration: "" }
+            ] 
+        });
         
         console.log('\n=== SUMMARY ===');
         console.log(`Total SubSections: ${totalCount}`);

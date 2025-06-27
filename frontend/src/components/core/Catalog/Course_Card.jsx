@@ -74,7 +74,10 @@ function Course_Card({ course, Height }) {
                 <HiUsers className="text-sm" />
                 <span>{course?.studentsEnrolled?.length || 0} students</span>
               </div>
-
+              <div className="flex items-center gap-1">
+                <FaClock className="text-sm" />
+                <span>{course?.totalDuration || '0 hours'}</span>
+              </div>
             </div>
             
             {/* Rating Row */}

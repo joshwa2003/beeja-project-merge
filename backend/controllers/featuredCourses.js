@@ -1,28 +1,133 @@
 const FeaturedCourses = require('../models/FeaturedCourses');
 const Course = require('../models/course');
+const { convertSecondsToDuration } = require('../utils/secToDuration');
 
 // Get featured courses
 exports.getFeaturedCourses = async (req, res) => {
     try {
-        let featuredCourses = await FeaturedCourses.findOne()
-            .populate('popularPicks', 'courseName courseDescription thumbnail instructor studentsEnrolled ratingAndReviews status price')
-            .populate('topEnrollments', 'courseName courseDescription thumbnail instructor studentsEnrolled ratingAndReviews status price');
-
-        // If no featured courses exist yet, create default empty document
-        if (!featuredCourses) {
-            featuredCourses = await FeaturedCourses.create({
+        console.log('=== FEATURED COURSES API CALLED ===');
+        
+        // Get featured courses document
+        let featuredCoursesDoc = await FeaturedCourses.findOne();
+        
+        if (!featuredCoursesDoc) {
+            featuredCoursesDoc = await FeaturedCourses.create({
                 popularPicks: [],
                 topEnrollments: []
             });
         }
 
-        // Filter out unpublished courses
-        featuredCourses.popularPicks = featuredCourses.popularPicks.filter(course => course.status === 'Published');
-        featuredCourses.topEnrollments = featuredCourses.topEnrollments.filter(course => course.status === 'Published');
+        console.log('Featured courses IDs:', {
+            popularPicks: featuredCoursesDoc.popularPicks,
+            topEnrollments: featuredCoursesDoc.topEnrollments
+        });
+
+        // Manually fetch and populate courses
+        const popularPicksIds = featuredCoursesDoc.popularPicks || [];
+        const topEnrollmentsIds = featuredCoursesDoc.topEnrollments || [];
+
+        // Fetch popular picks courses
+        const popularPicksCourses = await Course.find({
+            _id: { $in: popularPicksIds },
+            status: 'Published'
+        })
+        .populate({
+            path: 'instructor',
+            select: 'firstName lastName email'
+        })
+        .populate({
+            path: 'courseContent',
+            populate: {
+                path: 'subSection',
+                select: 'timeDuration'
+            }
+        });
+
+        // Fetch top enrollments courses
+        const topEnrollmentsCourses = await Course.find({
+            _id: { $in: topEnrollmentsIds },
+            status: 'Published'
+        })
+        .populate({
+            path: 'instructor',
+            select: 'firstName lastName email'
+        })
+        .populate({
+            path: 'courseContent',
+            populate: {
+                path: 'subSection',
+                select: 'timeDuration'
+            }
+        });
+
+        console.log('Fetched courses:', {
+            popularPicksCount: popularPicksCourses.length,
+            topEnrollmentsCount: topEnrollmentsCourses.length,
+            firstPopularPick: popularPicksCourses[0] ? {
+                name: popularPicksCourses[0].courseName,
+                hasContent: !!popularPicksCourses[0].courseContent,
+                contentLength: popularPicksCourses[0].courseContent?.length || 0
+            } : 'none'
+        });
+
+        // Calculate duration for popular picks
+        const processedPopularPicks = popularPicksCourses.map(course => {
+            let totalDurationInSeconds = 0;
+            if (course.courseContent) {
+                course.courseContent.forEach((content) => {
+                    if (content.subSection) {
+                        content.subSection.forEach((subSection) => {
+                            const timeDurationInSeconds = parseFloat(subSection.timeDuration);
+                            if (!isNaN(timeDurationInSeconds) && timeDurationInSeconds > 0) {
+                                totalDurationInSeconds += timeDurationInSeconds;
+                            }
+                        });
+                    }
+                });
+            }
+            const courseObj = course.toObject();
+            courseObj.totalDuration = convertSecondsToDuration(totalDurationInSeconds);
+            delete courseObj.courseContent; // Remove courseContent from response
+            return courseObj;
+        });
+
+        // Calculate duration for top enrollments
+        const processedTopEnrollments = topEnrollmentsCourses.map(course => {
+            let totalDurationInSeconds = 0;
+            if (course.courseContent) {
+                course.courseContent.forEach((content) => {
+                    if (content.subSection) {
+                        content.subSection.forEach((subSection) => {
+                            const timeDurationInSeconds = parseFloat(subSection.timeDuration);
+                            if (!isNaN(timeDurationInSeconds) && timeDurationInSeconds > 0) {
+                                totalDurationInSeconds += timeDurationInSeconds;
+                            }
+                        });
+                    }
+                });
+            }
+            const courseObj = course.toObject();
+            courseObj.totalDuration = convertSecondsToDuration(totalDurationInSeconds);
+            delete courseObj.courseContent; // Remove courseContent from response
+            return courseObj;
+        });
+
+        console.log('Processed courses with duration:', {
+            popularPicks: processedPopularPicks.map(c => ({ name: c.courseName, duration: c.totalDuration })),
+            topEnrollments: processedTopEnrollments.map(c => ({ name: c.courseName, duration: c.totalDuration }))
+        });
+
+        const result = {
+            _id: featuredCoursesDoc._id,
+            popularPicks: processedPopularPicks,
+            topEnrollments: processedTopEnrollments,
+            lastUpdated: featuredCoursesDoc.lastUpdated,
+            __v: featuredCoursesDoc.__v
+        };
 
         return res.status(200).json({
             success: true,
-            data: featuredCourses
+            data: result
         });
     } catch (error) {
         console.error('Error in getFeaturedCourses:', error);

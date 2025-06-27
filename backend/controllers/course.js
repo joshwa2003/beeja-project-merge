@@ -232,33 +232,59 @@ exports.createCourse = async (req, res) => {
 // ================ show all courses ================
 exports.getAllCourses = async (req, res) => {
     try {
-const allCourses = await Course.find({},
+        const allCourses = await Course.find({},
             {
                 courseName: true, courseDescription: true, price: true, thumbnail: true, instructor: true,
                 ratingAndReviews: true, studentsEnrolled: true, courseType: true, originalPrice: true,
-                adminSetFree: true, status: true, createdAt: true
+                adminSetFree: true, status: true, createdAt: true, courseContent: true
             })
             .populate({
                 path: 'instructor',
                 select: 'firstName lastName email image'
             })
+            .populate({
+                path: "courseContent",
+                populate: {
+                    path: "subSection",
+                    select: "timeDuration"
+                }
+            })
             .exec();
 
-        // Add average rating to each course
-        const coursesWithRating = await Promise.all(
+        // Add average rating and total duration to each course
+        const coursesWithRatingAndDuration = await Promise.all(
             allCourses.map(async (course) => {
                 const ratingData = await calculateAverageRating(course._id);
+                
+                // Calculate total duration
+                let totalDurationInSeconds = 0;
+                if (course.courseContent) {
+                    course.courseContent.forEach((content) => {
+                        if (content.subSection) {
+                            content.subSection.forEach((subSection) => {
+                                const timeDurationInSeconds = parseFloat(subSection.timeDuration);
+                                if (!isNaN(timeDurationInSeconds) && timeDurationInSeconds > 0) {
+                                    totalDurationInSeconds += timeDurationInSeconds;
+                                }
+                            });
+                        }
+                    });
+                }
+                
+                const totalDuration = convertSecondsToDuration(totalDurationInSeconds);
+                
                 return {
                     ...course.toObject(),
                     averageRating: ratingData.averageRating,
-                    totalRatings: ratingData.totalRatings
+                    totalRatings: ratingData.totalRatings,
+                    totalDuration: totalDuration
                 };
             })
         );
 
         return res.status(200).json({
             success: true,
-            data: coursesWithRating,
+            data: coursesWithRatingAndDuration,
             message: 'Data for all courses fetched successfully'
         });
     }

@@ -1,5 +1,6 @@
 const Category = require('../models/category')
 const Course = require('../models/course')
+const { convertSecondsToDuration } = require("../utils/secToDuration")
 
 // get Random Integer
 function getRandomInt(max) {
@@ -254,6 +255,13 @@ exports.getCategoryPageDetails = async (req, res) => {
             {
                 path: "category",
                 select: "name"
+            },
+            {
+                path: "courseContent",
+                populate: {
+                    path: "subSection",
+                    select: "timeDuration"
+                }
             }
         ])
         .lean();
@@ -310,6 +318,13 @@ exports.getCategoryPageDetails = async (req, res) => {
             {
                 path: "category",
                 select: "name"
+            },
+            {
+                path: "courseContent",
+                populate: {
+                    path: "subSection",
+                    select: "timeDuration"
+                }
             }
         ])
         .lean();
@@ -337,6 +352,13 @@ exports.getCategoryPageDetails = async (req, res) => {
             {
                 path: "category",
                 select: "name"
+            },
+            {
+                path: "courseContent",
+                populate: {
+                    path: "subSection",
+                    select: "timeDuration"
+                }
             }
         ])
         .lean();
@@ -365,31 +387,82 @@ exports.getCategoryPageDetails = async (req, res) => {
 
         mostSellingCourses = Array.from(combinedCoursesMap.values())
 
-        // Calculate average rating for all courses
+        // Calculate average rating and total duration for all courses
         selectedCategory.courses = selectedCategory.courses.map(course => {
             const ratingData = calculateAverageRating(course.ratingAndReviews);
+            
+            // Calculate total duration
+            let totalDurationInSeconds = 0;
+            if (course.courseContent) {
+                course.courseContent.forEach((content) => {
+                    if (content.subSection) {
+                        content.subSection.forEach((subSection) => {
+                            const timeDurationInSeconds = parseFloat(subSection.timeDuration);
+                            if (!isNaN(timeDurationInSeconds) && timeDurationInSeconds > 0) {
+                                totalDurationInSeconds += timeDurationInSeconds;
+                            }
+                        });
+                    }
+                });
+            }
+            
             return {
                 ...course,
                 averageRating: ratingData.averageRating,
-                totalRatings: ratingData.totalRatings
+                totalRatings: ratingData.totalRatings,
+                totalDuration: convertSecondsToDuration(totalDurationInSeconds)
             };
         });
 
         differentCategory.courses = differentCategory.courses.map(course => {
             const ratingData = calculateAverageRating(course.ratingAndReviews);
+            
+            // Calculate total duration
+            let totalDurationInSeconds = 0;
+            if (course.courseContent) {
+                course.courseContent.forEach((content) => {
+                    if (content.subSection) {
+                        content.subSection.forEach((subSection) => {
+                            const timeDurationInSeconds = parseFloat(subSection.timeDuration);
+                            if (!isNaN(timeDurationInSeconds) && timeDurationInSeconds > 0) {
+                                totalDurationInSeconds += timeDurationInSeconds;
+                            }
+                        });
+                    }
+                });
+            }
+            
             return {
                 ...course,
                 averageRating: ratingData.averageRating,
-                totalRatings: ratingData.totalRatings
+                totalRatings: ratingData.totalRatings,
+                totalDuration: convertSecondsToDuration(totalDurationInSeconds)
             };
         });
 
         mostSellingCourses = mostSellingCourses.map(course => {
             const ratingData = calculateAverageRating(course.ratingAndReviews);
+            
+            // Calculate total duration
+            let totalDurationInSeconds = 0;
+            if (course.courseContent) {
+                course.courseContent.forEach((content) => {
+                    if (content.subSection) {
+                        content.subSection.forEach((subSection) => {
+                            const timeDurationInSeconds = parseFloat(subSection.timeDuration);
+                            if (!isNaN(timeDurationInSeconds) && timeDurationInSeconds > 0) {
+                                totalDurationInSeconds += timeDurationInSeconds;
+                            }
+                        });
+                    }
+                });
+            }
+            
             return {
                 ...course,
                 averageRating: ratingData.averageRating,
-                totalRatings: ratingData.totalRatings
+                totalRatings: ratingData.totalRatings,
+                totalDuration: convertSecondsToDuration(totalDurationInSeconds)
             };
         });
 
