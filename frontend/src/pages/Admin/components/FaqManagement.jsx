@@ -85,11 +85,16 @@ const FaqManagement = () => {
   };
 
   const filteredFaqs = faqs.filter(faq => {
+    // Handle null userId cases
+    const userFirstName = faq.userId?.firstName || '';
+    const userLastName = faq.userId?.lastName || '';
+    const userEmail = faq.userId?.email || '';
+    
     const matchesSearch = faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (faq.answer && faq.answer.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      faq.userId.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      faq.userId.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      faq.userId.email.toLowerCase().includes(searchTerm.toLowerCase());
+      userFirstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      userLastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      userEmail.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesFilter = filterStatus === 'all' || 
       (filterStatus === 'pending' && faq.status === 'pending') ||
@@ -366,8 +371,11 @@ const FaqManagement = () => {
                       <FaUser className="text-richblack-500" />
                       <span className="flex flex-wrap gap-1">
                         <span>Asked by:</span> <span className="text-richblack-300 font-medium">
-                          {faq.userId.firstName} {faq.userId.lastName}
-                        </span> ({faq.userId.email})
+                          {faq.userId ? 
+                            `${faq.userId.firstName} ${faq.userId.lastName}` : 
+                            'Unknown User'
+                          }
+                        </span> {faq.userId?.email ? `(${faq.userId.email})` : '(No email available)'}
                       </span>
                     </div>
                   </div>
