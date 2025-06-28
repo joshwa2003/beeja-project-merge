@@ -68,7 +68,7 @@ function Catalog() {
     }
     if (!loading && !catalogPageData) {
         return (
-            <div className="text-white text-4xl flex justify-center items-center mt-[20%]">
+            <div className="text-white text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl flex justify-center items-center mt-[15%] sm:mt-[20%] px-4 text-center">
                 No Courses found for selected Category
             </div>)
     }
@@ -89,17 +89,17 @@ function Catalog() {
 
             {/* Hero Section */}
             <div className="relative box-content bg-richblack-800 px-4 sm:px-6 lg:px-8 z-10">
-                <div className="mx-auto flex min-h-[200px] sm:min-h-[240px] lg:min-h-[260px] max-w-maxContentTab flex-col justify-center gap-3 sm:gap-4 lg:max-w-maxContent">
-                    <p className="text-xs sm:text-sm text-richblack-300">
+                <div className="mx-auto flex min-h-[180px] sm:min-h-[220px] md:min-h-[240px] lg:min-h-[260px] max-w-maxContentTab flex-col justify-center gap-3 sm:gap-4 lg:max-w-maxContent">
+                    <p className="text-xs sm:text-sm md:text-base text-richblack-300">
                         {`Home / Catalog / `}
                         <span className="text-yellow-25">
                             {catalogPageData?.selectedCategory?.name}
                         </span>
                     </p>
-                    <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-richblack-5 leading-tight">
+                    <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-richblack-5 leading-tight sm:leading-snug">
                         {catalogPageData?.selectedCategory?.name}
                     </p>
-                    <p className="max-w-[870px] text-sm sm:text-base text-richblack-200 leading-relaxed">
+                    <p className="max-w-[600px] sm:max-w-[700px] lg:max-w-[870px] text-sm sm:text-base md:text-lg lg:text-xl text-richblack-200 leading-relaxed sm:leading-relaxed md:leading-loose">
                         {catalogPageData?.selectedCategory?.description}
                     </p>
                 </div>
@@ -108,19 +108,19 @@ function Catalog() {
             {/* Section 1 */}
             <div className="mx-auto box-content w-full max-w-maxContentTab px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12 lg:max-w-maxContent">
                 <div 
-                    className="section_heading text-xl xs:text-2xl sm:text-3xl font-bold text-richblack-5 mb-6"
+                    className="section_heading text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-richblack-5 mb-4 sm:mb-6"
                     style={{ opacity: 1, visibility: 'visible', transform: 'none', transition: 'none' }}
                     data-course-component="true"
                 >
                     Courses to get you started
                 </div>
                 <div 
-                    className="my-4 flex border-b border-b-richblack-600 text-sm overflow-x-auto"
+                    className="my-4 flex border-b border-b-richblack-600 text-sm sm:text-base overflow-x-auto"
                     style={{ opacity: 1, visibility: 'visible', transform: 'none', transition: 'none' }}
                     data-course-component="true"
                 >
                     <p
-                        className={`px-3 sm:px-4 py-2 whitespace-nowrap ${active === 1
+                        className={`px-3 sm:px-4 py-2 whitespace-nowrap text-sm sm:text-base ${active === 1
                             ? "border-b border-b-yellow-25 text-yellow-25"
                             : "text-richblack-50"
                             } cursor-pointer hover:text-yellow-50`}
@@ -130,7 +130,7 @@ function Catalog() {
                         Most Popular
                     </p>
                     <p
-                        className={`px-3 sm:px-4 py-2 whitespace-nowrap ${active === 2
+                        className={`px-3 sm:px-4 py-2 whitespace-nowrap text-sm sm:text-base ${active === 2
                             ? "border-b border-b-yellow-25 text-yellow-25"
                             : "text-richblack-50"
                             } cursor-pointer hover:text-yellow-50`}
@@ -150,7 +150,7 @@ function Catalog() {
             {/* Section 2 */}
             <div className="mx-auto box-content w-full max-w-maxContentTab px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12 lg:max-w-maxContent">
                 <div 
-                    className="section_heading text-xl xs:text-2xl sm:text-3xl font-bold text-richblack-5 mb-6"
+                    className="section_heading text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-richblack-5 mb-4 sm:mb-6"
                     style={{ opacity: 1, visibility: 'visible', transform: 'none', transition: 'none' }}
                     data-course-component="true"
                 >

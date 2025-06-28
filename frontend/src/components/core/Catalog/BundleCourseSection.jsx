@@ -91,21 +91,21 @@ function BundleCourseSection({ courses }) {
   }
 
   return (
-    <div className="mx-auto box-content w-full max-w-maxContentTab px-8 sm:px-12 py-16 lg:max-w-maxContent">
+    <div className="mx-auto box-content w-full max-w-maxContentTab px-4 sm:px-8 py-12 sm:py-16 lg:max-w-maxContent">
       {/* Header Section */}
-      <div className="text-center mb-12">
+      <div className="flex flex-col items-center justify-center text-center max-w-4xl mx-auto mb-8 sm:mb-10 lg:mb-12">
         <div 
-          className="flex items-center justify-center gap-3 mb-4"
+          className="flex flex-col items-center justify-center gap-2 sm:gap-3 mb-4 sm:mb-6 w-full"
           style={{ opacity: 1, visibility: 'visible', transform: 'none', transition: 'none' }}
           data-course-component="true"
         >
-          <FiPackage className="text-yellow-50 text-3xl" />
-<h2 className="text-2xl/7 font-bold text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-          Back End Developer
-        </h2>
+          <FiPackage className="text-yellow-50 text-2xl sm:text-3xl lg:text-4xl mb-2 sm:mb-3" />
+          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-richblack-5 leading-tight sm:leading-snug text-center w-full">
+            Back End Developer
+          </h2>
         </div>
         <p 
-          className="text-base xs:text-lg text-richblack-200 max-w-3xl mx-auto leading-relaxed text-center"
+          className="text-sm sm:text-base md:text-lg lg:text-xl text-richblack-200 w-full max-w-2xl lg:max-w-3xl mx-auto leading-relaxed sm:leading-relaxed md:leading-loose text-center"
           style={{ opacity: 1, visibility: 'visible', transform: 'none', transition: 'none' }}
           data-course-component="true"
         >
@@ -114,12 +114,12 @@ function BundleCourseSection({ courses }) {
         </p>
         
         {/* Discount Info */}
-        <div className="flex flex-wrap justify-center gap-4 mt-6">
-          <div className="bg-gradient-to-r from-yellow-900/30 to-yellow-800/30 border border-yellow-700 rounded-full px-4 py-2">
-            <span className="text-yellow-100 text-sm font-medium">2+ Courses: 10% OFF</span>
+        <div className="flex flex-col sm:flex-row items-center justify-center flex-wrap gap-3 sm:gap-4 mt-6 sm:mt-8 w-full">
+          <div className="bg-gradient-to-r from-yellow-900/30 to-yellow-800/30 border border-yellow-700 rounded-full px-3 sm:px-4 py-2">
+            <span className="text-yellow-100 text-xs sm:text-sm md:text-base font-medium">2+ Courses: 10% OFF</span>
           </div>
-          <div className="bg-gradient-to-r from-green-900/30 to-green-800/30 border border-green-700 rounded-full px-4 py-2">
-            <span className="text-green-100 text-sm font-medium">3+ Courses: 15% OFF</span>
+          <div className="bg-gradient-to-r from-green-900/30 to-green-800/30 border border-green-700 rounded-full px-3 sm:px-4 py-2">
+            <span className="text-green-100 text-xs sm:text-sm md:text-base font-medium">3+ Courses: 15% OFF</span>
           </div>
         </div>
       </div>
@@ -183,19 +183,19 @@ function BundleCourseSection({ courses }) {
             <div className="max-w-7xl mx-auto px-4 py-6">
               <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
                 {/* Selected Count & Price */}
-                <div className="flex items-center gap-6">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-yellow-50 text-richblack-900 rounded-full w-10 h-10 flex items-center justify-center font-bold">
+                <div className="flex items-center gap-4 sm:gap-6">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="bg-yellow-50 text-richblack-900 rounded-full w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center font-bold text-sm sm:text-base">
                       {selectedCourses.length}
                     </div>
                     <div>
-                      <p className="text-richblack-5 font-semibold">
+                      <p className="text-richblack-5 font-semibold text-sm sm:text-base">
                         {selectedCourses.length} Course{selectedCourses.length > 1 ? 's' : ''} Selected
                       </p>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                         {getBundleDiscount() > 0 && (
                           <>
-                            <span className="text-richblack-400 line-through text-sm">
+                            <span className="text-richblack-400 line-through text-xs sm:text-sm">
                               ₹{getOriginalPrice()}
                             </span>
                             <span className="bg-green-900/30 text-green-100 px-2 py-1 rounded text-xs font-medium">
@@ -203,7 +203,7 @@ function BundleCourseSection({ courses }) {
                             </span>
                           </>
                         )}
-                        <span className="text-yellow-50 font-bold text-lg">
+                        <span className="text-yellow-50 font-bold text-base sm:text-lg md:text-xl">
                           ₹{getFinalPrice()}
                         </span>
                       </div>
@@ -212,22 +212,24 @@ function BundleCourseSection({ courses }) {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
                   <button
                     onClick={() => setSelectedCourses([])}
-                    className="flex items-center gap-2 px-4 py-2 text-richblack-300 hover:text-richblack-100 transition-colors"
+                    className="flex items-center gap-2 px-3 sm:px-4 py-2 text-richblack-300 hover:text-richblack-100 transition-colors text-sm sm:text-base"
                   >
-                    <FiX className="w-4 h-4" />
-                    Clear All
+                    <FiX className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Clear All</span>
+                    <span className="sm:hidden">Clear</span>
                   </button>
                   
                   <button
                     onClick={handleProceedToBundle}
-                    className="flex items-center gap-3 bg-gradient-to-r from-yellow-50 to-yellow-25 text-richblack-900 px-8 py-3 rounded-xl font-semibold hover:from-yellow-25 hover:to-yellow-50 transition-all duration-200 shadow-lg hover:shadow-xl"
+                    className="flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-yellow-50 to-yellow-25 text-richblack-900 px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-lg sm:rounded-xl font-semibold hover:from-yellow-25 hover:to-yellow-50 transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base"
                   >
-                    <FiShoppingCart className="w-5 h-5" />
-                    Proceed to Checkout
-                    <FiArrowRight className="w-4 h-4" />
+                    <FiShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="hidden sm:inline">Proceed to Checkout</span>
+                    <span className="sm:hidden">Checkout</span>
+                    <FiArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
                   </button>
                 </div>
               </div>
@@ -243,8 +245,8 @@ function BundleCourseSection({ courses }) {
           animate={{ opacity: 1, y: 0 }}
           className="mt-12 bg-gradient-to-br from-richblack-800 to-richblack-900 rounded-2xl p-8 border border-richblack-700 hidden lg:block"
         >
-          <h3 className="text-2xl font-bold text-richblack-5 mb-6 flex items-center gap-3">
-            <FiShoppingCart className="text-yellow-50" />
+          <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-richblack-5 mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
+            <FiShoppingCart className="text-yellow-50 text-lg sm:text-xl lg:text-2xl" />
             Your Bundle Preview
           </h3>
           
@@ -257,7 +259,7 @@ function BundleCourseSection({ courses }) {
                   className="w-16 h-16 rounded-lg object-cover"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-richblack-5 font-medium text-sm truncate">{course.courseName}</p>
+                  <p className="text-richblack-5 font-medium text-xs sm:text-sm truncate">{course.courseName}</p>
                   <p className="text-richblack-300 text-xs">
                     {course.courseType === 'Free' ? 'Free' : `₹${course.price}`}
                   </p>
