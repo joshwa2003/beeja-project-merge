@@ -91,7 +91,7 @@ function BundleCourseSection({ courses }) {
   }
 
   return (
-    <div className="mx-auto box-content w-full max-w-maxContentTab px-4 py-16 lg:max-w-maxContent">
+    <div className="mx-auto box-content w-full max-w-maxContentTab px-8 sm:px-12 py-16 lg:max-w-maxContent">
       {/* Header Section */}
       <div className="text-center mb-12">
         <div 
@@ -100,16 +100,12 @@ function BundleCourseSection({ courses }) {
           data-course-component="true"
         >
           <FiPackage className="text-yellow-50 text-3xl" />
-          <h2 
-            className="text-2xl xs:text-3xl sm:text-4xl font-bold text-richblack-5"
-            style={{ opacity: 1, visibility: 'visible', transform: 'none', transition: 'none' }}
-            data-course-component="true"
-          >
-            Bundle Courses
-          </h2>
+<h2 className="text-2xl/7 font-bold text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
+          Back End Developer
+        </h2>
         </div>
         <p 
-          className="text-base xs:text-lg text-richblack-200 max-w-3xl mx-auto leading-relaxed"
+          className="text-base xs:text-lg text-richblack-200 max-w-3xl mx-auto leading-relaxed text-center"
           style={{ opacity: 1, visibility: 'visible', transform: 'none', transition: 'none' }}
           data-course-component="true"
         >
@@ -129,8 +125,8 @@ function BundleCourseSection({ courses }) {
       </div>
       
       {/* Course Grid */}
-      <div className="w-full">
-        <div className="flex flex-wrap justify-center gap-8 lg:gap-12">
+      <div className="w-full max-w-maxContent mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {availableCourses.length === 0 ? (
             <div className="col-span-full text-center text-richblack-300 py-8">
               {token ? 
@@ -142,7 +138,7 @@ function BundleCourseSection({ courses }) {
             availableCourses.map((course, index) => (
               <div
                 key={course._id || index}
-                className="w-full xs:w-auto"
+                className="w-full"
               >
                 <div 
                   onClick={() => handleCourseSelect(course)}

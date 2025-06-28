@@ -39,7 +39,9 @@ export default function MyProfile() {
             <h2 className="text-2xl font-bold text-white capitalize">
               {user?.firstName + " " + user?.lastName}
             </h2>
-            <p className="text-slate-400 mt-2">{user?.email}</p>
+            <p className="text-slate-400 mt-2 break-all sm:break-words text-sm sm:text-base">
+              {user?.email}
+            </p>
           </div>
         </div>
       </div>
@@ -113,15 +115,24 @@ export default function MyProfile() {
 
 // Helper Component for Detail Cards
 function DetailCard({ label, value, icon }) {
+  // Check if this is an email field to apply different styling
+  const isEmail = label === "Email";
+  
   return (
     <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-800/50 hover:border-slate-700/50 transition-colors duration-300">
-      <div className="flex items-center gap-3 mb-2">
-        <span className="text-lg">{icon}</span>
-        <p className="text-sm text-slate-400">{label}</p>
+      <div className="flex items-center gap-3 mb-3">
+        <span className="text-lg flex-shrink-0">{icon}</span>
+        <p className="text-sm text-slate-400 font-medium">{label}</p>
       </div>
-      <p className="text-base font-medium text-white capitalize pl-8">
-        {value}
-      </p>
+      <div className="pl-0">
+        <p className={`text-sm sm:text-base font-medium text-white ${
+          isEmail 
+            ? "break-all sm:break-words lowercase" 
+            : "capitalize break-words"
+        }`}>
+          {value}
+        </p>
+      </div>
     </div>
   )
 }

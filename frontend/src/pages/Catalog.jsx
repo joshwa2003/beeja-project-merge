@@ -163,30 +163,7 @@ function Catalog() {
                 </div>
             </div>
 
-            {/* Section 3 */}
-            <div className="mx-auto box-content w-full max-w-maxContentTab px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12 lg:max-w-maxContent">
-                <div 
-                    className="section_heading text-xl xs:text-2xl sm:text-3xl font-bold text-richblack-5 mb-6"
-                    style={{ opacity: 1, visibility: 'visible', transform: 'none', transition: 'none' }}
-                    data-course-component="true"
-                >
-                    Frequently Bought
-                </div>
-                <div className="py-6 sm:py-8">
-                    <div className="grid grid-cols-1 xs:grid-cols-1 sm:grid-cols-2 gap-3 xs:gap-4 sm:gap-6 lg:gap-8">
-                        {catalogPageData?.mostSellingCourses
-                            ?.slice(0, 4)   
-                            .map((course, i) => (
-                                <div key={i} className="flex justify-center w-full">
-                                    <Course_Card 
-                                        course={course} 
-                                        Height={"h-[250px] sm:h-[280px] lg:h-[300px]"} 
-                                    />
-                                </div>
-                            ))}
-                    </div>
-                </div>
-            </div>
+
 
             {/* Bundle Course Section */}
             <BundleCourseSection courses={catalogPageData?.selectedCategory?.courses} />
