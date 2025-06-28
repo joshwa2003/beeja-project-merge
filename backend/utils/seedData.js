@@ -114,9 +114,9 @@ const instructorProfileData = {
 const instructorData = {
     firstName: "John",
     lastName: "Doe",
-    email: "john.instructor@example.com",
-    password: "instructor123",
-    accountType: "Instructor",
+    email: "Admin@example.com",
+    password: "Admin123",
+    accountType: "Admin",
     active: true,
     approved: true,
     image: "https://example.com/instructor-image.jpg", // placeholder image URL
