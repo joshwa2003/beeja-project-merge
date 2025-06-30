@@ -442,6 +442,160 @@ function CourseDetails() {
               </div>
             </motion.div>
 
+            {/* Professional Certificates Section */}
+            <motion.div 
+              data-course-component
+              className="my-12 bg-richblack-800 border border-richblack-700 rounded-xl p-8 shadow-xl"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              style={{ opacity: 1, transform: 'translateY(0px)' }}
+            >
+              <h2 className="text-3xl font-bold text-richblack-5 mb-8">
+                Gain a Competitive Edge With Our <span className="text-yellow-50">Professional Certificates</span>
+              </h2>
+              
+              <div className="flex flex-col lg:flex-row gap-8 items-center">
+                <div className="lg:w-1/2">
+                  <div className="relative bg-richblack-700 p-6 rounded-xl border border-richblack-600 shadow-lg">
+                    <img 
+                      src="/certificate.png"
+                      alt="Sample Certificate"
+                      className="w-full rounded-lg shadow-md"
+                    />
+                    <div className="absolute top-4 right-4 bg-yellow-50 text-richblack-900 px-3 py-1 rounded-full text-sm font-semibold">
+                      Sample
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="lg:w-1/2 space-y-4">
+                  <div className="flex items-start gap-3 p-4 bg-richblack-700/50 rounded-lg border border-richblack-600 hover:bg-richblack-700/70 transition-all duration-300">
+                    <div className="bg-yellow-50/10 p-2 rounded-lg border border-yellow-50/20 flex-shrink-0">
+                      <BsCheckCircle className="w-4 h-4 text-yellow-50" />
+                    </div>
+                    <p className="text-richblack-200 leading-relaxed">
+                      Master the latest programming languages and enhance your skill set with a recognized certificate.
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-start gap-3 p-4 bg-richblack-700/50 rounded-lg border border-richblack-600 hover:bg-richblack-700/70 transition-all duration-300">
+                    <div className="bg-yellow-50/10 p-2 rounded-lg border border-yellow-50/20 flex-shrink-0">
+                      <BsCheckCircle className="w-4 h-4 text-yellow-50" />
+                    </div>
+                    <p className="text-richblack-200 leading-relaxed">
+                      Unlock new career opportunities with a programming certificate.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* This is one For You Section */}
+            <motion.div 
+              data-course-component
+              className="my-12 bg-richblack-800 border border-richblack-700 rounded-xl p-8 shadow-xl"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              style={{ opacity: 1, transform: 'translateY(0px)' }}
+            >
+              <h2 className="text-3xl font-bold text-richblack-5 mb-8">
+                This is one <span className="text-yellow-50">For You</span>
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Hands on training */}
+                <motion.div 
+                  className="bg-richblack-700/50 border border-richblack-600 rounded-xl p-6 hover:bg-richblack-700/70 transition-all duration-300 hover:border-yellow-50/30"
+                  whileHover={{ scale: 1.02 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.1 }}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="bg-yellow-50/10 p-3 rounded-lg border border-yellow-50/20 flex-shrink-0">
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-richblack-5 mb-2">Hands on training</h3>
+                      <p className="text-richblack-200 leading-relaxed">
+                        Looking to enhance your Coding skills
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Innovation Ideas */}
+                <motion.div 
+                  className="bg-richblack-700/50 border border-richblack-600 rounded-xl p-6 hover:bg-richblack-700/70 transition-all duration-300 hover:border-yellow-50/30"
+                  whileHover={{ scale: 1.02 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="bg-yellow-50/10 p-3 rounded-lg border border-yellow-50/20 flex-shrink-0">
+                      <div className="w-8 h-8 bg-yellow-50 rounded-full flex items-center justify-center">
+                        <div className="w-4 h-4 bg-richblack-900 rounded-full"></div>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-richblack-5 mb-2">Innovation Ideas</h3>
+                      <p className="text-richblack-200 leading-relaxed">
+                        lets you create innovative solutions, explore technologies
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Newbie Programmer */}
+                <motion.div 
+                  className="bg-richblack-700/50 border border-richblack-600 rounded-xl p-6 hover:bg-richblack-700/70 transition-all duration-300 hover:border-yellow-50/30"
+                  whileHover={{ scale: 1.02 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.3 }}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="bg-yellow-50/10 p-3 rounded-lg border border-yellow-50/20 flex-shrink-0">
+                      <div className="w-8 h-8 bg-gradient-to-r from-yellow-50 to-yellow-25 rounded flex items-center justify-center">
+                        <span className="text-richblack-900 font-bold text-lg">🚀</span>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-richblack-5 mb-2">Newbie Programmer</h3>
+                      <p className="text-richblack-200 leading-relaxed">
+                        Budding Programmer, Wants to learn some tricks and tips
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Upskilling your skills */}
+                <motion.div 
+                  className="bg-richblack-700/50 border border-richblack-600 rounded-xl p-6 hover:bg-richblack-700/70 transition-all duration-300 hover:border-yellow-50/30"
+                  whileHover={{ scale: 1.02 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.4 }}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="bg-yellow-50/10 p-3 rounded-lg border border-yellow-50/20 flex-shrink-0">
+                      <div className="w-8 h-8 bg-yellow-50 rounded-full flex items-center justify-center">
+                        <span className="text-richblack-900 font-bold text-sm">▲</span>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-richblack-5 mb-2">Upskilling your skills</h3>
+                      <p className="text-richblack-200 leading-relaxed">
+                        A professional wanting to Update their skills
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
+
             {/* Professional Tags Section */}
             <motion.div 
               data-course-component
