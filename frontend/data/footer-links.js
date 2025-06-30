@@ -65,6 +65,7 @@ export const FooterLink2 = [
       { title: "Press & Hours", link: "/press-hours" },
       { title: "Partnership", link: "/partnership" },
       { title: "Business", link: "/business" },
+      { title: "Verify Certificate", link: "/verify-certificate" },
     ],
   },
   {

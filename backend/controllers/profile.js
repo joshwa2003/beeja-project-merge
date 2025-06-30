@@ -309,22 +309,26 @@ exports.getEnrolledCourses = async (req, res) => {
         // Import Order model to check order status
         const Order = require('../models/order');
 
-        // Filter courses based on order status or if they're free
+        // Filter courses based on enrollment - once enrolled, always accessible
         const activeCourses = []
         
         for (let i = 0; i < userDetails.courses.length; i++) {
             const course = userDetails.courses[i]
             
-            // Check if course is free or has an active order
+            // Check if course is currently free
             const isFree = course.courseType === 'Free' || course.adminSetFree;
+            
+            // Check if user has an active order for paid courses
             const activeOrder = await Order.findOne({
                 user: userId,
                 course: course._id,
                 status: true
             })
 
-            // Process courses that are either free or have active orders
-            if (isFree || activeOrder) {
+            // Since we're iterating through user's enrolled courses, they should always have access
+            // This ensures students who enrolled when course was free retain access even if course becomes paid later
+            // We still check for active orders for potential future use cases
+            if (true) { // Always allow access to enrolled courses
                 let totalDurationInSeconds = 0
                 let SubsectionLength = 0
                 

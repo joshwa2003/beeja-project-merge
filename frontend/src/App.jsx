@@ -147,6 +147,7 @@ function App() {
         <Route path="catalog/:catalogName" element={<Catalog />} />
         <Route path="free-courses" element={<FreeCourses />} />
         <Route path="courses/:courseId" element={<CourseDetails />} />
+        <Route path="verify-certificate" element={<VerifyCertificate />} />
         <Route path="verify-certificate/:certificateId" element={<VerifyCertificate />} />
         <Route path="bundle-checkout" element={<BundleCheckout />} />
         <Route path="course-checkout" element={<CourseCheckout />} />

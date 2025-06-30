@@ -12,7 +12,19 @@ exports.generateCertificate = async (req, res) => {
     // Check if course exists
     const course = await Course.findById(courseId);
     
-    // Check if user has access to this course (either free course or active order)
+    // Check if user has access to this course
+    // First check if user is enrolled in the course
+    const user = await User.findById(userId);
+    const isEnrolled = user.courses.includes(courseId);
+    
+    if (!isEnrolled) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. You are not enrolled in this course.',
+      });
+    }
+    
+    // If enrolled, check if course is free or user has active order
     const isFree = course.courseType === 'Free' || course.adminSetFree;
     
     if (!isFree) {
@@ -23,11 +35,10 @@ exports.generateCertificate = async (req, res) => {
         status: true
       });
 
+      // Allow certificate generation if user is enrolled, regardless of current course type
+      // This ensures students who enrolled when course was free can still get certificates
       if (!activeOrder) {
-        return res.status(403).json({
-          success: false,
-          message: 'Access denied. Course access has been disabled by admin.',
-        });
+        console.log(`Certificate generation allowed for enrolled student - User: ${userId}, Course: ${courseId}`);
       }
     }
     if (!course) {
@@ -37,8 +48,7 @@ exports.generateCertificate = async (req, res) => {
       });
     }
 
-    // Get user details
-    const user = await User.findById(userId);
+    // User details already fetched above for enrollment check
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -121,8 +131,40 @@ exports.generateCertificate = async (req, res) => {
     });
 
     if (!certificate) {
-      // Generate unique certificate ID
-      const certificateId = `BEEJA-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      // Generate unique certificate ID with format: BA-25FJ2849
+      // BA- -> company name with hyphen
+      // 25 -> current year
+      // FJ -> random 2 alphabets
+      // 2849 -> random 4 numbers
+      const generateCertificateId = () => {
+        const companyPrefix = 'BA-';
+        const currentYear = new Date().getFullYear().toString().slice(-2);
+        
+        // Generate 2 random alphabets
+        const alphabets = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const randomAlphabets = Array(2).fill(0)
+          .map(() => alphabets.charAt(Math.floor(Math.random() * alphabets.length)))
+          .join('');
+        
+        // Generate 4 random numbers
+        const randomNumbers = Array(4).fill(0)
+          .map(() => Math.floor(Math.random() * 10))
+          .join('');
+        
+        return `${companyPrefix}${currentYear}${randomAlphabets}${randomNumbers}`;
+      };
+
+      let certificateId;
+      let isUnique = false;
+      
+      // Ensure the generated ID is unique
+      while (!isUnique) {
+        certificateId = generateCertificateId();
+        const existingCertificate = await Certificate.findOne({ certificateId });
+        if (!existingCertificate) {
+          isUnique = true;
+        }
+      }
 
       // Create new certificate
       certificate = await Certificate.create({

@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const path = require('path');
 
 const mailSender = async (email, title, body) => {
     try {
@@ -8,17 +9,30 @@ const mailSender = async (email, title, body) => {
 
         const transporter = nodemailer.createTransport({
             host: process.env.MAIL_HOST,
+            port: process.env.MAIL_PORT || 587,
+            secure: false, // Use TLS
             auth: {
                 user: process.env.MAIL_USER,
                 pass: process.env.MAIL_PASS
+            },
+            tls: {
+                rejectUnauthorized: false, // Accept all certificates
+                minVersion: 'TLSv1'  // Allow older TLS versions
             }
         });
 
         const info = await transporter.sendMail({
-            from: 'StudyNotion || by Aniruddha Gade',
+            from: 'Beeja Academy || Innovative Learning',
             to: email,
             subject: title,
-            html: body
+            html: body,
+            attachments: [
+                {
+                    filename: 'beeja-logo.png',
+                    path: path.join(__dirname, '../public/images/Beeja innovative ventures.png'),
+                    cid: 'beeja-logo'
+                }
+            ]
         });
 
         console.log('Email sent successfully to:', email);

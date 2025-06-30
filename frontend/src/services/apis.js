@@ -168,7 +168,7 @@ export const quizEndpoints = {
 // CERTIFICATE ENDPOINTS
 export const certificateEndpoints = {
   GENERATE_CERTIFICATE_API: BASE_URL + "/api/v1/certificate/generate",
-  VERIFY_CERTIFICATE_API: BASE_URL + "/api/v1/certificate/verify/:certificateId",
+  VERIFY_CERTIFICATE_API: BASE_URL + "/api/v1/certificate/verify",
   GET_USER_CERTIFICATES_API: BASE_URL + "/api/v1/certificate/user-certificates",
 }
 // NOTIFICATION ENDPOINTS

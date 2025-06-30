@@ -67,7 +67,7 @@ const otpTemplate = (otp, name) => {
 	<body>
 		<div class="container">
 			<a href=""><img class="logo"
-					src="backend/mail/templates/emailVerificationTemplate.js" alt="Beeja Logo"></a>
+					src="cid:beeja-logo" alt="Beeja Logo"></a>
 			<div class="message">OTP Verification Email</div>
 			<div class="body">
 				<p>Dear ${name}</p>
@@ -78,7 +78,7 @@ const otpTemplate = (otp, name) => {
 				Once your account is verified, you will have access to our platform and its features.</p>
 			</div>
 			<div class="support">If you have any questions or need assistance, please feel free to reach out to us at <a
-					href="mailto:info@beejaacadamy.com">info@beejaacadamy.com</a>. We are here to help!</div>
+					href="mailto:info@beejaacademy.com">info@beejaacademy.com</a>. We are here to help!</div>
 		</div>
 	</body>
 	

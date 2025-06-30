@@ -102,6 +102,7 @@ exports.passwordUpdated = (email, name = 'User') => {
     <body>
         <div class="container">
             <div class="header">
+                <img src="cid:beeja-logo" alt="Beeja Logo" style="max-width: 150px; margin-bottom: 15px;">
                 <h1>🔐 Password Successfully Updated</h1>
             </div>
             
@@ -130,10 +131,10 @@ exports.passwordUpdated = (email, name = 'User') => {
             <div class="footer">
                 <p>This is an automated message from Beeja Learning Platform. If you have any questions, please contact our support team.</p>
                 <p>
-                    <a href="mailto:support@beejalearning.com">support@beejalearning.com</a>
+                    <a href="mailto:info@beejaacademy.com">info@beejaacademy.com</a>
                 </p>
                 <p style="margin-top: 15px; font-size: 12px; color: #999;">
-                    © 2024 Beeja Learning Platform. All rights reserved.
+                    © 2024 Beeja Innovative Ventures. All rights reserved.
                 </p>
             </div>
         </div>
