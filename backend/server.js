@@ -1,6 +1,11 @@
 require('dotenv').config(); 
 const express = require('express')
 const app = express();
+const http = require('http');
+const socketIo = require('socket.io');
+
+// Create HTTP server
+const server = http.createServer(app);
 
 // packages
 // const fileUpload = require('express-fileupload');
@@ -26,6 +31,7 @@ const contactMessageRoutes = require('./routes/contactMessage');
 const featuredCoursesRoutes = require('./routes/featuredCourses');
 const faqRoutes = require('./routes/faq.js');
 const userAnalyticsRoutes = require('./routes/userAnalytics');
+const chatRoutes = require('./routes/chat');
 
 // middleware 
 app.use(cookieParser());
@@ -40,6 +46,152 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+
+// Socket.io configuration
+const io = socketIo(server, {
+    cors: {
+        origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'],
+        methods: ['GET', 'POST'],
+        credentials: true
+    }
+});
+
+// Socket.io connection handling
+const jwt = require('jsonwebtoken');
+const Chat = require('./models/chat');
+const Message = require('./models/message');
+
+io.on('connection', (socket) => {
+    console.log('User connected:', socket.id);
+
+    // Authenticate socket connection
+    socket.on('authenticate', async (token) => {
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            socket.userId = decoded.id;
+            socket.userRole = decoded.accountType;
+            console.log(`User ${decoded.id} authenticated with role ${decoded.accountType}`);
+            socket.emit('authenticated', { success: true });
+        } catch (error) {
+            console.error('Socket authentication failed:', error);
+            socket.emit('authentication_error', { message: 'Invalid token' });
+        }
+    });
+
+    // Join chat room
+    socket.on('join_chat', async (chatId) => {
+        try {
+            if (!socket.userId) {
+                socket.emit('error', { message: 'Not authenticated' });
+                return;
+            }
+
+            // Verify user has access to this chat
+            const chat = await Chat.findById(chatId);
+            if (!chat) {
+                socket.emit('error', { message: 'Chat not found' });
+                return;
+            }
+
+            const hasAccess = chat.student.toString() === socket.userId || 
+                            chat.instructor.toString() === socket.userId || 
+                            socket.userRole === 'Admin';
+
+            if (!hasAccess) {
+                socket.emit('error', { message: 'Access denied' });
+                return;
+            }
+
+            socket.join(chatId);
+            console.log(`User ${socket.userId} joined chat ${chatId}`);
+            socket.emit('joined_chat', { chatId });
+
+        } catch (error) {
+            console.error('Error joining chat:', error);
+            socket.emit('error', { message: 'Error joining chat' });
+        }
+    });
+
+    // Leave chat room
+    socket.on('leave_chat', (chatId) => {
+        socket.leave(chatId);
+        console.log(`User ${socket.userId} left chat ${chatId}`);
+    });
+
+    // Handle new message
+    socket.on('send_message', async (data) => {
+        try {
+            const { chatId, content, messageType = 'text' } = data;
+
+            if (!socket.userId) {
+                socket.emit('error', { message: 'Not authenticated' });
+                return;
+            }
+
+            // Verify chat access
+            const chat = await Chat.findById(chatId);
+            if (!chat) {
+                socket.emit('error', { message: 'Chat not found' });
+                return;
+            }
+
+            const hasAccess = chat.student.toString() === socket.userId || 
+                            chat.instructor.toString() === socket.userId || 
+                            socket.userRole === 'Admin';
+
+            if (!hasAccess) {
+                socket.emit('error', { message: 'Access denied' });
+                return;
+            }
+
+            // Create and save message
+            const message = new Message({
+                chat: chatId,
+                sender: socket.userId,
+                messageType,
+                content
+            });
+
+            await message.save();
+
+            // Update chat's last message
+            await Chat.findByIdAndUpdate(chatId, {
+                lastMessage: message._id,
+                lastMessageTime: new Date()
+            });
+
+            // Populate message for broadcasting
+            const populatedMessage = await Message.findById(message._id)
+                .populate('sender', 'firstName lastName image');
+
+            // Broadcast to all users in the chat room
+            io.to(chatId).emit('new_message', populatedMessage);
+
+            console.log(`Message sent in chat ${chatId} by user ${socket.userId}`);
+
+        } catch (error) {
+            console.error('Error sending message:', error);
+            socket.emit('error', { message: 'Error sending message' });
+        }
+    });
+
+    // Handle typing indicators
+    socket.on('typing_start', (chatId) => {
+        socket.to(chatId).emit('user_typing', { userId: socket.userId, typing: true });
+    });
+
+    socket.on('typing_stop', (chatId) => {
+        socket.to(chatId).emit('user_typing', { userId: socket.userId, typing: false });
+    });
+
+    // Handle disconnect
+    socket.on('disconnect', () => {
+        console.log('User disconnected:', socket.id);
+    });
+});
+
+// Make io available to routes
+app.set('io', io);
 
 // Body parser middleware with increased limits
 app.use(express.json({ limit: '500mb' }));
@@ -78,6 +230,8 @@ app.use('/api/v1/featured-courses', featuredCoursesRoutes);
 app.use('/api/v1/faqs', faqRoutes);
 // User Analytics Routes
 app.use('/api/v1/user', userAnalyticsRoutes);
+// Chat Routes
+app.use('/api/v1/chat', chatRoutes);
 
 // Default Route
 app.get('/', (req, res) => {
@@ -114,6 +268,7 @@ connectDB();
 cloudinaryConnect();
 
 const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server Started on PORT ${PORT}`);
+    console.log(`Socket.io server running on PORT ${PORT}`);
 });

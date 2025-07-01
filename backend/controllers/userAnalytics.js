@@ -378,16 +378,22 @@ exports.getUserActivity = async (req, res) => {
             createdAt: { $gte: startDate, $lte: endDate }
         }).populate('courses', 'courseName');
 
+        // Filter out progress updates where courseID is null (deleted courses)
+        const validProgressUpdates = progressUpdates.filter(progress => progress.courseID !== null);
+
+        // Filter out orders with null courses (deleted courses)
+        const validOrders = orders.filter(order => order.courses && order.courses.length > 0);
+
         const activity = {
-            progressUpdates: progressUpdates.map(progress => ({
+            progressUpdates: validProgressUpdates.map(progress => ({
                 courseId: progress.courseID._id,
                 courseName: progress.courseID.courseName,
                 completedVideos: progress.completedVideos ? progress.completedVideos.length : 0,
                 updatedAt: progress.updatedAt
             })),
-            newEnrollments: orders.map(order => ({
+            newEnrollments: validOrders.map(order => ({
                 orderId: order._id,
-                courses: order.courses.map(course => course.courseName),
+                courses: order.courses.filter(course => course !== null).map(course => course.courseName),
                 amount: order.amount,
                 createdAt: order.createdAt
             }))

@@ -56,4 +56,11 @@ export const sidebarLinks = [
     type: ACCOUNT_TYPE.STUDENT,
     icon: "VscMortarBoard",
   },
+  {
+    id: 9,
+    name: "Chats",
+    path: "/dashboard/instructor-chats",
+    type: ACCOUNT_TYPE.INSTRUCTOR,
+    icon: "VscComment",
+  },
 ];

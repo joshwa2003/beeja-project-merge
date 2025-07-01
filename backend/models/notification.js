@@ -45,6 +45,10 @@ const notificationSchema = new mongoose.Schema({
             'NEW_RATING_REVIEW',
             'ADMIN_ANNOUNCEMENT',
             
+            // Chat notifications
+            'NEW_STUDENT_CHAT',
+            'NEW_CHAT_MESSAGE',
+            
             // Legacy types (for backward compatibility)
             'COURSE_ENROLLMENT',
             'CONTENT_UPDATE',

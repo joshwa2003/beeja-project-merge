@@ -5,6 +5,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom"
 import IconBtn from './../../common/IconBtn';
 import { setCourseViewSidebar } from "../../../slices/sidebarSlice"
 import { checkSectionAccess } from "../../../services/operations/courseProgressAPI"
+import ChatButton from '../Chat/ChatButton';
 
 import { BsChevronDown } from "react-icons/bs"
 import { IoIosArrowBack } from "react-icons/io"
@@ -128,6 +129,18 @@ export default function VideoDetailsSidebar({ setReviewModal }) {
             <p className="text-sm font-semibold text-richblack-500">
               {completedLectures?.length} / {totalNoOfLectures}
             </p>
+          </div>
+
+          {/* Chat with Instructor Button */}
+          <div className="mt-3">
+            <ChatButton 
+              courseId={courseEntireData?._id}
+              courseName={courseEntireData?.courseName}
+              instructorName={courseEntireData?.instructor ? 
+                `${courseEntireData.instructor.firstName} ${courseEntireData.instructor.lastName}` : 
+                'Instructor'
+              }
+            />
           </div>
         </div>
 

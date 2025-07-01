@@ -61,6 +61,8 @@ import AccessRequests from "./components/core/Dashboard/AccessRequests";
 import PurchaseHistory from "./components/core/Dashboard/PurchaseHistory/PurchaseHistory";
 import Certificates from "./pages/Dashboard/Certificates";
 import UserAnalytics from "./components/core/Dashboard/UserAnalytics";
+import InstructorChats from "./pages/Dashboard/InstructorChats";
+import AdminChats from "./pages/Dashboard/AdminChats";
 
 import ViewCourse from "./pages/ViewCourse";
 import BundleCheckout from "./pages/BundleCheckout";
@@ -228,6 +230,7 @@ function App() {
               <Route path="dashboard/instructor" element={<Instructor />} />
               <Route path="dashboard/my-courses" element={<MyCourses />} />
               <Route path="dashboard/edit-course/:courseId" element={<EditCourse />} />
+              <Route path="dashboard/instructor-chats" element={<InstructorChats />} />
             </>
           )}
 
@@ -240,6 +243,7 @@ function App() {
               <Route path="dashboard/admin/coupons" element={<Coupons />} />
               <Route path="dashboard/admin/orders" element={<Orders />} />
               <Route path="dashboard/admin/student-progress" element={<StudentProgress />} />
+              <Route path="dashboard/admin/chats" element={<AdminChats />} />
             </>
           )}
         </Route>

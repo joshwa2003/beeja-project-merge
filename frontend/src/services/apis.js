@@ -191,3 +191,25 @@ export const faqEndpoints = {
   TOGGLE_FAQ_PUBLISH_API: BASE_URL + "/api/v1/faqs/toggle-publish/:id",
   DELETE_FAQ_API: BASE_URL + "/api/v1/faqs/delete/:id",
 }
+
+// CHAT ENDPOINTS
+export const chatEndpoints = {
+  // Student endpoints
+  INITIATE_CHAT_API: BASE_URL + "/api/v1/chat/initiate",
+  GET_STUDENT_CHATS_API: BASE_URL + "/api/v1/chat/student/chats",
+  
+  // Instructor endpoints
+  GET_INSTRUCTOR_CHATS_API: BASE_URL + "/api/v1/chat/instructor/chats",
+  
+  // Admin endpoints
+  GET_ALL_CHATS_API: BASE_URL + "/api/v1/chat/admin/chats",
+  ARCHIVE_CHAT_API: BASE_URL + "/api/v1/chat/admin/archive",
+  FLAG_CHAT_API: BASE_URL + "/api/v1/chat/admin/flag",
+  DELETE_CHAT_API: BASE_URL + "/api/v1/chat/admin/delete",
+  HIDE_MESSAGE_API: BASE_URL + "/api/v1/chat/admin/hide-message",
+  
+  // Common endpoints
+  SEND_MESSAGE_API: BASE_URL + "/api/v1/chat/message",
+  GET_CHAT_MESSAGES_API: BASE_URL + "/api/v1/chat/messages",
+  GET_CHAT_DETAILS_API: BASE_URL + "/api/v1/chat/details",
+}

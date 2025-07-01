@@ -24,6 +24,7 @@ import NotificationManagement from './components/NotificationManagement';
 import FeaturedCoursesManagement from './components/FeaturedCoursesManagement';
 import ContactMessages from '../../components/core/Dashboard/Admin/ContactMessages';
 import FaqManagement from './components/FaqManagement';
+import AdminChats from '../Dashboard/AdminChats';
 
 const AdminDashboard = () => {
   const { user } = useSelector((state) => state.profile);
@@ -43,6 +44,7 @@ const AdminDashboard = () => {
     { id: 'bundleRequests', label: 'Bundle Requests', icon: <FaUsers className="w-5 h-5" /> },
     { id: 'orders', label: 'Orders', icon: <VscPackage className="w-5 h-5" /> },
     { id: 'coupons', label: 'Coupons', icon: <FaTag className="w-5 h-5" /> },
+    { id: 'chats', label: 'Manage Chats', icon: <FaUsers className="w-5 h-5" /> },
     { id: 'analytics', label: 'Analytics', icon: <FaChartBar className="w-5 h-5" /> },
     { id: 'settings', label: 'Settings', icon: <MdSettings className="w-5 h-5" /> },
     { id: 'users', label: 'User Management' },
@@ -54,6 +56,7 @@ const AdminDashboard = () => {
     { id: 'contactMessages', label: 'Contact Messages' },
     { id: 'featuredCourses', label: 'Featured Courses Management' },
     { id: 'faqs', label: 'FAQ Management' },
+    { id: 'chats', label: 'Manage Chats' },
     { id: 'analytics', label: 'Analytics Dashboard' },
     { id: 'settings', label: 'Settings' },
   ];
@@ -113,6 +116,7 @@ const AdminDashboard = () => {
                   {activeTab === 'contactMessages' && <ContactMessages />}
                   {activeTab === 'featuredCourses' && <FeaturedCoursesManagement />}
                   {activeTab === 'faqs' && <FaqManagement />}
+                  {activeTab === 'chats' && <AdminChats />}
                 </>
               )}
             </div>
