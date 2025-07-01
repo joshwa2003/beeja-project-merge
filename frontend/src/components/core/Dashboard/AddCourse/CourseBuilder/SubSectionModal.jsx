@@ -144,7 +144,7 @@ export default function SubSectionModal({ modalData, setModalData, add = false, 
           )
           const updatedCourse = { ...course, courseContent: updatedCourseContent }
           dispatch(setCourse(updatedCourse))
-          toast.success("Lecture added successfully")
+          
           setModalData(null)
         }
       } catch (error) {

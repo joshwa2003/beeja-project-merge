@@ -379,7 +379,7 @@ exports.approveCourse = async (req, res) => {
         return res.status(200).json({
             success: true,
             course,
-            message: 'Course approved successfully'
+            
         });
     } catch (error) {
         console.error('Error approving course:', error);

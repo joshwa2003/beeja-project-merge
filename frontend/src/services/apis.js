@@ -7,6 +7,9 @@ export const endpoints = {
   LOGIN_API: BASE_URL + "/api/v1/auth/login",
   RESETPASSTOKEN_API: BASE_URL + "/api/v1/auth/reset-password-token",
   RESETPASSWORD_API: BASE_URL + "/api/v1/auth/reset-password",
+  // User Analytics
+  USER_ANALYTICS_API: BASE_URL + "/api/v1/user/analytics",
+  USER_ACTIVITY_API: BASE_URL + "/api/v1/user/activity",
 }
 
 // PROFILE ENDPOINTS

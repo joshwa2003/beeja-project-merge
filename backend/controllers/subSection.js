@@ -42,9 +42,12 @@ exports.updateSubSection = async (req, res) => {
             const video = req.file;
             console.log('Uploading video file:', video.originalname);
             const uploadDetails = await uploadImageToCloudinary(video, process.env.FOLDER_NAME);
+            console.log('Video duration from Cloudinary (update):', uploadDetails.duration);
+            console.log('Full Cloudinary response (update):', JSON.stringify(uploadDetails, null, 2));
             subSection.videoUrl = uploadDetails.secure_url;
             subSection.timeDuration = uploadDetails.duration || 0;
             console.log('Video uploaded successfully:', uploadDetails.secure_url);
+            console.log('Setting timeDuration to (update):', subSection.timeDuration);
         }
 
         // Handle quiz attachment
@@ -132,9 +135,14 @@ exports.createSubSection = async (req, res) => {
                 
                 const videoFileDetails = await Promise.race([uploadPromise, timeoutPromise]);
                 console.log('Video uploaded successfully:', videoFileDetails.secure_url);
+                console.log('Video duration from Cloudinary:', videoFileDetails.duration);
+                console.log('Full Cloudinary response:', JSON.stringify(videoFileDetails, null, 2));
                 
                 videoUrl = videoFileDetails.secure_url;
+                // Cloudinary returns duration in seconds, we'll store it as seconds
                 timeDuration = videoFileDetails.duration || 0;
+                
+                console.log('Setting timeDuration to:', timeDuration);
             } catch (uploadError) {
                 console.error('Video upload failed:', uploadError);
                 return res.status(500).json({

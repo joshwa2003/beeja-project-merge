@@ -111,7 +111,7 @@ export default function AdminSubSectionModal({
     
     onUpdate(newSubSection)
     setModalData(null)
-    toast.success("Lecture added (unsaved)")
+    
   }
 
   return (

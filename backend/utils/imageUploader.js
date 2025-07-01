@@ -2,21 +2,20 @@ const cloudinary = require('cloudinary').v2;
 
 exports.uploadImageToCloudinary = async (file, folder, height, quality) => {
     try {
+        console.log('🔧 FIXED UPLOADER: Starting upload with simplified options');
         const options = { folder };
         if (height) options.height = height;
         if (quality) options.quality = quality;
 
-        // Set resource type and options for video uploads
+        // Set basic resource type for video/image uploads
         if (file.mimetype && file.mimetype.startsWith('video/')) {
             options.resource_type = 'video';
-            options.chunk_size = 6000000; // 6MB chunks for better upload handling
-            options.eager = [{ format: 'mp4' }];
-            options.eager_async = false; // Wait for eager transformation
-            options.video_metadata = true; // Request video metadata including duration
+            console.log('🎥 Video upload detected - using basic video resource type');
         } else {
             options.resource_type = 'auto';
-            options.chunk_size = 6000000;
         }
+        
+        console.log('📋 Upload options:', JSON.stringify(options, null, 2));
         
         // Create a promise to handle the upload
         return new Promise((resolve, reject) => {

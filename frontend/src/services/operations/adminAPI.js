@@ -383,7 +383,7 @@ export const approveCourse = async (courseId, token) => {
       throw new Error("No course data received in response")
     }
 
-    toast.success("Course approved successfully")
+    
     result = response.data.course
   } catch (error) {
     console.error("APPROVE_COURSE_API ERROR:", {

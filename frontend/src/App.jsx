@@ -60,6 +60,7 @@ import AddCourse from "./components/core/Dashboard/AddCourse/AddCourse";
 import AccessRequests from "./components/core/Dashboard/AccessRequests";
 import PurchaseHistory from "./components/core/Dashboard/PurchaseHistory/PurchaseHistory";
 import Certificates from "./pages/Dashboard/Certificates";
+import UserAnalytics from "./components/core/Dashboard/UserAnalytics";
 
 import ViewCourse from "./pages/ViewCourse";
 import BundleCheckout from "./pages/BundleCheckout";
@@ -216,6 +217,7 @@ function App() {
               <Route path="dashboard/purchase-history" element={<PurchaseHistory />} />
               <Route path="dashboard/access-requests" element={<AccessRequests />} />
               <Route path="dashboard/certificates" element={<Certificates />} />
+              <Route path="dashboard/user-analytics" element={<UserAnalytics />} />
             </>
           )}
 

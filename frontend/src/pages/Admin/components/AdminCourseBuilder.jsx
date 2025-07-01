@@ -227,7 +227,7 @@ export default function AdminCourseBuilder({ course, onCourseUpdate }) {
   // Save all changes to database
   const saveAllChanges = async () => {
     setIsSavingAll(true)
-    const toastId = toast.loading("Saving all changes...")
+    
     
     try {
       // Process all changes sequentially
@@ -354,7 +354,7 @@ export default function AdminCourseBuilder({ course, onCourseUpdate }) {
       toast.error("Failed to save some changes. Please try again.")
     } finally {
       setIsSavingAll(false)
-      toast.dismiss(toastId)
+      
     }
   }
 
