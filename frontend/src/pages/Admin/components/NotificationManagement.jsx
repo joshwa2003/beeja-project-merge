@@ -249,34 +249,34 @@ const NotificationManagement = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-gradient-to-br from-indigo-500/20 to-purple-600/20 rounded-2xl border border-indigo-500/30">
-            <FiBell className="w-8 h-8 text-indigo-400" />
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 sm:gap-6">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="p-2 sm:p-3 bg-gradient-to-br from-indigo-500/20 to-purple-600/20 rounded-2xl border border-indigo-500/30">
+            <FiBell className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-400" />
           </div>
           <div>
-            <h2 className="text-3xl font-bold text-white mb-2 flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-1 sm:mb-2 flex items-center gap-2">
               Notification Center
-              <IoSparkles className="w-6 h-6 text-yellow-400" />
+              <IoSparkles className="w-4 h-4 sm:w-6 sm:h-6 text-yellow-400" />
             </h2>
-            <p className="text-gray-400">Manage and send notifications to your community</p>
+            <p className="text-sm sm:text-base text-gray-400">Manage and send notifications to your community</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={fetchNotifications}
-            className="px-4 py-2 bg-slate-700 text-white rounded-xl font-medium flex items-center gap-2 hover:bg-slate-600 transition-all duration-200"
+            className="px-3 sm:px-4 py-2 bg-slate-700 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-slate-600 transition-all duration-200 text-sm sm:text-base"
           >
             <FiRefreshCw className="w-4 h-4" />
-            Refresh
+            <span className="sm:inline">Refresh</span>
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowCreateForm(true)}
-            className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-semibold flex items-center gap-2 hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 shadow-lg shadow-indigo-500/25"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 shadow-lg shadow-indigo-500/25 text-sm sm:text-base"
           >
             <FiSend className="w-4 h-4" />
             Create Notification
@@ -285,7 +285,7 @@ const NotificationManagement = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -355,23 +355,23 @@ const NotificationManagement = () => {
       </div>
 
       {/* Search and Filter Bar */}
-      <div className="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-6">
-        <div className="flex flex-col lg:flex-row gap-4">
+      <div className="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-4 sm:p-6">
+        <div className="flex flex-col lg:flex-row gap-3 sm:gap-4">
           <div className="flex-1 relative">
-            <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <FiSearch className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
             <input
               type="text"
               placeholder="Search notifications..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm sm:text-base"
             />
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm sm:text-base"
             >
               <option value="all">All Recipients</option>
               <option value="student">Students Only</option>
@@ -382,7 +382,7 @@ const NotificationManagement = () => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm sm:text-base"
             >
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>

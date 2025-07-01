@@ -8,7 +8,9 @@ const {
   GET_INSTRUCTOR_CHATS_API,
   GET_ALL_CHATS_API,
   ARCHIVE_CHAT_API,
+  UNARCHIVE_CHAT_API,
   FLAG_CHAT_API,
+  UNFLAG_CHAT_API,
   DELETE_CHAT_API,
   HIDE_MESSAGE_API,
   SEND_MESSAGE_API,
@@ -211,6 +213,70 @@ export const flagChat = async (chatId, reason, token) => {
   } catch (error) {
     console.log("FLAG_CHAT_API ERROR............", error);
     toast.error(error.response?.data?.message || error.message || "Could not flag chat");
+  }
+  
+  toast.dismiss(toastId);
+  return result;
+};
+
+// Unarchive chat (Admin only)
+export const unarchiveChat = async (chatId, token) => {
+  const toastId = toast.loading("Unarchiving chat...");
+  let result = false;
+  
+  try {
+    const response = await apiConnector(
+      "PATCH",
+      `${UNARCHIVE_CHAT_API}/${chatId}`,
+      {},
+      {
+        Authorization: `Bearer ${token}`,
+      }
+    );
+
+    console.log("UNARCHIVE_CHAT_API RESPONSE............", response);
+
+    if (!response?.data?.success) {
+      throw new Error(response?.data?.message || "Could not unarchive chat");
+    }
+
+    toast.success("Chat unarchived successfully!");
+    result = true;
+  } catch (error) {
+    console.log("UNARCHIVE_CHAT_API ERROR............", error);
+    toast.error(error.response?.data?.message || error.message || "Could not unarchive chat");
+  }
+  
+  toast.dismiss(toastId);
+  return result;
+};
+
+// Unflag chat (Admin only)
+export const unflagChat = async (chatId, token) => {
+  const toastId = toast.loading("Removing flag from chat...");
+  let result = false;
+  
+  try {
+    const response = await apiConnector(
+      "PATCH",
+      `${UNFLAG_CHAT_API}/${chatId}`,
+      {},
+      {
+        Authorization: `Bearer ${token}`,
+      }
+    );
+
+    console.log("UNFLAG_CHAT_API RESPONSE............", response);
+
+    if (!response?.data?.success) {
+      throw new Error(response?.data?.message || "Could not unflag chat");
+    }
+
+    toast.success("Chat flag removed successfully!");
+    result = true;
+  } catch (error) {
+    console.log("UNFLAG_CHAT_API ERROR............", error);
+    toast.error(error.response?.data?.message || error.message || "Could not unflag chat");
   }
   
   toast.dismiss(toastId);

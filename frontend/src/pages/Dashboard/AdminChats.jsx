@@ -16,7 +16,9 @@ import {
   getAllChats, 
   getChatDetails, 
   archiveChat, 
+  unarchiveChat,
   flagChat, 
+  unflagChat,
   deleteChat 
 } from '../../services/operations/chatAPI';
 import ChatWindow from '../../components/core/Chat/ChatWindow';
@@ -56,9 +58,12 @@ const AdminChats = () => {
     filterChats();
   }, [chats, searchTerm, filterCourse, filterInstructor]);
 
+  const [allChats, setAllChats] = useState([]);
+
   const loadChats = async (page = 1) => {
     setIsLoading(true);
     try {
+      // Get filtered chats based on status
       const filters = {
         page,
         limit: 10,
@@ -66,6 +71,10 @@ const AdminChats = () => {
       };
       
       const response = await getAllChats(token, filters);
+      
+      // Get all chats for accurate counts
+      const allChatsResponse = await getAllChats(token, { status: 'all' });
+      
       if (response?.chats) {
         setChats(response.chats);
         setPagination({
@@ -73,6 +82,10 @@ const AdminChats = () => {
           totalPages: response.totalPages,
           totalChats: response.totalChats
         });
+      }
+
+      if (allChatsResponse?.chats) {
+        setAllChats(allChatsResponse.chats);
       }
     } catch (error) {
       console.error('Error loading chats:', error);
@@ -143,6 +156,22 @@ const AdminChats = () => {
     setShowActionMenu(null);
   };
 
+  const handleUnarchiveChat = async (chatId) => {
+    const success = await unarchiveChat(chatId, token);
+    if (success) {
+      loadChats(pagination.currentPage);
+    }
+    setShowActionMenu(null);
+  };
+
+  const handleUnflagChat = async (chatId) => {
+    const success = await unflagChat(chatId, token);
+    if (success) {
+      loadChats(pagination.currentPage);
+    }
+    setShowActionMenu(null);
+  };
+
   const handleDeleteChat = async (chatId) => {
     if (window.confirm('Are you sure you want to delete this chat? This action cannot be undone.')) {
       const success = await deleteChat(chatId, token);
@@ -204,17 +233,17 @@ const AdminChats = () => {
         </div>
         <div className="flex items-center gap-2 text-richblack-300">
           <BsChatDots size={20} />
-          <span>{pagination.totalChats} total conversations</span>
+          <span>{allChats.length} total conversations</span>
         </div>
       </div>
 
       {/* Status Filter Tabs */}
       <div className="flex gap-2 border-b border-richblack-700">
         {[
-          { key: 'active', label: 'Active', count: chats.filter(c => !c.isArchived && !c.isFlagged).length },
-          { key: 'flagged', label: 'Flagged', count: chats.filter(c => c.isFlagged).length },
-          { key: 'archived', label: 'Archived', count: chats.filter(c => c.isArchived).length },
-          { key: 'all', label: 'All', count: chats.length }
+          { key: 'active', label: 'Active', count: allChats.filter(c => !c.isArchived && !c.isFlagged).length },
+          { key: 'flagged', label: 'Flagged', count: allChats.filter(c => c.isFlagged).length },
+          { key: 'archived', label: 'Archived', count: allChats.filter(c => c.isArchived).length },
+          { key: 'all', label: 'All', count: allChats.length }
         ].map(tab => (
           <button
             key={tab.key}
@@ -355,7 +384,18 @@ const AdminChats = () => {
                               <BsEye size={14} />
                               View Chat
                             </button>
-                            {!chat.isArchived && (
+                            {chat.isArchived ? (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleUnarchiveChat(chat._id);
+                                }}
+                                className="w-full px-4 py-2 text-left text-richblack-5 hover:bg-richblack-700 flex items-center gap-2"
+                              >
+                                <BsArchive size={14} />
+                                Unarchive
+                              </button>
+                            ) : (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -367,7 +407,18 @@ const AdminChats = () => {
                                 Archive
                               </button>
                             )}
-                            {!chat.isFlagged && (
+                            {chat.isFlagged ? (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleUnflagChat(chat._id);
+                                }}
+                                className="w-full px-4 py-2 text-left text-yellow-400 hover:bg-richblack-700 flex items-center gap-2"
+                              >
+                                <BsFlag size={14} />
+                                Remove Flag
+                              </button>
+                            ) : (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();

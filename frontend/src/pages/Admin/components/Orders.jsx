@@ -86,29 +86,29 @@ export default function Orders() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-richblack-900 via-richblack-800 to-richblack-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-richblack-900 via-richblack-800 to-richblack-900 p-3 sm:p-6">
       {/* Header */}
-      <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+      <div className="mb-6 sm:mb-8 flex flex-col gap-4 sm:gap-6 md:flex-row md:items-center md:justify-between">
         <div className="animate-fadeInUp">
-          <h1 className="text-4xl font-bold text-richblack-5 bg-gradient-to-r from-yellow-50 to-yellow-200 bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-richblack-5 bg-gradient-to-r from-yellow-50 to-yellow-200 bg-clip-text text-transparent">
             Orders Management
           </h1>
-          <p className="mt-2 text-richblack-300">Manage and track all customer orders</p>
+          <p className="mt-2 text-sm sm:text-base text-richblack-300">Manage and track all customer orders</p>
         </div>
-        <div className="flex items-center gap-4 animate-fadeInUp animation-delay-200">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 animate-fadeInUp animation-delay-200">
           <div className="relative group">
-            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-richblack-400 transition-colors group-focus-within:text-yellow-50" size={20} />
+            <FiSearch className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-richblack-400 transition-colors group-focus-within:text-yellow-50" size={18} />
             <input
               type="text"
               placeholder="Search orders, users, courses..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-80 rounded-xl bg-richblack-700 border border-richblack-600 px-12 py-3 text-richblack-5 placeholder-richblack-400 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-yellow-50 focus:border-yellow-50 hover:bg-richblack-600 hover:border-richblack-500"
+              className="w-full sm:w-80 rounded-xl bg-richblack-700 border border-richblack-600 px-10 sm:px-12 py-2.5 sm:py-3 text-sm sm:text-base text-richblack-5 placeholder-richblack-400 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-yellow-50 focus:border-yellow-50 hover:bg-richblack-600 hover:border-richblack-500"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-richblack-400 hover:text-richblack-200 transition-colors"
+                className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-richblack-400 hover:text-richblack-200 transition-colors"
               >
                 ✕
               </button>
@@ -116,45 +116,133 @@ export default function Orders() {
           </div>
           <button
             onClick={handleGeneratePDF}
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-yellow-50 to-yellow-100 px-6 py-3 text-richblack-900 font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-yellow-50/20 active:scale-95"
+            className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-yellow-50 to-yellow-100 px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base text-richblack-900 font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-yellow-50/20 active:scale-95"
           >
-            <FiDownload size={20} />
-            Download PDF
+            <FiDownload size={18} />
+            <span className="hidden sm:inline">Download PDF</span>
+            <span className="sm:hidden">PDF</span>
           </button>
         </div>
       </div>
 
-      {/* Table */}
+      {/* Mobile Card View and Desktop Table */}
       <div className="relative overflow-hidden rounded-2xl border border-richblack-600 bg-gradient-to-br from-richblack-800 to-richblack-900 shadow-2xl animate-fadeInUp animation-delay-400">
-        <div className="overflow-x-auto">
+        {/* Mobile Card View */}
+        <div className="block lg:hidden">
+          <div className="space-y-4 p-4">
+            {filteredAndSortedOrders.map((order, index) => (
+              <div
+                key={order._id}
+                className="bg-richblack-700 rounded-lg p-4 space-y-3 border border-richblack-600"
+              >
+                {/* Order Number and Status */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-50 text-xs font-bold text-richblack-900">
+                      {index + 1}
+                    </span>
+                    <span className="text-sm font-medium text-richblack-300">Order #{index + 1}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleStatusToggle(order._id, !order.status)}
+                      className={`${
+                        order.status 
+                          ? 'bg-gradient-to-r from-green-500 to-green-400' 
+                          : 'bg-gradient-to-r from-richblack-600 to-richblack-500'
+                      } relative inline-flex h-6 w-10 items-center rounded-full transition-all duration-300`}
+                    >
+                      <span
+                        className={`${
+                          order.status ? 'translate-x-5' : 'translate-x-1'
+                        } inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300`}
+                      />
+                    </button>
+                    <span className={`text-xs ${order.status ? 'text-green-400' : 'text-richblack-400'}`}>
+                      {order.status ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* User Details */}
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-richblack-5">
+                    {order.user ? `${order.user.firstName || ''} ${order.user.lastName || ''}`.trim() : 'N/A'}
+                  </p>
+                  <p className="text-xs text-blue-300 truncate">{order.user?.email || 'N/A'}</p>
+                  <p className="text-xs text-green-300 truncate">{order.course?.courseName || 'N/A'}</p>
+                </div>
+
+                {/* Payment Details */}
+                <div className="space-y-1">
+                  <p className="text-xs text-richblack-300">
+                    <span className="text-richblack-400">ID:</span> 
+                    <span className="font-mono text-purple-300 ml-1">{order.transactionId}</span>
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs bg-richblack-600 px-2 py-1 rounded text-orange-300">
+                      {order.paymentMethod}
+                    </span>
+                    <span className="text-sm font-bold text-green-400">₹{order.amount}</span>
+                  </div>
+                </div>
+
+                {/* Date and Actions */}
+                <div className="flex items-center justify-between pt-2 border-t border-richblack-600">
+                  <div className="text-xs text-richblack-300">
+                    {new Date(order.purchaseDate).toLocaleDateString('en-IN', {
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric'
+                    })}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setSelectedOrder(order)
+                      setShowViewModal(true)
+                    }}
+                    className="rounded-lg bg-gradient-to-r from-caribbeangreen-600 to-caribbeangreen-500 p-2 text-white transition-all duration-200 hover:scale-105"
+                    title="View Order"
+                  >
+                    <FiEye size={16} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Desktop Table View */}
+        <div className="hidden lg:block overflow-x-auto">
           <table className="w-full table-auto border-collapse">
             <thead className="bg-gradient-to-r from-richblack-700 to-richblack-600">
               <tr className="border-b border-richblack-500">
-                <th className="p-6 text-left text-sm font-semibold uppercase tracking-wider text-richblack-100">
+                <th className="p-4 xl:p-6 text-left text-xs xl:text-sm font-semibold uppercase tracking-wider text-richblack-100">
                   <div className="flex items-center gap-2">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-50 text-xs font-bold text-richblack-900">#</span>
-                    S.No
+                    <span className="flex h-6 w-6 xl:h-8 xl:w-8 items-center justify-center rounded-full bg-yellow-50 text-xs font-bold text-richblack-900">#</span>
+                    <span className="hidden xl:inline">S.No</span>
                   </div>
                 </th>
-                <th className="p-6 text-left text-sm font-semibold uppercase tracking-wider text-richblack-100">
+                <th className="p-4 xl:p-6 text-left text-xs xl:text-sm font-semibold uppercase tracking-wider text-richblack-100">
                   <div className="flex items-center gap-2">
                     <span className="text-blue-400">👤</span>
                     User Details
                   </div>
                 </th>
-                <th className="p-6 text-left text-sm font-semibold uppercase tracking-wider text-richblack-100">
+                <th className="p-4 xl:p-6 text-left text-xs xl:text-sm font-semibold uppercase tracking-wider text-richblack-100">
                   <div className="flex items-center gap-2">
                     <span className="text-green-400">💳</span>
                     Payment Details
                   </div>
                 </th>
                 <th
-                  className="cursor-pointer p-6 text-left text-sm font-semibold uppercase tracking-wider text-richblack-100 transition-all duration-200 hover:text-yellow-50 hover:scale-105"
+                  className="cursor-pointer p-4 xl:p-6 text-left text-xs xl:text-sm font-semibold uppercase tracking-wider text-richblack-100 transition-all duration-200 hover:text-yellow-50 hover:scale-105"
                   onClick={() => handleSort('purchaseDate')}
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-purple-400">📅</span>
-                    Date of Purchase
+                    <span className="hidden xl:inline">Date of Purchase</span>
+                    <span className="xl:hidden">Date</span>
                     {sortConfig.key === 'purchaseDate' && (
                       <span className="text-yellow-50 animate-bounce">
                         {sortConfig.direction === 'asc' ? '▲' : '▼'}
@@ -162,13 +250,13 @@ export default function Orders() {
                     )}
                   </div>
                 </th>
-                <th className="p-6 text-left text-sm font-semibold uppercase tracking-wider text-richblack-100">
+                <th className="p-4 xl:p-6 text-left text-xs xl:text-sm font-semibold uppercase tracking-wider text-richblack-100">
                   <div className="flex items-center gap-2">
                     <span className="text-orange-400">⚡</span>
                     Status
                   </div>
                 </th>
-                <th className="p-6 text-left text-sm font-semibold uppercase tracking-wider text-richblack-100">
+                <th className="p-4 xl:p-6 text-left text-xs xl:text-sm font-semibold uppercase tracking-wider text-richblack-100">
                   <div className="flex items-center gap-2">
                     <span className="text-pink-400">⚙️</span>
                     Actions
@@ -180,49 +268,49 @@ export default function Orders() {
               {filteredAndSortedOrders.map((order, index) => (
                 <tr
                   key={order._id}
-                  className="group relative text-base font-medium text-richblack-5 transition-all duration-300 hover:bg-gradient-to-r hover:from-richblack-700 hover:to-richblack-600 hover:shadow-lg animate-slideInLeft"
+                  className="group relative text-sm xl:text-base font-medium text-richblack-5 transition-all duration-300 hover:bg-gradient-to-r hover:from-richblack-700 hover:to-richblack-600 hover:shadow-lg animate-slideInLeft"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  <td className="p-6">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-yellow-50 to-yellow-100 text-sm font-bold text-richblack-900 shadow-lg transition-transform group-hover:scale-110">
+                  <td className="p-4 xl:p-6">
+                    <div className="flex h-8 w-8 xl:h-10 xl:w-10 items-center justify-center rounded-full bg-gradient-to-r from-yellow-50 to-yellow-100 text-xs xl:text-sm font-bold text-richblack-900 shadow-lg transition-transform group-hover:scale-110">
                       {index + 1}
                     </div>
                   </td>
-                  <td className="p-6">
-                    <div className="space-y-2">
-                      <p className="flex items-center gap-2 font-semibold">
+                  <td className="p-4 xl:p-6">
+                    <div className="space-y-1 xl:space-y-2">
+                      <p className="flex items-center gap-2 font-semibold text-xs xl:text-sm">
                         <span className="text-richblack-300">User:</span> 
-                        <span className="text-richblack-5">{order.user ? `${order.user.firstName || ''} ${order.user.lastName || ''}`.trim() : 'N/A'}</span>
+                        <span className="text-richblack-5 truncate">{order.user ? `${order.user.firstName || ''} ${order.user.lastName || ''}`.trim() : 'N/A'}</span>
                       </p>
-                      <p className="flex items-center gap-2 text-sm text-richblack-300">
-                        <span className="text-richblack-400">Mail ID:</span> 
-                        <span className="text-blue-300">{order.user?.email || 'N/A'}</span>
+                      <p className="flex items-center gap-2 text-xs text-richblack-300">
+                        <span className="text-richblack-400">Mail:</span> 
+                        <span className="text-blue-300 truncate">{order.user?.email || 'N/A'}</span>
                       </p>
-                      <p className="flex items-center gap-2 text-sm text-richblack-300">
+                      <p className="flex items-center gap-2 text-xs text-richblack-300">
                         <span className="text-richblack-400">Course:</span> 
-                        <span className="text-green-300">{order.course?.courseName || 'N/A'}</span>
+                        <span className="text-green-300 truncate">{order.course?.courseName || 'N/A'}</span>
                       </p>
                     </div>
                   </td>
-                  <td className="p-6">
-                    <div className="space-y-2">
-                      <p className="flex items-center gap-2 text-sm text-richblack-300">
+                  <td className="p-4 xl:p-6">
+                    <div className="space-y-1 xl:space-y-2">
+                      <p className="flex items-center gap-2 text-xs text-richblack-300">
                         <span className="text-richblack-400">ID:</span> 
-                        <span className="font-mono text-purple-300">{order.transactionId}</span>
+                        <span className="font-mono text-purple-300 truncate">{order.transactionId}</span>
                       </p>
-                      <p className="flex items-center gap-2 text-sm text-richblack-300">
-                        <span className="text-richblack-400">Payment Method:</span> 
+                      <p className="flex items-center gap-2 text-xs text-richblack-300">
+                        <span className="text-richblack-400">Method:</span> 
                         <span className="rounded-full bg-richblack-600 px-2 py-1 text-xs text-orange-300">{order.paymentMethod}</span>
                       </p>
-                      <p className="flex items-center gap-2 text-lg font-bold text-yellow-50">
-                        <span className="text-richblack-400 text-sm font-normal">Total Amount:</span> 
+                      <p className="flex items-center gap-2 text-sm xl:text-lg font-bold text-yellow-50">
+                        <span className="text-richblack-400 text-xs font-normal">Amount:</span> 
                         <span className="text-green-400">₹{order.amount}</span>
                       </p>
                     </div>
                   </td>
-                  <td className="p-6">
-                    <div className="rounded-lg bg-gradient-to-r from-richblack-600 to-richblack-500 px-4 py-3 text-center shadow-inner">
-                      <p className="text-sm font-semibold text-richblack-5">
+                  <td className="p-4 xl:p-6">
+                    <div className="rounded-lg bg-gradient-to-r from-richblack-600 to-richblack-500 px-2 xl:px-4 py-2 xl:py-3 text-center shadow-inner">
+                      <p className="text-xs xl:text-sm font-semibold text-richblack-5">
                         {new Date(order.purchaseDate).toLocaleDateString('en-IN', {
                           day: '2-digit',
                           month: 'short',
@@ -237,7 +325,7 @@ export default function Orders() {
                       </p>
                     </div>
                   </td>
-                  <td className="p-6">
+                  <td className="p-4 xl:p-6">
                     <div className="flex flex-col items-start gap-2">
                       <button
                         onClick={() => handleStatusToggle(order._id, !order.status)}
@@ -245,12 +333,12 @@ export default function Orders() {
                           order.status 
                             ? 'bg-gradient-to-r from-green-500 to-green-400 shadow-green-500/30' 
                             : 'bg-gradient-to-r from-richblack-600 to-richblack-500 shadow-richblack-600/30'
-                        } relative inline-flex h-7 w-12 items-center rounded-full shadow-lg transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-yellow-50 focus:ring-offset-2 focus:ring-offset-richblack-800`}
+                        } relative inline-flex h-6 w-10 xl:h-7 xl:w-12 items-center rounded-full shadow-lg transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-yellow-50 focus:ring-offset-2 focus:ring-offset-richblack-800`}
                       >
                         <span
                           className={`${
-                            order.status ? 'translate-x-6' : 'translate-x-1'
-                          } inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-300`}
+                            order.status ? 'translate-x-5 xl:translate-x-6' : 'translate-x-1'
+                          } inline-block h-4 w-4 xl:h-5 xl:w-5 transform rounded-full bg-white shadow-lg transition-transform duration-300`}
                         />
                       </button>
                       <span className={`text-xs font-medium ${order.status ? 'text-green-400' : 'text-richblack-400'}`}>
@@ -258,17 +346,17 @@ export default function Orders() {
                       </span>
                     </div>
                   </td>
-                  <td className="p-6">
+                  <td className="p-4 xl:p-6">
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => {
                           setSelectedOrder(order)
                           setShowViewModal(true)
                         }}
-                        className="rounded-lg bg-gradient-to-r from-caribbeangreen-600 to-caribbeangreen-500 p-3 text-white shadow-lg transition-all duration-200 hover:scale-110 hover:shadow-caribbeangreen-500/30 active:scale-95"
+                        className="rounded-lg bg-gradient-to-r from-caribbeangreen-600 to-caribbeangreen-500 p-2 xl:p-3 text-white shadow-lg transition-all duration-200 hover:scale-110 hover:shadow-caribbeangreen-500/30 active:scale-95"
                         title="View Order"
                       >
-                        <FiEye size={18} />
+                        <FiEye size={16} />
                       </button>
                     </div>
                   </td>
@@ -280,12 +368,12 @@ export default function Orders() {
         
         {/* Empty State */}
         {filteredAndSortedOrders.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16 animate-fadeIn">
-            <div className="rounded-full bg-gradient-to-r from-richblack-600 to-richblack-500 p-8 mb-6 shadow-2xl">
-              <FiSearch size={48} className="text-richblack-300" />
+          <div className="flex flex-col items-center justify-center py-8 sm:py-16 animate-fadeIn px-4">
+            <div className="rounded-full bg-gradient-to-r from-richblack-600 to-richblack-500 p-6 sm:p-8 mb-4 sm:mb-6 shadow-2xl">
+              <FiSearch size={32} className="text-richblack-300" />
             </div>
-            <h3 className="text-2xl font-bold text-richblack-5 mb-3">No Orders Found</h3>
-            <p className="text-richblack-300 text-center max-w-md leading-relaxed">
+            <h3 className="text-xl sm:text-2xl font-bold text-richblack-5 mb-2 sm:mb-3 text-center">No Orders Found</h3>
+            <p className="text-sm sm:text-base text-richblack-300 text-center max-w-md leading-relaxed">
               {searchQuery 
                 ? `No orders match your search for "${searchQuery}". Try adjusting your search terms.` 
                 : 'No orders have been placed yet. Orders will appear here once customers make purchases.'
@@ -294,7 +382,7 @@ export default function Orders() {
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="mt-4 rounded-lg bg-yellow-50 px-4 py-2 text-richblack-900 transition-all hover:scale-105"
+                className="mt-4 rounded-lg bg-yellow-50 px-3 sm:px-4 py-2 text-sm sm:text-base text-richblack-900 transition-all hover:scale-105"
               >
                 Clear Search
               </button>

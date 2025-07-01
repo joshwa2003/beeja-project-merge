@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { FaRegEnvelope, FaRegEnvelopeOpen, FaSync } from 'react-icons/fa'
+import { FaRegEnvelope, FaRegEnvelopeOpen, FaSync, FaSearch } from 'react-icons/fa'
+import { FiX } from 'react-icons/fi'
 import { MdDelete } from 'react-icons/md'
 import { useSelector } from 'react-redux'
 import { toast } from 'react-hot-toast'
@@ -13,6 +14,8 @@ export default function ContactMessages() {
   const [messages, setMessages] = useState([])
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState("all")
 
   useEffect(() => {
     fetchMessages()
@@ -152,6 +155,27 @@ export default function ContactMessages() {
     fetchStats()
   }
 
+  // Filter messages based on search term and status
+  const filteredMessages = messages.filter(message => {
+    const matchesSearch = searchTerm === "" || 
+      `${message.firstname} ${message.lastname}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      message.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      message.phoneNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      message.message?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === "all" || 
+      (statusFilter === "read" && message.status === "read") ||
+      (statusFilter === "unread" && message.status === "unread");
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  // Clear search
+  const clearSearch = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+  };
+
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -196,12 +220,76 @@ export default function ContactMessages() {
         )}
       </div>
 
+      {/* Search and Filter Section */}
+      <div className="mb-6 space-y-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Search Input */}
+          <div className="relative flex-1">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FaSearch className="h-4 w-4 text-richblack-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search by name, email, phone, or message content..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-10 py-2.5 bg-richblack-700 border border-richblack-600 rounded-lg text-richblack-5 placeholder-richblack-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-richblack-400 hover:text-richblack-200"
+              >
+                <FiX className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Status Filter */}
+          <div className="sm:w-48">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full px-3 py-2.5 bg-richblack-700 border border-richblack-600 rounded-lg text-richblack-5 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
+            >
+              <option value="all">All Messages</option>
+              <option value="unread">Unread</option>
+              <option value="read">Read</option>
+            </select>
+          </div>
+
+          {/* Clear Filters */}
+          {(searchTerm || statusFilter !== "all") && (
+            <button
+              onClick={clearSearch}
+              className="flex items-center gap-2 px-4 py-2.5 bg-richblack-600 text-richblack-200 rounded-lg hover:bg-richblack-500 transition-colors whitespace-nowrap"
+            >
+              <FiX className="h-3 w-3" />
+              Clear
+            </button>
+          )}
+        </div>
+
+        {/* Search Results Info */}
+        {(searchTerm || statusFilter !== "all") && (
+          <div className="text-sm text-richblack-300">
+            Showing {filteredMessages.length} of {messages.length} messages
+            {searchTerm && (
+              <span> matching "{searchTerm}"</span>
+            )}
+            {statusFilter !== "all" && (
+              <span> with status "{statusFilter}"</span>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* Messages List */}
       <div className="rounded-md border border-richblack-700">
         <div className="border-b border-richblack-700 bg-richblack-800 p-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">
-              Messages ({messages.length})
+              Messages ({filteredMessages.length})
             </h3>
             {loading && (
               <div className="flex items-center gap-2 text-sm text-richblack-300">
@@ -212,13 +300,15 @@ export default function ContactMessages() {
           </div>
         </div>
         
-        {messages.length === 0 ? (
+        {filteredMessages.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-richblack-300">No messages found</p>
+            <p className="text-richblack-300">
+              {messages.length === 0 ? "No messages found" : "No messages match your search criteria."}
+            </p>
           </div>
         ) : (
           <div className="divide-y divide-richblack-700">
-            {messages.map((message) => (
+            {filteredMessages.map((message) => (
               <div
                 key={message._id}
                 className={`p-6 transition-all duration-200 ${

@@ -64,19 +64,19 @@ const BundleAccessRequests = () => {
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
+    <div className="p-3 sm:p-6">
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-4 sm:space-y-0">
           <div>
-            <h2 className="text-2xl font-bold text-richblack-5">Bundle Access Requests</h2>
-            <p className="text-richblack-200">Manage bundle access requests from students</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-richblack-5">Bundle Access Requests</h2>
+            <p className="text-sm sm:text-base text-richblack-200">Manage bundle access requests from students</p>
           </div>
-          <div className="flex items-center gap-4">
-            <label className="text-richblack-300">Filter by Status:</label>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <label className="text-sm sm:text-base text-richblack-300">Filter by Status:</label>
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="bg-richblack-700 text-richblack-5 px-4 py-2 rounded-lg border border-richblack-600 focus:outline-none focus:border-yellow-50"
+              className="bg-richblack-700 text-richblack-5 px-3 sm:px-4 py-2 rounded-lg border border-richblack-600 focus:outline-none focus:border-yellow-50 text-sm sm:text-base w-full sm:w-auto"
             >
               <option value="pending">Pending</option>
               <option value="approved">Approved</option>
@@ -87,35 +87,35 @@ const BundleAccessRequests = () => {
       </div>
 
       {bundleRequests.length === 0 ? (
-        <div className="text-center text-richblack-200 py-10">
-          No {selectedStatus} bundle access requests found
+        <div className="text-center text-richblack-200 py-8 sm:py-10">
+          <p className="text-sm sm:text-base">No {selectedStatus} bundle access requests found</p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {bundleRequests.map((request) => (
             <div
               key={request._id}
-              className="bg-richblack-800 rounded-lg p-6 space-y-4"
+              className="bg-richblack-800 rounded-lg p-4 sm:p-6 space-y-3 sm:space-y-4"
             >
               {/* User Info */}
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3 sm:space-x-4">
                 <img
                   src={request.user.image}
                   alt={request.user.firstName}
-                  className="w-12 h-12 rounded-full object-cover"
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover flex-shrink-0"
                 />
-                <div>
-                  <h3 className="text-lg font-semibold text-richblack-5">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-base sm:text-lg font-semibold text-richblack-5 truncate">
                     {request.user.firstName} {request.user.lastName}
                   </h3>
-                  <p className="text-richblack-300">{request.user.email}</p>
+                  <p className="text-sm sm:text-base text-richblack-300 truncate">{request.user.email}</p>
                 </div>
               </div>
 
               {/* Courses List */}
               <div className="space-y-2">
-                <h4 className="text-sm font-medium text-richblack-300">Requested Courses:</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <h4 className="text-xs sm:text-sm font-medium text-richblack-300">Requested Courses:</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
                   {request.courses.map((course) => (
                     <div
                       key={course._id}
@@ -124,9 +124,9 @@ const BundleAccessRequests = () => {
                       <img
                         src={course.thumbnail}
                         alt={course.courseName}
-                        className="w-10 h-10 rounded object-cover"
+                        className="w-8 h-8 sm:w-10 sm:h-10 rounded object-cover flex-shrink-0"
                       />
-                      <span className="text-sm text-richblack-50 truncate">
+                      <span className="text-xs sm:text-sm text-richblack-50 truncate">
                         {course.courseName}
                       </span>
                     </div>
@@ -135,30 +135,30 @@ const BundleAccessRequests = () => {
               </div>
 
               {/* Request Info */}
-              <div className="flex items-center justify-between text-sm text-richblack-300">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 text-xs sm:text-sm text-richblack-300">
                 <div>
                   Requested: {new Date(request.requestedAt).toLocaleDateString()}
                 </div>
-                <div className="flex items-center space-x-4">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                   {request.status === 'pending' ? (
                     <>
                       <button
                         onClick={() => handleStatusUpdate(request._id, 'approved')}
-                        className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-caribbeangreen-200 text-richblack-900 hover:bg-caribbeangreen-100 transition-colors"
+                        className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 rounded-lg bg-caribbeangreen-200 text-richblack-900 hover:bg-caribbeangreen-100 transition-colors text-sm"
                       >
                         <FiCheck className="w-4 h-4" />
                         <span>Approve</span>
                       </button>
                       <button
                         onClick={() => handleStatusUpdate(request._id, 'rejected')}
-                        className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-pink-200 text-richblack-900 hover:bg-pink-100 transition-colors"
+                        className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 rounded-lg bg-pink-200 text-richblack-900 hover:bg-pink-100 transition-colors text-sm"
                       >
                         <FiX className="w-4 h-4" />
                         <span>Reject</span>
                       </button>
                     </>
                   ) : (
-                    <span className={`px-3 py-1 rounded-full ${
+                    <span className={`px-3 py-1 rounded-full text-center text-sm ${
                       request.status === 'approved' 
                         ? 'bg-caribbeangreen-200 text-richblack-900' 
                         : 'bg-pink-200 text-richblack-900'

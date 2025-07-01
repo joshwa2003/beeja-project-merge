@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { getAllCourses, approveCourse, deleteCourse, toggleCourseVisibility } from "../../../services/operations/adminAPI";
 import { getFullDetailsOfCourse } from "../../../services/operations/courseDetailsAPI";
-import { FaCheck, FaTrash, FaEye, FaEyeSlash, FaPlus, FaEdit } from "react-icons/fa";
+import { FaCheck, FaTrash, FaEye, FaEyeSlash, FaPlus, FaEdit, FaSearch, FaTimes } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import CreateCourse from "./CreateCourse/CreateCourse";
 import EditCourse from "./EditCourse";
@@ -14,6 +14,8 @@ const CourseManagement = () => {
   const [courses, setCourses] = useState([]); // Initialize as empty array
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   // Fetch courses from backend API
   const fetchCourses = async () => {
@@ -153,6 +155,22 @@ const CourseManagement = () => {
     console.log("View course:", courseId);
   };
 
+  // Filter courses based on search term and status
+  const filteredCourses = courses.filter(course => {
+    const matchesSearch = searchTerm === "" || 
+      course.courseName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      `${course.instructor?.firstName} ${course.instructor?.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.category?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === "all" || 
+      (statusFilter === "published" && course.status === "Published") ||
+      (statusFilter === "draft" && course.status === "Draft") ||
+      (statusFilter === "visible" && course.isVisible) ||
+      (statusFilter === "hidden" && !course.isVisible);
+    
+    return matchesSearch && matchesStatus;
+  });
+
   // Calculate statistics
   const totalCourses = courses.length;
   // Pending courses are those in Draft status and visible (submitted for approval)
@@ -160,6 +178,12 @@ const CourseManagement = () => {
     course.status === 'Draft' && course.isVisible
   ).length;
   const activeCourses = courses.filter(course => course.status === 'Published').length;
+
+  // Clear search
+  const clearSearch = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+  };
 
   return (
     <div className="text-richblack-5">
@@ -173,6 +197,72 @@ const CourseManagement = () => {
             <FaPlus className="w-4 h-4" />
             Create Course
           </button>
+        </div>
+        
+        {/* Search and Filter Section */}
+        <div className="mb-6 space-y-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            {/* Search Input */}
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FaSearch className="h-4 w-4 text-richblack-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search courses by title, instructor, or category..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-10 py-2.5 bg-richblack-700 border border-richblack-600 rounded-lg text-richblack-5 placeholder-richblack-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-richblack-400 hover:text-richblack-200"
+                >
+                  <FaTimes className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Status Filter */}
+            <div className="sm:w-48">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full px-3 py-2.5 bg-richblack-700 border border-richblack-600 rounded-lg text-richblack-5 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
+              >
+                <option value="all">All Courses</option>
+                <option value="published">Published</option>
+                <option value="draft">Draft</option>
+                <option value="visible">Visible</option>
+                <option value="hidden">Hidden</option>
+              </select>
+            </div>
+
+            {/* Clear Filters */}
+            {(searchTerm || statusFilter !== "all") && (
+              <button
+                onClick={clearSearch}
+                className="flex items-center gap-2 px-4 py-2.5 bg-richblack-600 text-richblack-200 rounded-lg hover:bg-richblack-500 transition-colors whitespace-nowrap"
+              >
+                <FaTimes className="h-3 w-3" />
+                Clear
+              </button>
+            )}
+          </div>
+
+          {/* Search Results Info */}
+          {(searchTerm || statusFilter !== "all") && (
+            <div className="text-sm text-richblack-300">
+              Showing {filteredCourses.length} of {totalCourses} courses
+              {searchTerm && (
+                <span> matching "{searchTerm}"</span>
+              )}
+              {statusFilter !== "all" && (
+                <span> with status "{statusFilter}"</span>
+              )}
+            </div>
+          )}
         </div>
         
         {/* Course Statistics */}
@@ -222,12 +312,14 @@ const CourseManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {courses.length === 0 ? (
+                {filteredCourses.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="p-4 text-center">No courses found.</td>
+                    <td colSpan="6" className="p-4 text-center">
+                      {courses.length === 0 ? "No courses found." : "No courses match your search criteria."}
+                    </td>
                   </tr>
                 ) : (
-                  courses.map((course) => (
+                  filteredCourses.map((course) => (
                     <tr key={course._id} className="border-b border-richblack-600 hover:bg-richblack-700/50">
                       <td className="p-3">{course.courseName}</td>
                       <td className="p-3">
@@ -301,12 +393,12 @@ const CourseManagement = () => {
 
           {/* Mobile Card View */}
           <div className="md:hidden space-y-4">
-            {courses.length === 0 ? (
+            {filteredCourses.length === 0 ? (
               <div className="text-center p-6 bg-richblack-700 rounded-lg">
-                <p>No courses found.</p>
+                <p>{courses.length === 0 ? "No courses found." : "No courses match your search criteria."}</p>
               </div>
             ) : (
-              courses.map((course) => (
+              filteredCourses.map((course) => (
                 <div key={course._id} className="bg-richblack-700 rounded-lg p-4 space-y-3">
                   <div className="flex justify-between items-start">
                     <div className="flex-1 min-w-0">

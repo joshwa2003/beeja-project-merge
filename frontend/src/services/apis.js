@@ -204,7 +204,9 @@ export const chatEndpoints = {
   // Admin endpoints
   GET_ALL_CHATS_API: BASE_URL + "/api/v1/chat/admin/chats",
   ARCHIVE_CHAT_API: BASE_URL + "/api/v1/chat/admin/archive",
+  UNARCHIVE_CHAT_API: BASE_URL + "/api/v1/chat/admin/unarchive",
   FLAG_CHAT_API: BASE_URL + "/api/v1/chat/admin/flag",
+  UNFLAG_CHAT_API: BASE_URL + "/api/v1/chat/admin/unflag",
   DELETE_CHAT_API: BASE_URL + "/api/v1/chat/admin/delete",
   HIDE_MESSAGE_API: BASE_URL + "/api/v1/chat/admin/hide-message",
   

@@ -1,4 +1,4 @@
-  import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { createCoupon } from '../../../services/operations/couponAPI';
@@ -86,27 +86,27 @@ export default function CouponForm({ onSuccess }) {
   };
 
   return (
-<div className="bg-richblack-800 rounded-2xl border border-richblack-700 p-8 shadow-xl transition-all duration-200 hover:shadow-2xl">
+<div className="bg-richblack-800 rounded-2xl border border-richblack-700 p-6 sm:p-8 shadow-xl transition-all duration-200 hover:shadow-2xl">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <div className="p-4 bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 rounded-2xl border border-yellow-500/30 shadow-lg">
-          <FiTag className="text-yellow-400 text-2xl" />
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6 sm:mb-8">
+        <div className="p-3 sm:p-4 bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 rounded-2xl border border-yellow-500/30 shadow-lg">
+          <FiTag className="text-yellow-400 text-xl sm:text-2xl" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-richblack-5 mb-2">Create New Coupon</h1>
-          <p className="text-richblack-300 text-base">Set up discount codes for your courses and bundles</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-richblack-5 mb-1 sm:mb-2">Create New Coupon</h1>
+          <p className="text-sm sm:text-base text-richblack-300">Set up discount codes for your courses and bundles</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Basic Information Section */}
-        <div className="bg-richblack-700/50 rounded-xl p-6 border border-richblack-600/50">
+        <div className="bg-richblack-700/50 rounded-xl p-4 sm:p-6 border border-richblack-600/50">
           <h3 className="text-lg font-semibold text-richblack-5 mb-6 flex items-center gap-2">
             <FiTag className="text-blue-400" />
             Basic Information
           </h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {/* Coupon Code */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-richblack-5 flex items-center gap-2">

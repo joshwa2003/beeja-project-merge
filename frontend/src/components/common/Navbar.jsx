@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { logout } from "../../services/operations/authAPI";
 
 import { NavbarLinks } from "../../../data/navbar-links";
-import studyNotionLogo from "../../assets/Logo/Logo-Full-Light.png";
+import beejaLogo from "/beejalogo.png";
 import { fetchCourseCategories } from "./../../services/operations/courseDetailsAPI";
 
 import { AiOutlineShoppingCart } from "react-icons/ai";
@@ -147,12 +147,12 @@ const ModernNavbar = () => {
         >
           <Link to="/" aria-label="Home" className="flex items-center">
             <img
-              src={studyNotionLogo}
-              width={90}
-              height={22}
+              src={beejaLogo}
+              width={40}
+              height={12}
               loading="lazy"
-              alt="StudyNotion Logo"
-              className="w-[70px] xs:w-[80px] sm:w-[85px] lg:w-[90px] h-auto transition-all duration-300 hover:brightness-110"
+              alt="Beeja Logo"
+              className="w-[28px] xs:w-[32px] sm:w-[36px] lg:w-[40px] h-auto transition-all duration-300 hover:brightness-110"
             />
           </Link>
         </motion.div>

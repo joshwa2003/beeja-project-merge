@@ -352,6 +352,85 @@ exports.flagChat = async (req, res) => {
     }
 };
 
+// Unflag chat (Admin only)
+exports.unflagChat = async (req, res) => {
+    try {
+        const { chatId } = req.params;
+        const adminId = req.user.id;
+
+        const chat = await Chat.findByIdAndUpdate(
+            chatId,
+            {
+                isFlagged: false,
+                flagReason: null,
+                moderatedBy: adminId,
+                moderatedAt: new Date()
+            },
+            { new: true }
+        );
+
+        if (!chat) {
+            return res.status(404).json({
+                success: false,
+                message: 'Chat not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Chat unflagged successfully',
+            data: chat
+        });
+
+    } catch (error) {
+        console.error('Error unflagging chat:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error unflagging chat',
+            error: error.message
+        });
+    }
+};
+
+// Unarchive chat (Admin only)
+exports.unarchiveChat = async (req, res) => {
+    try {
+        const { chatId } = req.params;
+        const adminId = req.user.id;
+
+        const chat = await Chat.findByIdAndUpdate(
+            chatId,
+            {
+                isArchived: false,
+                moderatedBy: adminId,
+                moderatedAt: new Date()
+            },
+            { new: true }
+        );
+
+        if (!chat) {
+            return res.status(404).json({
+                success: false,
+                message: 'Chat not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Chat unarchived successfully',
+            data: chat
+        });
+
+    } catch (error) {
+        console.error('Error unarchiving chat:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error unarchiving chat',
+            error: error.message
+        });
+    }
+};
+
 // Delete chat (Admin only)
 exports.deleteChat = async (req, res) => {
     try {

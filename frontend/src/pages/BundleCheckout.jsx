@@ -139,87 +139,91 @@ function BundleCheckout() {
   }
 
   return (
-    <div className="min-h-screen bg-richblack-900 py-8">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="min-h-screen bg-richblack-900 py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-6 sm:mb-8"
         >
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-richblack-300 hover:text-richblack-100 mb-4 transition-colors"
+            className="flex items-center gap-2 text-richblack-300 hover:text-richblack-100 mb-3 sm:mb-4 transition-colors text-sm sm:text-base"
           >
-            <FiArrowLeft className="w-5 h-5" />
-            Back to Course Selection
+            <FiArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline">Back to Course Selection</span>
+            <span className="sm:hidden">Back</span>
           </button>
           
-          <div className="flex items-center gap-4 mb-2">
-            <FiShoppingCart className="text-yellow-50 text-3xl" />
-            <h1 className="text-4xl font-bold text-richblack-5">Bundle Checkout</h1>
+          <div className="flex items-center gap-2 sm:gap-4 mb-2">
+            <FiShoppingCart className="text-yellow-50 text-2xl sm:text-3xl" />
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-richblack-5">Bundle Checkout</h1>
           </div>
-          <p className="text-richblack-300 text-lg">
+          <p className="text-richblack-300 text-sm sm:text-base lg:text-lg">
             Complete your purchase and start your learning journey with {selectedCourses.length} courses
           </p>
         </motion.div>
         
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Course List */}
-          <div className="xl:col-span-2">
+          <div className="lg:col-span-2 order-2 lg:order-1">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-gradient-to-br from-richblack-800 to-richblack-900 rounded-2xl p-8 border border-richblack-700"
+              className="bg-gradient-to-br from-richblack-800 to-richblack-900 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 border border-richblack-700"
             >
-              <h2 className="text-2xl font-bold text-richblack-5 mb-6 flex items-center gap-3">
-                <FiCheck className="text-green-400" />
-                Selected Courses ({selectedCourses.length})
+              <h2 className="text-xl sm:text-2xl font-bold text-richblack-5 mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
+                <FiCheck className="text-green-400 w-5 h-5 sm:w-6 sm:h-6" />
+                <span className="hidden sm:inline">Selected Courses ({selectedCourses.length})</span>
+                <span className="sm:hidden">Courses ({selectedCourses.length})</span>
               </h2>
               
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {selectedCourses.map((course, index) => (
                   <motion.div
                     key={course._id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="flex gap-6 bg-richblack-700/50 p-6 rounded-xl border border-richblack-600 hover:border-richblack-500 transition-colors"
+                    className="flex flex-col sm:flex-row gap-4 sm:gap-6 bg-richblack-700/50 p-4 sm:p-6 rounded-lg sm:rounded-xl border border-richblack-600 hover:border-richblack-500 transition-colors"
                   >
                     <img 
                       src={course.thumbnail}
                       alt={course.courseName}
-                      className="w-40 h-28 rounded-lg object-cover flex-shrink-0"
+                      className="w-full sm:w-32 md:w-40 h-32 sm:h-24 md:h-28 rounded-lg object-cover flex-shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-xl font-semibold text-richblack-5 mb-2 line-clamp-2">
+                      <h3 className="text-lg sm:text-xl font-semibold text-richblack-5 mb-2 line-clamp-2">
                         {course.courseName}
                       </h3>
-                      <p className="text-richblack-300 mb-3">
+                      <p className="text-richblack-300 mb-3 text-sm sm:text-base">
                         By {course.instructor?.firstName} {course.instructor?.lastName}
                       </p>
                       
                       {/* Course Stats */}
-                      <div className="flex flex-wrap items-center gap-4 mb-4 text-sm text-richblack-400">
+                      <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-3 sm:mb-4 text-xs sm:text-sm text-richblack-400">
                         <div className="flex items-center gap-1">
-                          <FiStar className="text-yellow-400" />
+                          <FiStar className="text-yellow-400 w-3 h-3 sm:w-4 sm:h-4" />
                           <span>{course.averageRating?.toFixed(1) || '0.0'}</span>
-                          <RatingStars Review_Count={course.averageRating || 0} Star_Size={14} />
+                          <div className="hidden sm:block">
+                            <RatingStars Review_Count={course.averageRating || 0} Star_Size={14} />
+                          </div>
                         </div>
                         <div className="flex items-center gap-1">
-                          <FiUsers className="w-4 h-4" />
+                          <FiUsers className="w-3 h-3 sm:w-4 sm:h-4" />
                           <span>{course.studentsEnrolled?.length || 0} students</span>
                         </div>
                       </div>
                       
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3">
                           {course.courseType === 'Free' ? (
-                            <span className="text-2xl font-bold text-caribbeangreen-100">Free</span>
+                            <span className="text-xl sm:text-2xl font-bold text-caribbeangreen-100">Free</span>
                           ) : (
-                            <span className="text-2xl font-bold text-richblack-5">₹{course.price}</span>
+                            <span className="text-xl sm:text-2xl font-bold text-richblack-5">₹{course.price}</span>
                           )}
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${
                             course.courseType === 'Free' 
                               ? 'bg-caribbeangreen-900/30 text-caribbeangreen-100 border border-caribbeangreen-700' 
                               : 'bg-yellow-900/30 text-yellow-100 border border-yellow-700'
@@ -236,15 +240,15 @@ function BundleCheckout() {
           </div>
 
           {/* Payment Summary */}
-          <div className="xl:col-span-1">
+          <div className="lg:col-span-1 order-1 lg:order-2">
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-gradient-to-br from-richblack-800 to-richblack-900 rounded-2xl p-8 border border-richblack-700 sticky top-8"
+              className="bg-gradient-to-br from-richblack-800 to-richblack-900 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 border border-richblack-700 lg:sticky lg:top-8"
             >
-              <h2 className="text-2xl font-bold text-richblack-5 mb-6">Order Summary</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-richblack-5 mb-4 sm:mb-6">Order Summary</h2>
               
-              <div className="space-y-4 mb-6">
+              <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
                 {/* Coupon Input */}
                 <CouponInput 
                   totalAmount={getOriginalPrice()} 
@@ -252,27 +256,27 @@ function BundleCheckout() {
                   checkoutType="bundle"
                 />
 
-                <div className="flex justify-between text-richblack-300">
+                <div className="flex justify-between text-richblack-300 text-sm sm:text-base">
                   <span>Total Courses:</span>
                   <span className="font-semibold">{selectedCourses.length}</span>
                 </div>
                 
-                <div className="flex justify-between text-richblack-300">
+                <div className="flex justify-between text-richblack-300 text-sm sm:text-base">
                   <span>Original Price:</span>
                   <span className="font-semibold">₹{getOriginalPrice()}</span>
                 </div>
 
                 {getBundleDiscount() > 0 && (
                   <>
-                    <div className="flex justify-between text-green-400">
+                    <div className="flex justify-between text-green-400 text-sm sm:text-base">
                       <span className="text-richblack-100">Bundle Discount ({Math.round(getBundleDiscount() * 100)}%):</span>
                       <span className="font-bold text-green-400">-₹{getSavings()}</span>
                     </div>
                     
-                    <div className="bg-gradient-to-r from-green-900/30 to-green-800/30 border border-green-600 rounded-lg p-4">
-                      <div className="flex items-center gap-2 text-white text-sm font-semibold">
-                        <FiCheck className="w-5 h-5 text-green-400" />
-                        🎉 You're saving ₹{getSavings()} with this bundle!
+                    <div className="bg-gradient-to-r from-green-900/30 to-green-800/30 border border-green-600 rounded-lg p-3 sm:p-4">
+                      <div className="flex items-center gap-2 text-white text-xs sm:text-sm font-semibold">
+                        <FiCheck className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 flex-shrink-0" />
+                        <span>🎉 You're saving ₹{getSavings()} with this bundle!</span>
                       </div>
                     </div>
                   </>
@@ -281,64 +285,69 @@ function BundleCheckout() {
                 <hr className="border-richblack-600" />
                 
                 {couponDiscount > 0 && (
-                  <div className="flex justify-between text-green-400">
+                  <div className="flex justify-between text-green-400 text-sm sm:text-base">
                     <span>Coupon Discount:</span>
                     <span className="font-bold text-green-400">-₹{couponDiscount}</span>
                   </div>
                 )}
 
-                <div className="flex justify-between text-xl font-bold text-richblack-5">
+                <div className="flex justify-between text-lg sm:text-xl font-bold text-richblack-5">
                   <span>Total Amount:</span>
                   <span className="text-yellow-50">₹{Math.max(0, getFinalPrice() - couponDiscount)}</span>
                 </div>
               </div>
 
-              <div className="space-y-4">
-              <button
-                onClick={handleBuyBundle}
-                className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-3
-                  ${isAllFree 
-                    ? 'bg-caribbeangreen-200 hover:bg-caribbeangreen-100 text-richblack-900' 
-                    : 'bg-gradient-to-r from-yellow-50 to-yellow-25 hover:from-yellow-25 hover:to-yellow-50 text-richblack-900'
-                  }`}
-              >
-                {isAllFree ? (
-                  <>
-                    <FiCheck className="w-5 h-5" />
-                    Request Access
-                  </>
-                ) : (
-                  <>
-                    <FiShoppingCart className="w-5 h-5" />
-                    Complete Purchase
-                  </>
-                )}
-              </button>
+              <div className="space-y-3 sm:space-y-4">
+                <button
+                  onClick={handleBuyBundle}
+                  className={`w-full py-3 sm:py-4 rounded-lg sm:rounded-xl font-bold text-base sm:text-lg transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 sm:gap-3
+                    ${isAllFree 
+                      ? 'bg-caribbeangreen-200 hover:bg-caribbeangreen-100 text-richblack-900' 
+                      : 'bg-gradient-to-r from-yellow-50 to-yellow-25 hover:from-yellow-25 hover:to-yellow-50 text-richblack-900'
+                    }`}
+                >
+                  {isAllFree ? (
+                    <>
+                      <FiCheck className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="hidden sm:inline">Request Access</span>
+                      <span className="sm:hidden">Request</span>
+                    </>
+                  ) : (
+                    <>
+                      <FiShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="hidden sm:inline">Complete Purchase</span>
+                      <span className="sm:hidden">Purchase</span>
+                    </>
+                  )}
+                </button>
 
                 <button
                   onClick={() => navigate(-1)}
-                  className="w-full bg-richblack-700 text-richblack-50 py-3 rounded-xl font-semibold hover:bg-richblack-600 transition-colors border border-richblack-600"
+                  className="w-full bg-richblack-700 text-richblack-50 py-2 sm:py-3 rounded-lg sm:rounded-xl font-semibold hover:bg-richblack-600 transition-colors border border-richblack-600 text-sm sm:text-base"
                 >
-                  Continue Shopping
+                  <span className="hidden sm:inline">Continue Shopping</span>
+                  <span className="sm:hidden">Continue</span>
                 </button>
               </div>
 
               {/* Security/Info Badge */}
-              <div className="mt-6 p-4 bg-richblack-700/30 rounded-lg border border-richblack-600">
-                <div className="flex items-center gap-2 text-richblack-300 text-sm">
-                  <FiCheck className="text-green-400 w-4 h-4" />
-                  {isAllFree ? (
-                    <span>Your request will be reviewed by admin</span>
-                  ) : (
-                    <>
-                      <span>Secure payment powered by Razorpay</span>
-                      {freeCourses.length > 0 && (
-                        <div className="mt-2 text-xs text-yellow-100">
-                          Note: Free course access will be requested after payment completion
-                        </div>
-                      )}
-                    </>
-                  )}
+              <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-richblack-700/30 rounded-lg border border-richblack-600">
+                <div className="flex items-start gap-2 text-richblack-300 text-xs sm:text-sm">
+                  <FiCheck className="text-green-400 w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0 mt-0.5" />
+                  <div>
+                    {isAllFree ? (
+                      <span>Your request will be reviewed by admin</span>
+                    ) : (
+                      <>
+                        <span>Secure payment powered by Razorpay</span>
+                        {freeCourses.length > 0 && (
+                          <div className="mt-2 text-xs text-yellow-100">
+                            Note: Free course access will be requested after payment completion
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>

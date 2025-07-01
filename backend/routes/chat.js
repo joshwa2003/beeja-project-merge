@@ -28,7 +28,9 @@ router.get('/instructor/chats', auth, isInstructor, getInstructorChats);
 // ================ ADMIN ROUTES ================
 router.get('/admin/chats', auth, isAdmin, getAllChats);
 router.patch('/admin/archive/:chatId', auth, isAdmin, archiveChat);
+router.patch('/admin/unarchive/:chatId', auth, isAdmin, require('../controllers/chat').unarchiveChat);
 router.patch('/admin/flag/:chatId', auth, isAdmin, flagChat);
+router.patch('/admin/unflag/:chatId', auth, isAdmin, require('../controllers/chat').unflagChat);
 router.delete('/admin/delete/:chatId', auth, isAdmin, deleteChat);
 router.patch('/admin/hide-message/:messageId', auth, isAdmin, hideMessage);
 
