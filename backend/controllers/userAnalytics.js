@@ -130,7 +130,7 @@ exports.getUserAnalytics = async (req, res) => {
 
         // Get user's orders for purchase history analytics
         const userOrders = await Order.find({ user: userId })
-            .populate('courses', 'courseName price')
+            .populate('course', 'courseName price')
             .sort({ createdAt: -1 })
             .limit(10);
 
@@ -225,7 +225,7 @@ exports.getUserAnalytics = async (req, res) => {
         const recentOrders = await Order.find({ user: userId })
             .sort({ createdAt: -1 })
             .limit(5)
-            .populate('courses', 'courseName');
+            .populate('course', 'courseName');
 
         // validCourseProgress is already calculated above
 
@@ -292,10 +292,10 @@ exports.getUserAnalytics = async (req, res) => {
 
         // Add enrollment activities
         for (const order of recentOrders) {
-            const courseNames = order.courses.map(c => c.courseName).join(', ');
+            const courseName = order.course ? order.course.courseName : 'Unknown Course';
             allActivities.push({
                 action: 'Course Enrollment',
-                details: `Enrolled in ${courseNames}`,
+                details: `Enrolled in ${courseName}`,
                 timestamp: order.createdAt,
                 type: 'enrollment',
                 amount: order.amount
@@ -376,13 +376,13 @@ exports.getUserActivity = async (req, res) => {
         const orders = await Order.find({
             user: userId,
             createdAt: { $gte: startDate, $lte: endDate }
-        }).populate('courses', 'courseName');
+        }).populate('course', 'courseName');
 
         // Filter out progress updates where courseID is null (deleted courses)
         const validProgressUpdates = progressUpdates.filter(progress => progress.courseID !== null);
 
         // Filter out orders with null courses (deleted courses)
-        const validOrders = orders.filter(order => order.courses && order.courses.length > 0);
+        const validOrders = orders.filter(order => order.course);
 
         const activity = {
             progressUpdates: validProgressUpdates.map(progress => ({
@@ -393,7 +393,7 @@ exports.getUserActivity = async (req, res) => {
             })),
             newEnrollments: validOrders.map(order => ({
                 orderId: order._id,
-                courses: order.courses.filter(course => course !== null).map(course => course.courseName),
+                course: order.course ? order.course.courseName : 'Unknown Course',
                 amount: order.amount,
                 createdAt: order.createdAt
             }))

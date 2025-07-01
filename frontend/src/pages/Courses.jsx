@@ -1,147 +1,77 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { FaCode, FaDatabase, FaMobile, FaCloud, FaShieldAlt, FaCogs, FaSearch, FaFilter, FaStar, FaClock, FaUsers, FaPlay, FaBookmark, FaArrowRight } from "react-icons/fa";
 import ImprovedFooter from "../components/common/ImprovedFooter";
+import { getAllCourses } from "../services/operations/courseDetailsAPI";
 
 const Courses = () => {
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("popular");
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const categories = [
-    { id: "all", name: "All Courses", icon: <FaCode />, count: 24 },
-    { id: "web-dev", name: "Web Development", icon: <FaCode />, count: 8 },
-    { id: "data-science", name: "Data Science", icon: <FaDatabase />, count: 6 },
-    { id: "mobile", name: "Mobile Development", icon: <FaMobile />, count: 4 },
-    { id: "cloud", name: "Cloud Computing", icon: <FaCloud />, count: 3 },
-    { id: "security", name: "Cybersecurity", icon: <FaShieldAlt />, count: 2 },
-    { id: "devops", name: "DevOps", icon: <FaCogs />, count: 1 }
-  ];
+  useEffect(() => {
+    fetchCourses();
+  }, []);
 
-  const courses = [
-    {
-      id: 1,
-      title: "Complete Web Development Bootcamp",
-      description: "Master HTML, CSS, JavaScript, React, Node.js, and MongoDB in this comprehensive full-stack course.",
-      category: "web-dev",
-      level: "Beginner to Advanced",
-      duration: "12 weeks",
-      students: 15420,
-      rating: 4.9,
-      price: 299,
-      originalPrice: 499,
-      instructor: "Sarah Johnson",
-      image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=250&fit=crop",
-      featured: true,
-      bestseller: true,
-      skills: ["HTML", "CSS", "JavaScript", "React", "Node.js", "MongoDB"]
-    },
-    {
-      id: 2,
-      title: "Data Science & Machine Learning",
-      description: "Learn Python, pandas, scikit-learn, and TensorFlow to become a data scientist.",
-      category: "data-science",
-      level: "Intermediate",
-      duration: "16 weeks",
-      students: 12350,
-      rating: 4.8,
-      price: 399,
-      originalPrice: 599,
-      instructor: "Dr. Michael Chen",
-      image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=250&fit=crop",
-      featured: true,
-      bestseller: false,
-      skills: ["Python", "Pandas", "Scikit-learn", "TensorFlow", "Statistics"]
-    },
-    {
-      id: 3,
-      title: "React Native Mobile Development",
-      description: "Build cross-platform mobile apps for iOS and Android using React Native.",
-      category: "mobile",
-      level: "Intermediate",
-      duration: "10 weeks",
-      students: 8750,
-      rating: 4.7,
-      price: 249,
-      originalPrice: 399,
-      instructor: "Alex Rodriguez",
-      image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=250&fit=crop",
-      featured: false,
-      bestseller: true,
-      skills: ["React Native", "JavaScript", "Mobile UI", "API Integration"]
-    },
-    {
-      id: 4,
-      title: "AWS Cloud Practitioner",
-      description: "Master Amazon Web Services and prepare for the AWS Cloud Practitioner certification.",
-      category: "cloud",
-      level: "Beginner",
-      duration: "8 weeks",
-      students: 6890,
-      rating: 4.6,
-      price: 199,
-      originalPrice: 299,
-      instructor: "David Kim",
-      image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=250&fit=crop",
-      featured: false,
-      bestseller: false,
-      skills: ["AWS", "Cloud Computing", "EC2", "S3", "Lambda"]
-    },
-    {
-      id: 5,
-      title: "Cybersecurity Fundamentals",
-      description: "Learn essential cybersecurity concepts, threat analysis, and security best practices.",
-      category: "security",
-      level: "Beginner",
-      duration: "6 weeks",
-      students: 4320,
-      rating: 4.5,
-      price: 179,
-      originalPrice: 249,
-      instructor: "Lisa Thompson",
-      image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&h=250&fit=crop",
-      featured: false,
-      bestseller: false,
-      skills: ["Network Security", "Ethical Hacking", "Risk Assessment", "Compliance"]
-    },
-    {
-      id: 6,
-      title: "DevOps Engineering Complete Course",
-      description: "Master CI/CD, Docker, Kubernetes, and cloud infrastructure automation.",
-      category: "devops",
-      level: "Advanced",
-      duration: "14 weeks",
-      students: 5670,
-      rating: 4.8,
-      price: 349,
-      originalPrice: 499,
-      instructor: "Robert Wilson",
-      image: "https://images.unsplash.com/photo-1518432031352-d6fc5c10da5a?w=400&h=250&fit=crop",
-      featured: true,
-      bestseller: false,
-      skills: ["Docker", "Kubernetes", "Jenkins", "AWS", "Terraform"]
+  const fetchCourses = async () => {
+    setLoading(true);
+    try {
+      const coursesData = await getAllCourses();
+      console.log("Raw courses data:", coursesData);
+      console.log("Is array?", Array.isArray(coursesData));
+      console.log("Length:", coursesData?.length);
+      
+      if (Array.isArray(coursesData)) {
+        console.log("First course:", coursesData[0]);
+        setCourses(coursesData);
+      } else {
+        console.log("Courses data is not an array, setting empty array");
+        setCourses([]);
+      }
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+      setCourses([]); // Set empty array on error
     }
-  ];
+    setLoading(false);
+  };
 
   const filteredCourses = courses.filter(course => {
-    const matchesCategory = activeCategory === "all" || course.category === activeCategory;
-    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         course.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
+    if (!course) return false;
+
+    // Exclude drafted courses by draft flags or status
+    if (course.draft === true || course.isDraft === true || course.status === "Draft") return false;
+    
+    const matchesCategory = activeCategory === "all" || 
+                          (course.category && course.category === activeCategory);
+    
+    const matchesSearch = 
+      (course.courseName && course.courseName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (course.courseDescription && course.courseDescription.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (course.tag && Array.isArray(course.tag) && 
+       course.tag.some(tag => tag && tag.toLowerCase().includes(searchTerm.toLowerCase())));
+    
     return matchesCategory && matchesSearch;
   });
 
   const sortedCourses = [...filteredCourses].sort((a, b) => {
+    if (!a || !b) return 0;
+    
     switch (sortBy) {
-      case "popular": return b.students - a.students;
-      case "rating": return b.rating - a.rating;
-      case "price-low": return a.price - b.price;
-      case "price-high": return b.price - a.price;
+      case "popular": return (b.studentsEnrolled?.length || 0) - (a.studentsEnrolled?.length || 0);
+      case "rating": return (b.averageRating || 0) - (a.averageRating || 0);
+      case "price-low": return (a.price || 0) - (b.price || 0);
+      case "price-high": return (b.price || 0) - (a.price || 0);
       default: return 0;
     }
   });
 
-  const featuredCourses = courses.filter(course => course.featured);
+  const featuredCourses = courses.filter(course => course && course.featured && !(course.draft === true || course.isDraft === true || course.status === "Draft"));
+
+  
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -174,8 +104,8 @@ const Courses = () => {
     >
       <div className="relative">
         <img 
-          src={course.image} 
-          alt={course.title}
+          src={course.thumbnail || course.image} 
+          alt={course.courseName}
           className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
         />
         <div className="absolute top-4 left-4 flex gap-2">
@@ -204,52 +134,65 @@ const Courses = () => {
         </div>
         
         <h3 className="text-lg font-semibold text-richblack-50 mb-2 group-hover:text-yellow-50 transition-colors">
-          {course.title}
+          {course.courseName}
         </h3>
         
         <p className="text-richblack-300 text-sm mb-4 line-clamp-2">
-          {course.description}
+          {course.courseDescription}
         </p>
         
         <div className="flex items-center gap-4 text-sm text-richblack-400 mb-4">
           <span className="flex items-center gap-1">
-            <FaClock /> {course.duration}
+            <FaClock /> {course.totalDuration || "N/A"}
           </span>
           <span className="flex items-center gap-1">
-            <FaUsers /> {course.students.toLocaleString()}
+            <FaUsers /> {course.studentsEnrolled?.length?.toLocaleString() || 0}
           </span>
           <span className="flex items-center gap-1">
-            <FaStar className="text-yellow-400" /> {course.rating}
+            <FaStar className="text-yellow-400" /> {course.averageRating?.toFixed(1) || "0.0"}
           </span>
         </div>
         
         <div className="flex flex-wrap gap-1 mb-4">
-          {course.skills.slice(0, 3).map((skill, index) => (
+          {course.tag?.slice(0, 3).map((tag, index) => (
             <span 
               key={index}
               className="bg-richblack-700 text-richblack-200 px-2 py-1 rounded text-xs"
             >
-              {skill}
+              {tag}
             </span>
           ))}
-          {course.skills.length > 3 && (
-            <span className="text-richblack-400 text-xs">+{course.skills.length - 3} more</span>
+          {course.tag && course.tag.length > 3 && (
+            <span className="text-richblack-400 text-xs">+{course.tag.length - 3} more</span>
           )}
         </div>
         
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-2xl font-bold text-yellow-50">${course.price}</span>
-            <span className="text-richblack-400 line-through ml-2">${course.originalPrice}</span>
+            {course.courseType === 'Free' || course.adminSetFree ? (
+              <span className="text-2xl font-bold text-green-400">Free</span>
+            ) : (
+              <>
+                <span className="text-2xl font-bold text-yellow-50">₹{course.price}</span>
+                {course.originalPrice && course.originalPrice !== course.price && (
+                  <span className="text-richblack-400 line-through ml-2">₹{course.originalPrice}</span>
+                )}
+              </>
+            )}
           </div>
-          <button className="bg-yellow-50 text-richblack-900 px-4 py-2 rounded-lg font-semibold hover:bg-yellow-100 transition-all duration-300 flex items-center gap-2 group-hover:scale-105">
+          <button 
+            onClick={() => navigate(`/courses/${course._id}`)}
+            className="bg-yellow-50 text-richblack-900 px-4 py-2 rounded-lg font-semibold hover:bg-yellow-100 transition-all duration-300 flex items-center gap-2 group-hover:scale-105"
+          >
             Enroll Now <FaArrowRight />
           </button>
         </div>
         
         <div className="mt-4 pt-4 border-t border-richblack-700">
           <p className="text-sm text-richblack-400">
-            Instructor: <span className="text-richblack-200">{course.instructor}</span>
+            Instructor: <span className="text-richblack-200">
+              {course.instructor?.firstName} {course.instructor?.lastName}
+            </span>
           </p>
         </div>
       </div>
@@ -295,7 +238,7 @@ const Courses = () => {
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {featuredCourses.map((course) => (
-              <CourseCard key={course.id} course={course} featured={true} />
+              <CourseCard key={course._id || course.id} course={course} featured={true} />
             ))}
           </div>
         </section>
@@ -335,25 +278,7 @@ const Courses = () => {
           </div>
         </section>
 
-        {/* Categories */}
-        <section className="mb-12">
-          <div className="flex flex-wrap gap-4 justify-center">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setActiveCategory(category.id)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
-                  activeCategory === category.id
-                    ? 'bg-yellow-50 text-richblack-900'
-                    : 'bg-richblack-800 text-richblack-300 hover:bg-richblack-700 border border-richblack-700'
-                }`}
-              >
-                {category.icon}
-                {category.name} ({category.count})
-              </button>
-            ))}
-          </div>
-        </section>
+        
 
         {/* All Courses */}
         <section>
@@ -364,10 +289,14 @@ const Courses = () => {
             </span>
           </h2>
           
-          {sortedCourses.length > 0 ? (
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-50"></div>
+            </div>
+          ) : sortedCourses.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {sortedCourses.map((course) => (
-                <CourseCard key={course.id} course={course} />
+                <CourseCard key={course._id || course.id} course={course} />
               ))}
             </div>
           ) : (

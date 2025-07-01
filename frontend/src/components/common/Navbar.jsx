@@ -248,9 +248,13 @@ const ModernNavbar = () => {
                     <MdKeyboardArrowDown size={14} />
                   </motion.div>
                   <motion.div
-                    className={`absolute left-0 top-full z-[91] flex w-[180px] mt-2 flex-col rounded-lg bg-white/95 backdrop-blur-xl p-3 text-richblack-900 lg:w-[250px] shadow-[0_8px_32px_rgba(0,0,0,0.2)] transition-all duration-300 ${
+                    className={`absolute left-0 top-full z-[91] flex w-[180px] mt-2 flex-col rounded-lg bg-white/95 backdrop-blur-xl p-3 text-richblack-900 lg:w-[250px] shadow-[0_8px_32px_rgba(0,0,0,0.2)] transition-all duration-300 max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 ${
                       catalogDropdownOpen ? 'visible opacity-100' : 'invisible opacity-0'
                     }`}
+                    style={{
+                      scrollbarWidth: 'thin',
+                      scrollbarColor: '#D1D5DB transparent'
+                    }}
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ 
                       scale: catalogDropdownOpen ? 1 : 0.8, 
@@ -279,6 +283,19 @@ const ModernNavbar = () => {
                               </Link>
                             </motion.div>
                           ))}
+                          {/* View All Courses Section */}
+                          <div className="border-t border-richblack-200 mt-2 pt-2">
+                            <motion.div whileHover={{ x: 5, backgroundColor: "rgba(0,0,0,0.05)" }}>
+                              <Link
+                                to="/courses"
+                                className="rounded-lg bg-transparent py-3 pl-4 hover:bg-richblack-50 flex items-center gap-3 text-blue-600 font-medium"
+                                transition={{ duration: 0.2 }}
+                              >
+                                <Icons.FaGraduationCap className="w-5 h-5" />
+                                <p>View All Courses</p>
+                              </Link>
+                            </motion.div>
+                          </div>
                         </>
                       ) : (
                         <p className="text-center text-sm">No Courses Found</p>
@@ -495,28 +512,45 @@ const ModernNavbar = () => {
                         <summary className="cursor-pointer rounded-lg p-1.5 xs:p-2 hover:bg-white/10 text-xs xs:text-sm font-medium transition-all duration-300">
                           Catalog
                         </summary>
-                        <div className="mt-1 flex flex-col gap-1 pl-3">
+                        <div className="mt-1 flex flex-col gap-1 pl-3 max-h-[200px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400" style={{
+                          scrollbarWidth: 'thin',
+                          scrollbarColor: '#D1D5DB transparent'
+                        }}>
                           {loading ? (
                             <p className="text-sm">Loading...</p>
                           ) : subLinks.length ? (
-                            subLinks.map((subLink, i) => (
-                              <motion.div
-                                key={i}
-                                whileHover={{ x: 5 }}
-                                transition={{ duration: 0.2 }}
-                              >
-                                <Link
-                                  to={`/catalog/${subLink.name
-                                    .split(" ")
-                                    .join("-")
-                                    .toLowerCase()}`}
-                                  className="rounded-lg py-1 xs:py-1.5 px-2 hover:bg-white/10 block text-xs xs:text-sm transition-all duration-200"
-                                  onClick={() => setMobileMenuOpen(false)}
+                            <>
+                              {subLinks.map((subLink, i) => (
+                                <motion.div
+                                  key={i}
+                                  whileHover={{ x: 5 }}
+                                  transition={{ duration: 0.2 }}
                                 >
-                                  {subLink.name}
-                                </Link>
-                              </motion.div>
-                            ))
+                                  <Link
+                                    to={`/catalog/${subLink.name
+                                      .split(" ")
+                                      .join("-")
+                                      .toLowerCase()}`}
+                                    className="rounded-lg py-1 xs:py-1.5 px-2 hover:bg-white/10 block text-xs xs:text-sm transition-all duration-200"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                  >
+                                    {subLink.name}
+                                  </Link>
+                                </motion.div>
+                              ))}
+                              {/* View All Courses for Mobile */}
+                              <div className="border-t border-white/20 mt-2 pt-2">
+                                <motion.div whileHover={{ x: 5 }}>
+                                  <Link
+                                    to="/courses"
+                                    className="rounded-lg py-1 xs:py-1.5 px-2 hover:bg-white/10 block text-xs xs:text-sm transition-all duration-200 text-blue-300 font-medium"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                  >
+                                    📚 View All Courses
+                                  </Link>
+                                </motion.div>
+                              </div>
+                            </>
                           ) : (
                             <p className="text-sm">No Courses Found</p>
                           )}
