@@ -92,6 +92,16 @@ const ChatWindow = ({ chat, onClose, courseName }) => {
         }
       });
 
+      // Listen for notifications
+      newSocket.on('new_notification', (notification) => {
+        console.log('New notification received:', notification);
+        // Show toast notification
+        toast.success(notification.message, {
+          duration: 5000,
+          position: 'top-right',
+        });
+      });
+
       newSocket.on('error', (error) => {
         console.error('Socket error:', error);
         toast.error(error.message || 'Connection error');

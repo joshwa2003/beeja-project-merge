@@ -70,7 +70,11 @@ io.on('connection', (socket) => {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             socket.userId = decoded.id;
             socket.userRole = decoded.accountType;
-            console.log(`User ${decoded.id} authenticated with role ${decoded.accountType}`);
+            
+            // Join user-specific room for notifications
+            socket.join(decoded.id);
+            
+            console.log(`User ${decoded.id} authenticated with role ${decoded.accountType} and joined personal room`);
             socket.emit('authenticated', { success: true });
         } catch (error) {
             console.error('Socket authentication failed:', error);

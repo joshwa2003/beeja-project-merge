@@ -83,6 +83,18 @@ exports.initiateChat = async (req, res) => {
                 priority: 'medium'
             });
             await notification.save();
+
+            // Emit socket notification to instructor
+            const io = req.app.get('io');
+            if (io) {
+                io.to(course.instructor._id.toString()).emit('new_notification', {
+                    type: 'NEW_STUDENT_CHAT',
+                    message: `${req.user.firstName} ${req.user.lastName} started a chat about ${course.courseName}`,
+                    chatId: chat._id,
+                    notification: notification
+                });
+                console.log(`New chat notification emitted to instructor ${course.instructor._id}`);
+            }
         }
 
         res.status(200).json({
@@ -458,11 +470,21 @@ exports.sendMessage = async (req, res) => {
         });
         await notification.save();
 
-        // Emit socket event for real-time updates
+        // Emit socket events for real-time updates
         const io = req.app.get('io');
         if (io) {
+            // Emit new message to chat room
             io.to(chatId).emit('new_message', populatedMessage);
-            console.log(`Socket event emitted for chat ${chatId}`);
+            
+            // Emit notification to recipient
+            io.to(recipientId.toString()).emit('new_notification', {
+                type: 'NEW_CHAT_MESSAGE',
+                message: `${senderName} sent you a message about ${chat.course.courseName}`,
+                chatId: chatId,
+                notification: notification
+            });
+            
+            console.log(`Socket events emitted for chat ${chatId} and recipient ${recipientId}`);
         }
 
         res.status(201).json({
