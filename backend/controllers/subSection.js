@@ -39,15 +39,63 @@ exports.updateSubSection = async (req, res) => {
 
         // upload video to cloudinary
         if (req.file) {
-            const video = req.file;
-            console.log('Uploading video file:', video.originalname);
-            const uploadDetails = await uploadImageToCloudinary(video, process.env.FOLDER_NAME);
-            console.log('Video duration from Cloudinary (update):', uploadDetails.duration);
-            console.log('Full Cloudinary response (update):', JSON.stringify(uploadDetails, null, 2));
-            subSection.videoUrl = uploadDetails.secure_url;
-            subSection.timeDuration = uploadDetails.duration || 0;
-            console.log('Video uploaded successfully:', uploadDetails.secure_url);
-            console.log('Setting timeDuration to (update):', subSection.timeDuration);
+            try {
+                const video = req.file;
+                console.log('Uploading video file (update):', video.originalname);
+                
+                // Check file size limit (500MB)
+                const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB in bytes
+                if (video.size > MAX_FILE_SIZE) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Video file size exceeds limit of 500MB'
+                    });
+                }
+
+                // Set a timeout for the entire upload process
+                const uploadTimeout = setTimeout(() => {
+                    throw new Error('Upload timeout exceeded');
+                }, 600000); // 10 minutes
+
+                try {
+                    const uploadDetails = await uploadImageToCloudinary(video, process.env.FOLDER_NAME);
+                    
+                    // Clear the timeout as upload succeeded
+                    clearTimeout(uploadTimeout);
+
+                    console.log('Video duration from Cloudinary (update):', uploadDetails.duration);
+                    console.log('Full Cloudinary response (update):', JSON.stringify(uploadDetails, null, 2));
+                    subSection.videoUrl = uploadDetails.secure_url;
+                    subSection.timeDuration = uploadDetails.duration || 0;
+                    console.log('Video uploaded successfully:', uploadDetails.secure_url);
+                    console.log('Setting timeDuration to (update):', subSection.timeDuration);
+                } catch (uploadError) {
+                    // Clear the timeout as upload failed
+                    clearTimeout(uploadTimeout);
+                    throw uploadError;
+                }
+            } catch (uploadError) {
+                console.error('Video upload failed (update):', uploadError);
+                
+                // Provide more detailed error messages based on error type
+                let errorMessage = 'Video upload failed';
+                if (uploadError.message.includes('timeout')) {
+                    errorMessage = 'Video upload timed out. Please try again with a smaller file or better connection';
+                } else if (uploadError.http_code === 413) {
+                    errorMessage = 'Video file size too large';
+                }
+                
+                return res.status(500).json({
+                    success: false,
+                    message: errorMessage,
+                    error: uploadError.message,
+                    details: {
+                        fileName: video.originalname,
+                        fileSize: video.size,
+                        errorType: uploadError.name
+                    }
+                });
+            }
         }
 
         // Handle quiz attachment
@@ -97,8 +145,9 @@ exports.createSubSection = async (req, res) => {
         // extract data
         const { title, description, sectionId, questions } = req.body;
 
-        // extract video file
-        const videoFile = req.file;
+        // extract video file - handle both single file and files array
+        const videoFile = req.files?.videoFile?.[0] || req.file;
+        console.log('req.files:', req.files);
         console.log('req.file:', req.file);
 
         // validation
@@ -106,6 +155,15 @@ exports.createSubSection = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: 'Title, description, and sectionId are required'
+            });
+        }
+
+        // Validate section exists
+        const section = await Section.findById(sectionId);
+        if (!section) {
+            return res.status(404).json({
+                success: false,
+                message: 'Section not found'
             });
         }
 
@@ -122,33 +180,67 @@ exports.createSubSection = async (req, res) => {
                     path: videoFile.path
                 });
                 
-                // Check if FOLDER_NAME environment variable is set
-                if (!process.env.FOLDER_NAME) {
-                    console.log('Warning: FOLDER_NAME environment variable not set, using default');
+                // Check file size limit (500MB)
+                const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB in bytes
+                if (videoFile.size > MAX_FILE_SIZE) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Video file size exceeds limit of 500MB'
+                    });
                 }
+
+                // Check if FOLDER_NAME environment variable is set
+                const folderName = process.env.FOLDER_NAME || 'course-content';
                 
-                // upload video to cloudinary with timeout
-                const uploadPromise = uploadImageToCloudinary(videoFile, process.env.FOLDER_NAME || 'uploads');
-                const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('Upload timeout')), 300000) // 5 minutes timeout
-                );
-                
-                const videoFileDetails = await Promise.race([uploadPromise, timeoutPromise]);
-                console.log('Video uploaded successfully:', videoFileDetails.secure_url);
-                console.log('Video duration from Cloudinary:', videoFileDetails.duration);
-                console.log('Full Cloudinary response:', JSON.stringify(videoFileDetails, null, 2));
-                
-                videoUrl = videoFileDetails.secure_url;
-                // Cloudinary returns duration in seconds, we'll store it as seconds
-                timeDuration = videoFileDetails.duration || 0;
-                
-                console.log('Setting timeDuration to:', timeDuration);
+                // Set a timeout for the entire upload process
+                const uploadTimeout = setTimeout(() => {
+                    throw new Error('Upload timeout exceeded');
+                }, 600000); // 10 minutes
+
+                try {
+                    // upload video to cloudinary with enhanced options
+                    const videoFileDetails = await uploadImageToCloudinary(
+                        videoFile, 
+                        folderName
+                    );
+                    
+                    // Clear the timeout as upload succeeded
+                    clearTimeout(uploadTimeout);
+
+                    console.log('Video uploaded successfully:', videoFileDetails.secure_url);
+                    console.log('Video duration from Cloudinary:', videoFileDetails.duration);
+                    console.log('Full Cloudinary response:', JSON.stringify(videoFileDetails, null, 2));
+                    
+                    videoUrl = videoFileDetails.secure_url;
+                    // Cloudinary returns duration in seconds, we'll store it as seconds
+                    timeDuration = videoFileDetails.duration || 0;
+                    
+                    console.log('Setting timeDuration to:', timeDuration);
+                } catch (uploadError) {
+                    // Clear the timeout as upload failed
+                    clearTimeout(uploadTimeout);
+                    throw uploadError;
+                }
             } catch (uploadError) {
                 console.error('Video upload failed:', uploadError);
+                
+                // Provide more detailed error messages based on error type
+                let errorMessage = 'Video upload failed';
+                if (uploadError.message.includes('timeout')) {
+                    errorMessage = 'Video upload timed out. Please try again with a smaller file or better connection';
+                } else if (uploadError.http_code === 413) {
+                    errorMessage = 'Video file size too large';
+                }
+                
                 return res.status(500).json({
                     success: false,
-                    message: 'Video upload failed',
-                    error: uploadError.message
+                    message: errorMessage,
+                    error: uploadError.message,
+                    details: {
+                        fileName: videoFile.originalname,
+                        fileSize: videoFile.size,
+                        errorType: uploadError.name
+                    }
                 });
             }
         } else {

@@ -313,13 +313,23 @@ export const toggleUserStatus = async (userId, token) => {
 }
 
 // ================ Get All Courses ================
-export const getAllCourses = async (token) => {
-  let result = []
+export const getAllCourses = async (token, params = {}) => {
+  let result = { courses: [], pagination: null }
   const toastId = toast.loading("Loading courses...")
 
   try {
-    console.log("Fetching courses with token:", token)
-    const response = await apiConnector("GET", GET_ALL_COURSES_API, null, {
+    console.log("Fetching courses with token:", token, "and params:", params)
+    
+    // Build query string from params
+    const queryParams = new URLSearchParams()
+    if (params.page) queryParams.append('page', params.page)
+    if (params.limit) queryParams.append('limit', params.limit)
+    if (params.search) queryParams.append('search', params.search)
+    if (params.courseType && params.courseType !== 'All') queryParams.append('courseType', params.courseType)
+    
+    const url = `${GET_ALL_COURSES_API}?${queryParams.toString()}`
+    
+    const response = await apiConnector("GET", url, null, {
       Authorization: `Bearer ${token}`,
     })
     
@@ -331,8 +341,12 @@ export const getAllCourses = async (token) => {
       throw new Error(error)
     }
     
-    result = response?.data?.courses
-    if (!result) {
+    result = {
+      courses: response?.data?.courses || [],
+      pagination: response?.data?.pagination || null
+    }
+    
+    if (!result.courses) {
       console.error("No courses data in response")
       throw new Error("No courses data received")
     }

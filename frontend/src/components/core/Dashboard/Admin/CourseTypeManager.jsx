@@ -1,54 +1,86 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { FiBook, FiUser, FiDollarSign, FiTag, FiSettings, FiSearch, FiFilter, FiCalendar } from 'react-icons/fi'
+import { FiBook, FiUser, FiDollarSign, FiTag, FiSettings, FiSearch, FiFilter, FiCalendar, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 import { getAllCourses, setCourseType } from '../../../../services/operations/adminAPI'
 import { formatDate, getRelativeTime } from '../../../../utils/dateFormatter'
 import toast from 'react-hot-toast'
 
+// Debounce utility function
+function debounce(func, wait) {
+  let timeout
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout)
+      func(...args)
+    }
+    clearTimeout(timeout)
+    timeout = setTimeout(later, wait)
+  }
+}
+
 export default function CourseTypeManager() {
   const { token } = useSelector((state) => state.auth)
   const [courses, setCourses] = useState([])
-  const [filteredCourses, setFilteredCourses] = useState([])
   const [loading, setLoading] = useState(false)
   const [processingId, setProcessingId] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [typeFilter, setTypeFilter] = useState('All')
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 20,
+    total: 0,
+    pages: 0
+  })
+
+  // Debounced search function
+  const debouncedFetchCourses = useCallback(
+    debounce((searchValue, typeValue, page) => {
+      fetchCourses(searchValue, typeValue, page)
+    }, 500),
+    [token]
+  )
 
   useEffect(() => {
     fetchCourses()
   }, [])
 
   useEffect(() => {
-    let filtered = courses
-    
-    // Filter by type
-    if (typeFilter !== 'All') {
-      filtered = filtered.filter(course => course.courseType === typeFilter)
-    }
-    
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(course => 
-        course.courseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.instructor?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.instructor?.lastName?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    }
-    
-    setFilteredCourses(filtered)
-  }, [typeFilter, courses, searchTerm])
+    // Reset to page 1 when search or filter changes
+    setPagination(prev => ({ ...prev, page: 1 }))
+    debouncedFetchCourses(searchTerm, typeFilter, 1)
+  }, [searchTerm, typeFilter, debouncedFetchCourses])
 
-  const fetchCourses = async () => {
+  const fetchCourses = async (search = searchTerm, courseType = typeFilter, page = pagination.page) => {
     setLoading(true)
     try {
-      const result = await getAllCourses(token)
+      const params = {
+        page,
+        limit: pagination.limit,
+        search,
+        courseType
+      }
+      
+      const result = await getAllCourses(token, params)
       if (result) {
-        setCourses(result)
+        setCourses(result.courses || [])
+        setPagination(prev => ({
+          ...prev,
+          page: result.pagination?.page || 1,
+          total: result.pagination?.total || 0,
+          pages: result.pagination?.pages || 0
+        }))
       }
     } catch (error) {
       toast.error('Failed to fetch courses')
     }
     setLoading(false)
+  }
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= pagination.pages) {
+      setPagination(prev => ({ ...prev, page: newPage }))
+      fetchCourses(searchTerm, typeFilter, newPage)
+    }
   }
 
   const handleCourseTypeChange = async (courseId, courseType) => {
@@ -165,19 +197,16 @@ export default function CourseTypeManager() {
               <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-t-blue-500 rounded-full animate-spin" style={{ animationDelay: '0.15s' }}></div>
             </div>
           </div>
-        ) : filteredCourses.length === 0 ? (
+        ) : courses.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 px-6">
             <div className="w-20 h-20 bg-slate-700/50 rounded-full flex items-center justify-center mb-4">
               <FiBook className="w-10 h-10 text-slate-400" />
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">
-              {courses.length === 0 ? 'No courses found' : 'No matching courses'}
+              No courses found
             </h3>
             <p className="text-slate-400 text-center max-w-md">
-              {courses.length === 0 
-                ? "No courses are available in the system yet."
-                : "No courses match your current filters. Try adjusting your search or filter criteria."
-              }
+              No courses match your current filters. Try adjusting your search or filter criteria.
             </p>
           </div>
         ) : (
@@ -196,7 +225,7 @@ export default function CourseTypeManager() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredCourses.map((course) => (
+                  {courses.map((course) => (
                     <tr key={course._id} className="border-b border-richblack-600 hover:bg-richblack-700/50">
                       <td className="p-3">
                         <div className="flex items-center gap-3">
@@ -279,7 +308,7 @@ export default function CourseTypeManager() {
 
             {/* Mobile/Tablet Card View */}
             <div className="lg:hidden p-4 space-y-4">
-              {filteredCourses.map((course) => (
+              {courses.map((course) => (
                 <div key={course._id} className="bg-slate-700/30 rounded-xl p-4 space-y-3">
                   {/* Course Header */}
                   <div className="flex items-start gap-3">
@@ -364,6 +393,68 @@ export default function CourseTypeManager() {
                 </div>
               ))}
             </div>
+
+            {/* Pagination */}
+            {pagination.pages > 1 && (
+              <div className="flex items-center justify-between px-4 py-3 border-t border-slate-700/50">
+                <div className="flex items-center text-sm text-slate-400">
+                  <span>
+                    Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
+                    {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
+                    {pagination.total} results
+                  </span>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handlePageChange(pagination.page - 1)}
+                    disabled={pagination.page <= 1}
+                    className="flex items-center gap-1 px-3 py-1.5 text-sm bg-slate-700/50 text-slate-300 rounded-lg hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <FiChevronLeft size={16} />
+                    Previous
+                  </button>
+                  
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
+                      let pageNum
+                      if (pagination.pages <= 5) {
+                        pageNum = i + 1
+                      } else if (pagination.page <= 3) {
+                        pageNum = i + 1
+                      } else if (pagination.page >= pagination.pages - 2) {
+                        pageNum = pagination.pages - 4 + i
+                      } else {
+                        pageNum = pagination.page - 2 + i
+                      }
+                      
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => handlePageChange(pageNum)}
+                          className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                            pageNum === pagination.page
+                              ? 'bg-purple-500 text-white'
+                              : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  
+                  <button
+                    onClick={() => handlePageChange(pagination.page + 1)}
+                    disabled={pagination.page >= pagination.pages}
+                    className="flex items-center gap-1 px-3 py-1.5 text-sm bg-slate-700/50 text-slate-300 rounded-lg hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Next
+                    <FiChevronRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>

@@ -331,18 +331,45 @@ exports.deleteUser = async (req, res) => {
 // ================ GET ALL COURSES ================
 exports.getAllCourses = async (req, res) => {
     try {
-        console.log('Fetching all courses with populated category...');
-        const courses = await Course.find({})
+        const { page = 1, limit = 10, search = '', courseType = 'All' } = req.query;
+        
+        // Build query
+        let query = {};
+        
+        // Add course type filter if specified
+        if (courseType !== 'All') {
+            query.courseType = courseType;
+        }
+
+        // Add search filter if specified
+        if (search) {
+            query.$or = [
+                { courseName: { $regex: search, $options: 'i' } },
+                { 'instructor.firstName': { $regex: search, $options: 'i' } },
+                { 'instructor.lastName': { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        // Get total count for pagination
+        const total = await Course.countDocuments(query);
+
+        // Execute paginated query
+        const courses = await Course.find(query)
             .populate('instructor', 'firstName lastName email')
             .populate('category', 'name _id')
-            .sort({ createdAt: -1 });
-
-        console.log('Courses fetched:', courses.length);
-        console.log('Sample course category:', courses[0]?.category);
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit);
 
         return res.status(200).json({
             success: true,
             courses,
+            pagination: {
+                total,
+                page: Number(page),
+                pages: Math.ceil(total / limit),
+                limit: Number(limit)
+            },
             message: 'Courses fetched successfully'
         });
     } catch (error) {

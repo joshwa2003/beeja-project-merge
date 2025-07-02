@@ -1,25 +1,13 @@
 const cloudinary = require('cloudinary').v2;
 
-exports.uploadImageToCloudinary = async (file, folder, height, quality) => {
-    try {
-        console.log('🔧 FIXED UPLOADER: Starting upload with simplified options');
-        const options = { folder };
-        if (height) options.height = height;
-        if (quality) options.quality = quality;
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 5000; // 5 seconds
 
-        // Set basic resource type for video/image uploads
-        if (file.mimetype && file.mimetype.startsWith('video/')) {
-            options.resource_type = 'video';
-            console.log('🎥 Video upload detected - using basic video resource type');
-        } else {
-            options.resource_type = 'auto';
-        }
-        
-        console.log('📋 Upload options:', JSON.stringify(options, null, 2));
-        
-        // Create a promise to handle the upload
-        return new Promise((resolve, reject) => {
-            // Create upload stream
+const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+const uploadWithRetry = async (file, options, retryCount = 0) => {
+    try {
+        return await new Promise((resolve, reject) => {
             const uploadStream = cloudinary.uploader.upload_stream(
                 options,
                 (error, result) => {
@@ -28,22 +16,70 @@ exports.uploadImageToCloudinary = async (file, folder, height, quality) => {
                 }
             );
 
-            // If file is in memory (Buffer)
+            // Add progress monitoring
+            if (options.resource_type === 'video') {
+                uploadStream.on('progress', (progress) => {
+                    console.log(`Upload progress: ${progress.percent}%`);
+                });
+            }
+
+            // Handle file upload based on format
             if (file.buffer) {
                 uploadStream.end(file.buffer);
-            } 
-            // If file is on disk
-            else if (file.path) {
+            } else if (file.path) {
                 const fs = require('fs');
                 fs.createReadStream(file.path)
                     .pipe(uploadStream)
-                    .on('error', (error) => {
-                        reject(error);
-                    });
+                    .on('error', (error) => reject(error));
             } else {
                 reject(new Error('Invalid file format'));
             }
         });
+    } catch (error) {
+        console.error(`Upload attempt ${retryCount + 1} failed:`, error.message);
+        
+        if (retryCount < MAX_RETRIES) {
+            console.log(`Retrying upload in ${RETRY_DELAY/1000} seconds...`);
+            await wait(RETRY_DELAY);
+            return uploadWithRetry(file, options, retryCount + 1);
+        }
+        throw error;
+    }
+};
+
+exports.uploadImageToCloudinary = async (file, folder, height, quality) => {
+    try {
+        console.log('🔧 Starting upload with enhanced options');
+        const options = { 
+            folder,
+            // Add chunked upload for large files
+            chunk_size: 6000000, // 6MB chunks
+            // Add timeout settings
+            timeout: 600000, // 10 minutes
+        };
+
+        if (height) options.height = height;
+        if (quality) options.quality = quality;
+
+        // Enhanced video upload configuration
+        if (file.mimetype && file.mimetype.startsWith('video/')) {
+            options.resource_type = 'video';
+            console.log('🎥 Video upload detected - using enhanced video configuration');
+            
+            // Add video-specific optimizations
+            options.eager = [
+                { streaming_profile: "full_hd", format: "m3u8" } // HLS streaming
+            ];
+            options.eager_async = true;
+            options.eager_notification_url = process.env.CLOUDINARY_NOTIFICATION_URL;
+        } else {
+            options.resource_type = 'auto';
+        }
+        
+        console.log('📋 Enhanced upload options:', JSON.stringify(options, null, 2));
+        
+        // Use enhanced upload with retry mechanism
+        return await uploadWithRetry(file, options);
     }
     catch (error) {
         console.log("Error while uploading file to Cloudinary");

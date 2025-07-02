@@ -29,11 +29,11 @@ const CourseManagement = () => {
       const response = await getAllCourses(token);
       console.log("Courses response:", response);
       
-      if (!response) {
+      if (!response || !response.courses) {
         throw new Error("No courses data received");
       }
 
-      setCourses(response);
+      setCourses(response.courses);
       setError(null);
     } catch (err) {
       console.error("Error fetching courses:", {
